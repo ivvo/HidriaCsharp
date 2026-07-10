@@ -1,0 +1,50 @@
+UTILS\
+Radnom tests and projects\
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Dd]ebug[Pp]ublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio uporabniške/lokalne datoteke
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+# Rider / ReSharper
+.idea/
+*.DotSettings.user
+
+# Test rezultati
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Publish
+*.pubxml
+*.publishproj
+PublishScripts/
+
+# Ostalo
+*.tmp
+*.bak
+*.swp
+Thumbs.db
+.DS_Store

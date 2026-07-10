@@ -1,0 +1,85 @@
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.pdb
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\HidriaSnap7.dll
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\ZedGraph.dll
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\snap7.net.dll
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\HidriaSnap7.pdb
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.FormView.resources
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.ValuesControl.resources
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\RotomatikaMeasView.csproj.GenerateResource.Cache
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.exe
+C:\Hidria\Utils\Sources\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.pdb
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\obj\Debug\HRMeasView.FormView.resources
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\obj\Debug\HRMeasView.Properties.Resources.resources
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\obj\Debug\RotomatikaMeasView.csproj.GenerateResource.Cache
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\obj\Debug\HRMeasView.ValuesControl.resources
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\bin\Debug\HRMeasView.exe
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\bin\Debug\HRMeasView.pdb
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\bin\Debug\HidriaSnap7.dll
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\bin\Debug\ZedGraph.dll
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\bin\Debug\snap7.net.dll
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\bin\Debug\HidriaSnap7.pdb
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\obj\Debug\HRMeasView.exe
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\obj\Debug\HRMeasView.pdb
+C:\Hidria\Utils\Sources\HRMeasView\WindowsFormsApplication1\obj\Debug\RotomatikaMeasView.csprojResolveAssemblyReference.cache
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\obj\Debug\HRMeasView.exe
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\obj\Debug\HRMeasView.pdb
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\bin\Debug\HRMeasView.exe
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\bin\Debug\HRMeasView.pdb
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\bin\Debug\HidriaSnap7.dll
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\bin\Debug\ZedGraph.dll
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\bin\Debug\snap7.net.dll
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\bin\Debug\HidriaSnap7.pdb
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\obj\Debug\RotomatikaMeasView.csprojResolveAssemblyReference.cache
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\obj\Debug\HRMeasView.FormView.resources
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\obj\Debug\HRMeasView.Properties.Resources.resources
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\obj\Debug\HRMeasView.ValuesControl.resources
+C:\Hidria\Utils\Sources\HRMeasView\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.GenerateResource.Cache
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\bin\Debug\HRMeasView.exe
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\bin\Debug\HRMeasView.pdb
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\bin\Debug\HidriaSnap7.dll
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\bin\Debug\snap7.net.dll
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\bin\Debug\HidriaSnap7.pdb
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\obj\Debug\HRMeasView.FormView.resources
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\obj\Debug\HRMeasView.Properties.Resources.resources
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\obj\Debug\HRMeasView.ValuesControl.resources
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.GenerateResource.Cache
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\obj\Debug\HRMeasView.exe
+C:\Hidria\Utils\Sources\Common\HRMeasView\HRMeasView\obj\Debug\HRMeasView.pdb
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\obj\Debug\HRMeasView.exe
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\obj\Debug\HRMeasView.pdb
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\bin\Debug\HRMeasView.exe
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\bin\Debug\HRMeasView.pdb
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\bin\Debug\HidriaSnap7.dll
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\bin\Debug\snap7.net.dll
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\bin\Debug\HidriaSnap7.pdb
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\obj\Debug\HRMeasView.FormView.resources
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\obj\Debug\HRMeasView.Properties.Resources.resources
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\obj\Debug\HRMeasView.ValuesControl.resources
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Smaller_Range\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.GenerateResource.Cache
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\obj\Debug\HRMeasView.exe
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\obj\Debug\HRMeasView.pdb
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\obj\Debug\RotomatikaMeasView.csprojResolveAssemblyReference.cache
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\obj\Debug\HRMeasView.FormView.resources
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\obj\Debug\HRMeasView.Properties.Resources.resources
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\obj\Debug\HRMeasView.ValuesControl.resources
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.GenerateResource.Cache
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\bin\Debug\HRMeasView.exe
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\bin\Debug\HRMeasView.pdb
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\bin\Debug\HidriaSnap7.dll
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\bin\Debug\snap7.net.dll
+C:\Users\tadkod\TadejDocuments\Utils\Sources\Common\HRMeasView_Drce\HRMeasView\bin\Debug\HidriaSnap7.pdb
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\bin\Debug\HRMeasView.exe
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\bin\Debug\HRMeasView.pdb
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\bin\Debug\snap7.net.dll
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\bin\Debug\HidriaSnap7.pdb
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.AssemblyReference.cache
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\HRMeasView.FormView.resources
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\HRMeasView.Properties.Resources.resources
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\HRMeasView.ValuesControl.resources
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.GenerateResource.cache
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.CoreCompileInputs.cache
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\RotomatikaMeasView.csproj.CopyComplete
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\HRMeasView.exe
+D:\C#\DataBaseView\HRMeasView - Copy\HRMeasView\obj\Debug\HRMeasView.pdb

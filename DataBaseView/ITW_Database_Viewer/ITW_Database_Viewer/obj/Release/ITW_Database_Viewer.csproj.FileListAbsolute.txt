@@ -1,0 +1,104 @@
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe.config
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.pdb
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\sl\ITW_Database_Viewer.resources.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ClosedXML.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\FastMember.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\System.IO.FileSystem.Primitives.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\System.IO.Packaging.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ClosedXML.pdb
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ClosedXML.xml
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.xml
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.xml
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.ResolveComReference.cache
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.resources
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.resources
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.sl.resources
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.sl.resources
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.GenerateResource.cache
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CoreCompileInputs.cache
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\sl\ITW_Database_Viewer.resources.dll
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CopyComplete
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.exe
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.pdb
+C:\HidriaVision\MetalflexShowResults\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csprojAssemblyReference.cache
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe.config
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.pdb
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\sl\ITW_Database_Viewer.resources.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\FastMember.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\System.IO.FileSystem.Primitives.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\System.IO.Packaging.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.pdb
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.xml
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.xml
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.xml
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csprojAssemblyReference.cache
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.ResolveComReference.cache
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.resources
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.resources
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.sl.resources
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.sl.resources
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.GenerateResource.cache
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CoreCompileInputs.cache
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\sl\ITW_Database_Viewer.resources.dll
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CopyComplete
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.exe
+C:\Users\elipur\Desktop\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.pdb
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe.config
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.pdb
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\sl\ITW_Database_Viewer.resources.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\FastMember.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\System.IO.FileSystem.Primitives.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\System.IO.Packaging.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.pdb
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.xml
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.xml
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.xml
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csprojAssemblyReference.cache
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.ResolveComReference.cache
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.resources
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.resources
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.sl.resources
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.sl.resources
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.GenerateResource.cache
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CoreCompileInputs.cache
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\sl\ITW_Database_Viewer.resources.dll
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CopyComplete
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.exe
+D:\PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.pdb
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe.config
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.exe
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ITW_Database_Viewer.pdb
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\sl\ITW_Database_Viewer.resources.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\FastMember.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\System.IO.FileSystem.Primitives.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\System.IO.Packaging.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.pdb
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ClosedXML.xml
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\DocumentFormat.OpenXml.xml
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\bin\Release\ExcelNumberFormat.xml
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csprojAssemblyReference.cache
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.ResolveComReference.cache
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.resources
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.resources
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.FormMain.sl.resources
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.Properties.MainFormMessages.sl.resources
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.GenerateResource.cache
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CoreCompileInputs.cache
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\sl\ITW_Database_Viewer.resources.dll
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.csproj.CopyComplete
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.exe
+D:\3-PROJEKTI VISUAL STUDIO\ITW_Database_Viewer\ITW_Database_Viewer\obj\Release\ITW_Database_Viewer.pdb
