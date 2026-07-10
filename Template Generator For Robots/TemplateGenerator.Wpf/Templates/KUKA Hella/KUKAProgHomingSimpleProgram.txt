@@ -1,0 +1,37 @@
+DEF {0}_homing()
+			REAL ndistance
+			ndistance = 9000	
+	LOOP
+		If (diROBOT_HOMING == TRUE) Then ; 
+			; Set homing flag
+			bROBOT_LOCAL_HOMING_FLAG = TRUE					
+			{1}  			
+			; Set in motion signal
+			doROBOT_IN_MOTION = TRUE		
+			; Go home
+			robot_goHome()
+			; Send the current location to the PLC
+			goROBOT_POSITION_AT = 0
+			; Turn off in motion signal
+			doROBOT_IN_MOTION =FALSE
+			; Set signal for motion end
+			doROBOT_END = TRUE
+			; Turn off homing request signal
+			doROBOT_HOMING_REQUEST = FALSE
+			; Set homing ok signal
+			doROBOT_HOMING_OK = TRUE
+			; Set reset ok signal
+			doROBOT_RESET_OK = TRUE
+			; Turn off homing flag
+			bROBOT_LOCAL_HOMING_FLAG = FALSE
+			; Set all station as free
+			robot_stationsFree()
+			; End homing task
+			GoTo P1_EndOfTask
+		EndIf
+	ENDLOOP
+	
+	P1_EndOfTask:
+    ; Start main task
+	{0}_mainTask()
+END

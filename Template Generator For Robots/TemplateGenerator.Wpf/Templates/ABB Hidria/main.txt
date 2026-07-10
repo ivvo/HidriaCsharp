@@ -1,0 +1,125 @@
+MODULE robot_main
+    PROC robot_init()
+	    !Power Low
+        robot_slowerWorkingMode nRobotLowPowerSpeed, nRobotProcLowPowerSpeed, nRobotLowPowerAccel,nRobotLowPowerAccRamp;
+		
+        ! Switch on check of configuration
+        confL\On;
+        confj\On;
+        
+        ! Delete Text on screen
+        TPErase;
+	
+	    ! Set stations as busy
+	    robot_stationBusy;
+	
+	    ! Reset depart locations
+	    robot_resetDepartLocations;
+	
+	    ! Reset dest locations
+	    robot_resetDestLocations;
+	
+	    ! Reset flags
+	    robot_resetFlags;
+	
+	    ! Reset profibus outputs
+	    robot_resetProfibusOutputs;
+               
+        ! Path resolution
+        PathResol 150;
+		
+		! Clear curent path, so we go home after crash etc...
+        ClearPath;
+		
+		! Define pallets
+{2}
+    	! Start homing
+    	Set doRobotHomingRequest;    
+        robot_homing;  
+         
+    ENDPROC
+    
+    PROC robot_homing()  
+
+		WHILE TRUE DO
+			IF diRobotHoming = 1 then
+				! Set homing flag
+				bRobotLocalHomingFlag := TRUE;
+					
+				!Get Curent Location
+				GetCurentLocation;
+			
+				! Go home
+				{0}_goHome;
+				! Send the current location to the PLC
+				SetGO goPositionAt, 0;
+				! Set signal for motion end
+				Set doRobotOEnd;
+				! Turn off homing request signal
+				Reset doRobotHomingRequest;
+				! Set homing ok signal
+				Set doRobotHomingOK;
+				! Set reset ok signal
+				Set doRobotResetOK;
+				! Turn off homing flag
+				bRobotLocalHomingFlag := FALSE;
+				! Set all station as free
+				robot_stationsFree;
+				! End homing task
+				GoTo P1_EndOfTask;            
+			ENDIF              
+		ENDWHILE	
+		P1_EndOfTask:
+		! Start main task
+		robot_mainTask; 
+    ENDPROC
+    
+    PROC robot_mainTask() 	
+    	WHILE TRUE DO   		
+    		If diRobotReset = 1 then 
+    			! Reset "reset ok" flag
+    			Reset doRobotResetOK;
+    		    ! Set local reset flag
+    			bRobotLocalResetFlag := TRUE;
+    			! Turn off signal for motion end
+    			Reset doRobotOEnd;
+    			! Go home
+    			robot_goHome;
+    			! Send the current location to the PLC
+    			SetGO goPositionAt, 0;
+    			! Turn off local reset flag
+    			bRobotLocalResetFlag := FALSE;
+                ! Set all station as free
+        	    robot_stationsFree;
+                ! Set homing ok signal
+        	    Set doRobotHomingOK;
+    			! Set reset ok signal
+    			Set doRobotResetOK;
+    			
+    		ELSEIF diRobotStart = 1 then 
+			
+			    set doRobotInMotion;
+				
+				! Turn off signal for motion end. Reset also local end flag
+    			Reset doRobotOEnd;
+				
+    			! Read next position
+    			nPosition := giRobotPositionTo;
+				
+                ! Read Pallet positions
+                nAdditionalPos := giAdditionalPos;
+				
+{1}
+
+                ENDTEST
+    			! Send the current location to the PLC
+    			SetGO goPositionAt, nPosition;
+                SetGO goAdditionalPositions,nAdditionalPos;
+    		EndIf
+    		! Set signal for motion end. Set also local signal for motion end
+            reset doRobotInMotion;
+    		Set doRobotOEnd;
+        ENDWHILE
+    ENDPROC 
+{3}	
+ENDMODULE

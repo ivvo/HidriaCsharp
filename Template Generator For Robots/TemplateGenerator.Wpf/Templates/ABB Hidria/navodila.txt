@@ -1,0 +1,11 @@
+EIO.sys
+Vsebuje IOje sistemske bite etc,
+naložimo ga Controller -> Load Parameters
+
+
+SYS.cfg
+Vrstica 40 -Routine "OnStartupExpitCycle" -Shelf "POWER_ON" -Task "T_ROB1"
+Ob zagonu stroja zažene OnStartupExpitCycle funkcijo, ki prekine vso delovanje. 
+Kar prekopiraš čez file v SYSPAR/
+To se drugače nastavlja v Configuration->Controller->Event Routine.
+Tle sem na Heli naredil "home sfero" oz pregled če je robot okoli določene točke tako, da lahko dovolimo homing.

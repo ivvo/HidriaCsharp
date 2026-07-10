@@ -1,0 +1,8 @@
+Function main
+	' Start error handling tasks
+	Xqt robot_errorHandling, NoEmgAbort
+	Xqt robot_estopHandling, NoEmgAbort
+	
+	' Init robots
+{0}
+Fend

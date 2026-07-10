@@ -1,0 +1,43 @@
+MODULE Global      
+    ! Speed variables [mm/s,re orientation of TCP degrees/s, linear external axes mm/s, rotation of external axes in degree/s]
+    VAR speeddata vFullSpeed := [1500,500,5000,1000];
+    VAR speeddata vMoveAway := [350,500,5000,1000];
+    VAR speeddata vMoveOnStation := [350,500,5000,1000];
+
+	! Weight
+	VAR num nWeight := 0;
+	
+	! Grippers
+	VAR num nGripper := 0.4;
+	   
+    ! Moving on or from station Z offset
+    CONST num nRobotStationZOffset := 150;
+    CONST num nRobotStationSlowZOffset := 50;
+	
+	VAR bool bRobot_onStation;
+	
+    ! From
+{0}    
+
+    ! To
+{1} 
+ 
+    ! Error variables
+    VAR errnum enProgramError := -1;
+    
+    ! Curent position variables
+    VAR robtarget jCurPos;  
+    
+    ! POINTS DEFINITION   
+{2}   
+
+    
+    ! Reset robot flags procedures
+    PROC robot_resetDepartLocations()
+{3}
+    ENDPROC
+
+    PROC robot_resetDestLocations()
+{4}
+    ENDPROC
+ENDMODULE

@@ -1,0 +1,78 @@
+&ACCESS RVO1
+&REL 11
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\Functions
+DEF robotFunctions ( )
+;Must be called like this
+END
+
+GLOBAL DEF robot_setOffsets()
+   frABOVE_STATION_Z_OFFSET.Z=nABOVE_STATION_OFFSET
+   frNEAR_STATION_OFFSET.Z=nNEAR_STATION_OFFSET
+   frABOVE_STAT_TOOL_Z_OFF.Z=-nABOVE_STATION_OFFSET
+   frNEAR_STAT_TOOL_OFFSET.Z=-nNEAR_STATION_OFFSET
+END
+
+GLOBAL DEF robot_setPowerMode()
+   CONTINUE
+   IF ((bROBOT_LOCAL_HOMING_FLAG == TRUE) or (diROBOT_STEP == TRUE)) THEN
+      BAS(#VEL_PTP, nROBOT_LOW_POWER_SPEED)  ;PTP speed 1-100%
+      BAS(#ACC_PTP, nROBOT_LOW_POWER_ACCEL)
+      BAS(#VEL_CP, nROBOT_LOW_PWR_LIN_SPEED) ; LIN speed 0-2 m/s
+      BAS(#ACC_CP, nROBOT_LOW_POWER_ACCEL)
+      SET_CD_PARAMS (25) ; Colision detect
+   ELSE   
+      BAS(#VEL_PTP, nROBOT_SPEED)  ;PTP speed 1-100%
+      BAS(#ACC_PTP, nROBOT_ACCEL)
+      BAS(#VEL_CP, nROBOT_LIN_SPEED) ; LIN speed 0-2 m/s
+      BAS(#ACC_CP, nROBOT_ACCEL)
+      SET_CD_PARAMS (0) ; Colision detect
+   ENDIF
+END
+
+GLOBAL DEF mainHalt ( )
+   doROBOT_IN_MOTION = FALSE 
+   doROBOT_HOMING_OK = FALSE 
+   doROBOT_RESET_OK = FALSE 
+   bROBOT_ERROR_RESET = TRUE
+END
+
+GLOBAL DEF robot_fullWorkingSpeed()  
+   BAS(#VEL_PTP, nROBOT_SPEED)  
+   BAS(#ACC_PTP, nROBOT_ACCEL)
+   BAS(#VEL_CP, nROBOT_LIN_SPEED) 
+   BAS(#ACC_CP, nROBOT_ACCEL)
+END
+
+GLOBAL DEF robot_slowerWorkingMode (nPTPspeed :IN, nLINspeed : IN,  naccel :IN)
+   int nPTPspeed
+   int nLINspeed
+   int naccel
+   BAS(#VEL_PTP, nPTPspeed)  
+   BAS(#VEL_CP, nLINspeed)
+   BAS(#ACC_CP, naccel)
+   BAS(#ACC_PTP, naccel)   
+END
+
+
+GLOBAL DEF robot_stationsFree()
+{0}
+END
+
+GLOBAL DEF robot_stationsBusy()
+{1}
+END
+
+GLOBAL DEF robot_resetProfibusOuts()
+	doROBOT_END = FALSE
+	doROBOT_HOMING_OK = FALSE
+	doROBOT_HOMING_REQUEST = FALSE
+	doROBOT_IN_MOTION = FALSE
+	doROBOT_RESET_OK = FALSE
+END
+
+GLOBAL DEF robot_resetFlags()
+	bROBOT_LOCAL_HOMING_FLAG = FALSE
+	bROBOT_LOCAL_RESET_FLAG = FALSE
+	bROBOT_ERROR_RESET = FALSE
+END

@@ -1,0 +1,10 @@
+Function {0}_fullWorkingSpeed
+	Robot {2}
+	
+	If Power = High Then
+		Speed {1}_SPEED * 100
+		Accel {1}_ACCEL * 100, {1}_ACCEL * 100
+		SpeedS {1}_SPEED * 2000
+		AccelS {1}_ACCEL * 25000, {1}_ACCEL * 25000
+	EndIf
+Fend

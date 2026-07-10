@@ -1,0 +1,196 @@
+ENVT0100,LM:2022/11/03 06:52:07:601,DS:0000004469,CS:22570,MA:C8-D9-D2-AE-3E-19,EI:           
+sRCVersion="7.5.2"
+InputBitLabels {{
+	nNumberOfLabels=14
+	Label1 {{
+		nBit=512
+		sLabel="ROBO_I_S_START"
+		sDescription=""
+	}}
+	Label2 {{
+		nBit=513
+		sLabel="ROBO_I_S_STOP"
+		sDescription=""
+	}}
+	Label3 {{
+		nBit=514
+		sLabel="ROBO_I_S_PAUSE"
+		sDescription=""
+	}}
+	Label4 {{
+		nBit=515
+		sLabel="ROBO_I_S_CONTINUE"
+		sDescription=""
+	}}
+	Label5 {{
+		nBit=516
+		sLabel="ROBO_I_S_RESET"
+		sDescription=""
+	}}
+	Label6 {{
+		nBit=517
+		sLabel="ROBO_I_S_FORCE_POWER_LOW"
+		sDescription=""
+	}}
+	Label7 {{
+		nBit=520
+		sLabel="ROBOT_I_HOMING"
+		sDescription=""
+	}}
+	Label8 {{
+		nBit=521
+		sLabel="ROBOT_I_RESET"
+		sDescription=""
+	}}
+	Label9 {{
+		nBit=522
+		sLabel="ROBOT_I_RUN"
+		sDescription=""
+	}}
+	Label10 {{
+		nBit=523
+		sLabel="ROBOT_I_STEP"
+		sDescription=""
+	}}
+	Label11 {{
+		nBit=524
+		sLabel="ROBOT_I_START"
+		sDescription=""
+	}}
+	Label12 {{
+		nBit=525
+		sLabel="ROBOT_I_ON_STATION"
+		sDescription=""
+	}}
+	Label13 {{
+		nBit=526
+		sLabel="ROBOT_I_GRIPPER_OPPEN"
+		sDescription=""
+	}}
+	Label14 {{
+		nBit=527
+		sLabel="ROBOT_I_GRIPPER_CLOSE"
+		sDescription=""
+	}}
+}}
+InputByteLabels {{
+	nNumberOfLabels=2
+	Label1 {{
+		nByte=68
+		sLabel="ROBOT_I_POSITION_TO"
+		sDescription=""
+	}}
+	Label2 {{
+		nByte=69
+		sLabel="ROBOT_I_ADDITIONAL_POS"
+		sDescription=""
+	}}
+}}
+InputWordLabels {{
+	nNumberOfLabels=0
+}}
+OutputBitLabels {{
+	nNumberOfLabels={1}
+	Label1 {{
+		nBit=512
+		sLabel="ROBO_O_S_READY"
+		sDescription=""
+	}}
+	Label2 {{
+		nBit=513
+		sLabel="ROBO_O_S_RUNNING"
+		sDescription=""
+	}}
+	Label3 {{
+		nBit=514
+		sLabel="ROBO_O_S_PAUSE"
+		sDescription=""
+	}}
+	Label4 {{
+		nBit=515
+		sLabel="ROBO_O_S_ERROR"
+		sDescription=""
+	}}
+	Label5 {{
+		nBit=516
+		sLabel="ROBO_O_S_ESTOPON"
+		sDescription=""
+	}}
+	Label6 {{
+		nBit=517
+		sLabel="ROBO_O_S_SAFEGUARD"
+		sDescription=""
+	}}
+	Label7 {{
+		nBit=518
+		sLabel="ROBO_O_S_SERROR"
+		sDescription=""
+	}}
+	Label8 {{
+		nBit=519
+		sLabel="ROBO_O_S_WARNING"
+		sDescription=""
+	}}
+	Label9 {{
+		nBit=520
+		sLabel="ROBOT_O_HOMING_REQUEST"
+		sDescription=""
+	}}
+	Label10 {{
+		nBit=521
+		sLabel="ROBOT_O_RESET_OK"
+		sDescription=""
+	}}
+	Label11 {{
+		nBit=522
+		sLabel="ROBOT_O_HOMING_OK"
+		sDescription=""
+	}}
+	Label12 {{
+		nBit=523
+		sLabel="ROBOT_O_END"
+		sDescription=""
+	}}
+	Label13 {{
+		nBit=524
+		sLabel="ROBOT_O_IN_MOTION"
+		sDescription=""
+	}}
+{0}
+}}
+OutputByteLabels {{
+	nNumberOfLabels=2
+	Label1 {{
+		nByte=68
+		sLabel="ROBOT_O_POSITION_AT"
+		sDescription=""
+	}}
+	Label2 {{
+		nByte=69
+		sLabel="ROBOT_O_ADDITIONAL_POS"
+		sDescription=""
+	}}
+}}
+OutputWordLabels {{
+	nNumberOfLabels=0
+}}
+MemoryBitLabels {{
+	nNumberOfLabels={3}
+	Label1 {{
+		nBit=0
+		sLabel="ROBOT_LOCAL_HOMING_FLAG"
+		sDescription=""
+	}}
+	Label2 {{
+		nBit=1
+		sLabel="ROBOT_LOCAL_RESET_FLAG"
+		sDescription=""
+	}}
+{2}
+}}
+MemoryByteLabels {{
+	nNumberOfLabels=0
+}}
+MemoryWordLabels {{	
+	nNumberOfLabels=0
+}}

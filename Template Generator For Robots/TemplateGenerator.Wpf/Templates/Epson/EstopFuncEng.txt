@@ -1,0 +1,8 @@
+Function robot_estopHandling
+	Wait EstopOn
+	
+	' Reset in motion
+{0}
+	
+	Quit All
+Fend

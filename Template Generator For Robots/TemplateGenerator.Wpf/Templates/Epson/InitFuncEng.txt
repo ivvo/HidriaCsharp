@@ -1,0 +1,39 @@
+Function {0}_init
+	Robot {2}
+	Reset
+	Motor On
+	Power Low
+	
+	' Set stations as busy
+	Call {0}_stationsBusy
+	
+	' Reset depart locations
+	Call {0}_resetDepartLocations
+	
+	' Reset dest locations
+	Call {0}_resetDestLocations
+	
+	' Reset flags
+	Call {0}_resetFlags
+	
+	' Reset profibus outputs
+	Call {0}_resetProfibusOutputs
+
+	' Set weight
+	Weight {0}_WEIGHT_MANIPULATOR
+	
+	' Set inertia and eccentricity
+	Inertia {0}_INERTION, {0}_ECCENTRICITY
+	
+	If SFree(1) Or SFree(2) Or SFree(3) Or SFree(4) Then
+		SLock 1, 2, 3, 4
+	EndIf
+	
+	' Use tool 1
+	' Tool 1
+	
+{3}
+	' Start homing
+	On {1}_O_HOMING_REQUEST
+	Xqt {0}_homing
+Fend

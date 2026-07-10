@@ -1,0 +1,10 @@
+GLOBAL DEFFCT REAL Dist( fp1 : IN, fp2 : IN)
+   ;Function returns distance between 2 points
+   FRAME fp1
+   FRAME fp2
+   
+   twoPdist = SQRT(((fp1.x-fp2.x)*(fp1.x-fp2.x))+((fp1.y-fp2.y)*(fp1.y-fp2.y))+((fp1.z-fp2.z)*(fp1.z-fp2.z)))
+   twoPdist = ABS(twoPdist)
+      
+   return twoPdist
+ENDFCT

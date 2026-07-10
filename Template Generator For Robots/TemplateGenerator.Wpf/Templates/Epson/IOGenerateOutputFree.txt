@@ -1,0 +1,5 @@
+Label{0} {{
+		nBit={1}
+		sLabel="ROBOT_O_{2}_FREE"
+		sDescription=""
+	}}

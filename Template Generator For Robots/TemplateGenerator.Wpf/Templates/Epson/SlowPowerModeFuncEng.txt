@@ -1,0 +1,10 @@
+Function {0}_slowerWorkingMode(spd As Double, acceler As Double, deceler As Double)
+	Robot {2}
+	
+	If Power = High Then
+		Speed spd * 100
+		Accel acceler * 100, deceler * 100
+		SpeedS spd * 2000
+		AccelS acceler * 25000, deceler * 25000
+	EndIf
+Fend

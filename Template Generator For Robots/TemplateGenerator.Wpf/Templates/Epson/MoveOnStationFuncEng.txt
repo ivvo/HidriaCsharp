@@ -1,0 +1,22 @@
+Function {0}_moveOnStation
+	Robot {2}
+	
+	' Set power mode
+	Call {0}_setPowerMode
+	
+	' Set the cp barrier in bot power modes(high, low)
+	'Call {0}_CPBarrier({1}_CP_TURN_OFF_POWER_LOW)
+	
+	' Go on the station only if bit is set
+	If Sw({1}_I_ON_STATION) = True Then	
+	
+{3}
+		
+		' We are on the station
+		{0}_onStation = True
+	EndIf
+	
+	' Set the final cp barrier in both power modes
+	Call {0}_CPBarrier({1}_CP_TURN_OFF)
+	
+Fend

@@ -1,0 +1,60 @@
+Function {0}_homing
+	Robot {2}
+	
+	Do While True
+		If Sw({1}_I_HOMING) = On Then
+			' Set homing flag
+			MemOn {1}_LOCAL_HOMING_FLAG
+			
+			Integer index
+			Integer currentLocation
+			Integer distance
+			distance = 9000
+			
+			currentLocation = 0
+			
+			For index = 0 To {3} ' Find the nearest point
+				If Dist(RealPos, P(index)) < distance Then
+					distance = Dist(RealPos, P(index))
+					currentLocation = index
+				EndIf
+			Next index
+			
+			' Set in motion signal
+			On {1}_O_IN_MOTION
+			
+			' Set current location... Correct the position if necesary
+			Select currentLocation
+{4}
+				Default
+					Error PROGRAM_ERROR
+			Send
+			
+			' Go home
+			Call {0}_goHome
+			' Send the current location to the PLC
+			Out {1}_O_POSITION_AT, 0
+			
+			' Turn off in motion signal
+			Off {1}_O_IN_MOTION
+			' Set signal for motion end
+			On {1}_O_END			
+			' Turn off homing request signal
+			Off {1}_O_HOMING_REQUEST
+			' Set homing ok signal
+			On {1}_O_HOMING_OK
+			' Set reset ok signal
+			On {1}_O_RESET_OK
+			' Turn off homing flag
+			MemOff {1}_LOCAL_HOMING_FLAG
+			' Set all station as free
+			Call {0}_stationsFree
+			' End homing task
+			GoTo endOfTask
+		EndIf
+	Loop
+	
+	EndOfTask:
+		' Start main task
+		Xqt {0}_mainTask
+Fend 

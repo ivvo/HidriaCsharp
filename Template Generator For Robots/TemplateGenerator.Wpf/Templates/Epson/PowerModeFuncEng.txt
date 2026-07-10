@@ -1,0 +1,21 @@
+Function {0}_setPowerMode
+	Robot {2}
+	
+	If MemSw({1}_LOCAL_RESET_FLAG) = On Or Sw({1}_I_STEP) = On Or MemSw({1}_LOCAL_HOMING_FLAG) = On Then
+		If Power <> Low Then
+			WaitPos
+			Wait 0.1
+			Power Low
+		EndIf				
+	Else
+		If Power <> High Then
+			WaitPos
+			Power Low	'Change to High
+		EndIf
+		
+		Speed {1}_SPEED * 100
+		Accel {1}_ACCEL * 100, {1}_ACCEL * 100
+		SpeedS {1}_SPEED * 2000
+		AccelS {1}_ACCEL * 25000, {1}_ACCEL * 25000
+	EndIf
+Fend

@@ -1,0 +1,9 @@
+Function {0}_CPBarrier(workingMode As Integer)
+	Robot {2}
+	
+	If Power = Low And workingMode = {1}_CP_TURN_OFF_POWER_LOW Then
+		WaitPos
+	ElseIf workingMode = {1}_CP_TURN_OFF Then
+		WaitPos
+	EndIf
+Fend

@@ -1,0 +1,56 @@
+
+DEF {0} ()
+
+END
+
+GLOBAL DEF {0}_init( )
+  ; Standard initialisation for the robot
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  
+   ; To avoid BCO warning
+   PTP $POS_ACT
+
+   ; Initialisation
+   $ADVANCE = 3
+   SET_CD_PARAMS (15) ; Low power
+   ;$PAL_MODE = TRUE
+	
+	; Set stations as busy
+	robot_stationsBusy()
+	
+	; Reset depart locations
+	FROM_LOC = #FROM_NONE
+	
+	; Reset dest locations
+	TO_LOC = #TO_NONE
+	
+	; Reset flags
+	robot_resetFlags()
+	
+	; Reset profibus outputs
+	robot_resetProfibusOuts()
+	
+	; Define Offsets
+	nABOVE_STATION_OFFSET = 100
+	nNEAR_STATION_OFFSET = 20
+	robot_setOffsets()
+	
+	; Define load data
+	LOAD_DATA[1].M= 0.1
+	$LOAD = LOAD_DATA[1]
+	
+	; Define tool
+	TOOL_NAME[1, ]= "Tool 1"
+	TOOL_DATA[1]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+	
+	; Use tool 1   
+	$TOOL = TOOL_DATA[1]
+	
+	; Start homing
+	doROBOT_HOMING_REQUEST = TRUE
+	{0}_homing()
+END
