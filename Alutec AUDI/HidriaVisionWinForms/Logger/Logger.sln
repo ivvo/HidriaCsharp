@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventLogger", "Logger\EventLogger.csproj", "{4E26FA7D-BCC9-4BC9-9F35-0C99B786F0B9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3520F561-4039-4CB9-98AD-576B42AED233} = {3520F561-4039-4CB9-98AD-576B42AED233}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLogger", "ResultsLogger\DataLogger.csproj", "{16913CC1-A42C-4A58-9694-E5C439EC9B99}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3520F561-4039-4CB9-98AD-576B42AED233} = {3520F561-4039-4CB9-98AD-576B42AED233}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoggerCommon", "LoggerCommon\LoggerCommon.csproj", "{3520F561-4039-4CB9-98AD-576B42AED233}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageLogger", "ImageLogger\ImageLogger.csproj", "{6A54E7F1-651E-4F32-A046-32B2C40FF2C7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data loggers", "Data loggers", "{6F9D9C14-6662-4C12-8100-8F8E9F5EF75E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Image logger", "Image logger", "{CFD4D06C-A446-49CE-9B57-0A5E64D5A611}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4E26FA7D-BCC9-4BC9-9F35-0C99B786F0B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E26FA7D-BCC9-4BC9-9F35-0C99B786F0B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E26FA7D-BCC9-4BC9-9F35-0C99B786F0B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E26FA7D-BCC9-4BC9-9F35-0C99B786F0B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16913CC1-A42C-4A58-9694-E5C439EC9B99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16913CC1-A42C-4A58-9694-E5C439EC9B99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16913CC1-A42C-4A58-9694-E5C439EC9B99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16913CC1-A42C-4A58-9694-E5C439EC9B99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3520F561-4039-4CB9-98AD-576B42AED233}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3520F561-4039-4CB9-98AD-576B42AED233}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3520F561-4039-4CB9-98AD-576B42AED233}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3520F561-4039-4CB9-98AD-576B42AED233}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A54E7F1-651E-4F32-A046-32B2C40FF2C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A54E7F1-651E-4F32-A046-32B2C40FF2C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A54E7F1-651E-4F32-A046-32B2C40FF2C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A54E7F1-651E-4F32-A046-32B2C40FF2C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4E26FA7D-BCC9-4BC9-9F35-0C99B786F0B9} = {6F9D9C14-6662-4C12-8100-8F8E9F5EF75E}
+		{16913CC1-A42C-4A58-9694-E5C439EC9B99} = {6F9D9C14-6662-4C12-8100-8F8E9F5EF75E}
+		{3520F561-4039-4CB9-98AD-576B42AED233} = {6F9D9C14-6662-4C12-8100-8F8E9F5EF75E}
+		{6A54E7F1-651E-4F32-A046-32B2C40FF2C7} = {CFD4D06C-A446-49CE-9B57-0A5E64D5A611}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {048E7757-2BEA-4680-BA95-836C64F6DE73}
+	EndGlobalSection
+EndGlobal

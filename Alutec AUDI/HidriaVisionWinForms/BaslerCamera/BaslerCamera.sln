@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaslerCamera", "BaslerCamera\BaslerCamera.csproj", "{81C7E202-BABB-4C67-98A2-7AA7A522D6C5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81C7E202-BABB-4C67-98A2-7AA7A522D6C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81C7E202-BABB-4C67-98A2-7AA7A522D6C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81C7E202-BABB-4C67-98A2-7AA7A522D6C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81C7E202-BABB-4C67-98A2-7AA7A522D6C5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF3F6E65-7EB8-46C5-917A-19D3680BDECC}
+	EndGlobalSection
+EndGlobal

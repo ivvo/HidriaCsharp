@@ -1,0 +1,524 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{12252E30-CB1E-4E66-9F0B-8FB6212B3813}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HidriaVision</RootNamespace>
+    <AssemblyName>HidriaVision</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <LangVersion>7.2</LangVersion>
+    <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <PublishUrl>C:\Users\matbeh\Desktop\PublishTest\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>HidriaVision.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>69E42F5A1C5B4B43C9F5E0FAF7B89B76A713CEE4</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>EyeIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Classes\HelperMethods.cs" />
+    <Compile Include="Classes\SharedVar.cs" />
+    <Compile Include="Form_03\Enums\Enums.cs" />
+    <Compile Include="Form_03\Form_03.Snap7.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03_ResultsLogView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03_ResultsLogView.Designer.cs">
+      <DependentUpon>Form_03_ResultsLogView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_03\Form_03.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03.Designer.cs">
+      <DependentUpon>Form_03.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_03\Form_03.Camera01.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03.HelperMethods.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03_CommonControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03_CommonControl.Designer.cs">
+      <DependentUpon>Form_03_CommonControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_03\Form_03.MainOperation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03.Parameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03.Parameters.Designer.cs">
+      <DependentUpon>Form_03.Parameters.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_03\Form_03_ResultsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03_ResultsControl.Designer.cs">
+      <DependentUpon>Form_03_ResultsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_03\Form_03.CalibrationToolblocks.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Form_03.Toolblocks.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_03\Structures\Structures.cs" />
+    <Compile Include="Form_Main\Form_Main.Snap7.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_CopyToNewType.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_CopyToNewType.Designer.cs">
+      <DependentUpon>Form_CopyToNewType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_CreateNewType.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_CreateNewType.Designer.cs">
+      <DependentUpon>Form_CreateNewType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_DeleteProgram.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_DeleteProgram.Designer.cs">
+      <DependentUpon>Form_DeleteProgram.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_DummyEditToolBlock.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_DummyEditToolBlock.Designer.cs">
+      <DependentUpon>Form_DummyEditToolBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_EditToolBlock.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_EditToolBlock.Designer.cs">
+      <DependentUpon>Form_EditToolBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_Error.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_Error.Designer.cs">
+      <DependentUpon>Form_Error.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_LogIn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_LogIn.Designer.cs">
+      <DependentUpon>Form_LogIn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_RenameType.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_RenameType.Designer.cs">
+      <DependentUpon>Form_RenameType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_Settings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_Settings.Designer.cs">
+      <DependentUpon>Form_Settings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Other\Form_Log.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_Log.Designer.cs">
+      <DependentUpon>Form_Log.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Notifications\Form_Running.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Notifications\Form_Running.Designer.cs">
+      <DependentUpon>Form_Running.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Notifications\Form_Loading.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Notifications\Form_Loading.Designer.cs">
+      <DependentUpon>Form_Loading.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Main\Form_Main.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Main\Form_Main.Designer.cs">
+      <DependentUpon>Form_Main.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Main\Program.cs" />
+    <Compile Include="Form_Other\Form_ToolBlockList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Other\Form_ToolBlockList.Designer.cs">
+      <DependentUpon>Form_ToolBlockList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\EncoderTrigger.cs" />
+    <Compile Include="Helpers\ProductivityControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Helpers\ProductivityControl.Designer.cs">
+      <DependentUpon>ProductivityControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\RGBWDriverControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Helpers\RGBWDriverControl.Designer.cs">
+      <DependentUpon>RGBWDriverControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\SFXDriverControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Helpers\SFXDriverControl.Designer.cs">
+      <DependentUpon>SFXDriverControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\TriggerImage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Helpers\TriggerImage.Designer.cs">
+      <DependentUpon>TriggerImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\TriggerImagesSFX.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Helpers\TriggerImagesSFX.Designer.cs">
+      <DependentUpon>TriggerImagesSFX.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\TriggerImageWithLedController.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Helpers\TriggerImageWithLedController.Designer.cs">
+      <DependentUpon>TriggerImageWithLedController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form_03\Form_03.resx">
+      <DependentUpon>Form_03.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_03\Form_03_CommonControl.resx">
+      <DependentUpon>Form_03_CommonControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_03\Form_03.Parameters.resx">
+      <DependentUpon>Form_03.Parameters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_03\Form_03_ResultsControl.resx">
+      <DependentUpon>Form_03_ResultsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_CopyToNewType.resx">
+      <DependentUpon>Form_CopyToNewType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_CreateNewType.resx">
+      <DependentUpon>Form_CreateNewType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_DeleteProgram.resx">
+      <DependentUpon>Form_DeleteProgram.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_DummyEditToolBlock.resx">
+      <DependentUpon>Form_DummyEditToolBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_EditToolBlock.resx">
+      <DependentUpon>Form_EditToolBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_Error.resx">
+      <DependentUpon>Form_Error.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_RenameType.resx">
+      <DependentUpon>Form_RenameType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_Settings.resx">
+      <DependentUpon>Form_Settings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_Log.resx">
+      <DependentUpon>Form_Log.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_LogIn.resx">
+      <DependentUpon>Form_LogIn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Notifications\Form_Running.resx">
+      <DependentUpon>Form_Running.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Notifications\Form_Loading.resx">
+      <DependentUpon>Form_Loading.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Main\Form_Main.resx">
+      <DependentUpon>Form_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Other\Form_ToolBlockList.resx">
+      <DependentUpon>Form_ToolBlockList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Helpers\ProductivityControl.resx">
+      <DependentUpon>ProductivityControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Helpers\RGBWDriverControl.resx">
+      <DependentUpon>RGBWDriverControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Helpers\SFXDriverControl.resx">
+      <DependentUpon>SFXDriverControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Helpers\TriggerImage.resx">
+      <DependentUpon>TriggerImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Helpers\TriggerImagesSFX.resx">
+      <DependentUpon>TriggerImagesSFX.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Helpers\TriggerImageWithLedController.resx">
+      <DependentUpon>TriggerImageWithLedController.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Properties\app.manifest" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Form_Main\App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\ExitButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\HeaderTopBlank.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\MinimizeButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\RestoreButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\Settings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\warningClean.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\EyeIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\Open.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\OpenCsv.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\openSettings.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\Parameters.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\ProfileView.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\refresh.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\SaveCsvIco.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\SaveImageIco.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\saveSettings.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\Log.png" />
+    <None Include="Images\LogIn.png" />
+    <None Include="Images\LogOut.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="Images\Blank.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\WarningIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\CameraIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\Loging.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="EyeIcon.ico" />
+    <None Include="Images\loading.gif" />
+    <None Include="Images\Offline.png" />
+    <None Include="Images\Online.png" />
+    <None Include="Resources\Online.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BaslerCamera\BaslerCamera\BaslerCamera.csproj">
+      <Project>{81c7e202-babb-4c67-98a2-7aa7a522d6c5}</Project>
+      <Name>BaslerCamera</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HidriaVisionLog\HidriaVisionLog\VisualLogger.csproj">
+      <Project>{44821140-A82B-4F7D-A265-687E9203C4C0}</Project>
+      <Name>VisualLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Logger\ImageLogger\ImageLogger.csproj">
+      <Project>{6a54e7f1-651e-4f32-a046-32b2c40ff2c7}</Project>
+      <Name>ImageLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Logger\Logger\EventLogger.csproj">
+      <Project>{4e26fa7d-bcc9-4bc9-9f35-0c99b786f0b9}</Project>
+      <Name>EventLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Logger\ResultsLogger\DataLogger.csproj">
+      <Project>{16913cc1-a42c-4a58-9694-e5c439ec9b99}</Project>
+      <Name>DataLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ResultsView\ResultsView\ResultsView.csproj">
+      <Project>{331b83c4-0ae2-4cd2-a458-fab7d3362f66}</Project>
+      <Name>ResultsView</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RGBWController\RGBWController\RGBWController.csproj">
+      <Project>{1D8EA0D4-D4EB-413A-A63E-A85DB873A9E0}</Project>
+      <Name>RGBWController</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Snap7Manager\Snap7Manager.csproj">
+      <Project>{356a8626-5a7b-4917-be2c-e3e9c4450ea5}</Project>
+      <Name>Snap7Manager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolblockManager\ToolblockManager.csproj">
+      <Project>{9cd95ff3-6832-46e7-b3c0-cd3eeb98e948}</Project>
+      <Name>ToolblockManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UserManagment\UserManagment\UserManagment.csproj">
+      <Project>{872829fa-4e97-4bfb-90b3-b5ea9a5f3333}</Project>
+      <Name>UserManagment</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XMLSettings\XMLSettings\XMLSettings.csproj">
+      <Project>{784dd4b9-d248-4e47-a5e9-e0fe4653f689}</Project>
+      <Name>XMLSettings</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
