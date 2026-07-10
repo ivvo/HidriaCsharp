@@ -3,7 +3,9 @@
     "allow": [
       "Bash(sed 's/\\\\$$//')",
       "Bash(mkdir -p \"/c/Users/ivoval/AppData/Local/Temp/claude/D--C--Template-Generator-For-Robots/510deb91-6738-481b-8ab4-56b846c8d9ce/scratchpad/EpsonTestHarness\")",
-      "Bash(cd \"/d/C#/Template Generator For Robots\" && cp -r \"TemplateGenerator.Wpf/bin/Debug/net5.0-windows/Templates\" \"TemplateGenerator.Wpf/Templates\" && find \"TemplateGenerator.Wpf/Templates\" -maxdepth 2 | sort)"
+      "Bash(cd \"/d/C#/Template Generator For Robots\" && cp -r \"TemplateGenerator.Wpf/bin/Debug/net5.0-windows/Templates\" \"TemplateGenerator.Wpf/Templates\" && find \"TemplateGenerator.Wpf/Templates\" -maxdepth 2 | sort)",
+      "Bash(ls \"TemplateGenerator.Core/bin/Debug/Templates\")",
+      "Bash(rm -rf \"TemplateGenerator.Core/bin/Debug/Templates\")"
     ]
   }
 }

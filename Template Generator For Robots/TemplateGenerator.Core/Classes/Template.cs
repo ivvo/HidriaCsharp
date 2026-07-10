@@ -12,6 +12,7 @@ namespace TemplateGenerator.Core.Classes
     class Template
     {
         public static bool FormatsLoaded = false;
+        public static string LoadError = null;
         //EPSON//
         private static readonly string EpsonHeaderFormatEng = "";
         private static readonly string EpsonMainFuncFormatEng = "";
@@ -145,10 +146,11 @@ namespace TemplateGenerator.Core.Classes
                 ABBHidriaEIORobotFunc = File.ReadAllText("./Templates/ABB Hidria/EIOrobot.txt");
                 ABBHidriaEIOSimulationFunc = File.ReadAllText("./Templates/ABB Hidria/EIOsimulation.txt");
             }
-            catch
+            catch (Exception ex)
             {
                 // Formats not loaded
                 FormatsLoaded = false;
+                LoadError = ex.Message;
             }
         }
 

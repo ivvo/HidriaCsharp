@@ -15,4 +15,10 @@
     <ProjectReference Include="..\TemplateGenerator.Core\TemplateGenerator.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Templates\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

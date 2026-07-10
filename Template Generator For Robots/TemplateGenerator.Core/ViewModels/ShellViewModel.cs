@@ -224,6 +224,12 @@ namespace TemplateGenerator.Core.ViewModels
         //public IMvxCommand GenerateProjectCommand { get; set; }
         public void GenerateProject(string s)
         {
+            if (!Template.FormatsLoaded)
+            {
+                TextUpdate = $"Predloge se niso naložile ({Template.LoadError}) - preveri mapo Templates/ ob .exe datoteki.";
+                return;
+            }
+
             string path = s;
 
             if (SelectedTemplate == "Epson Hidria")
@@ -535,6 +541,12 @@ namespace TemplateGenerator.Core.ViewModels
         public void UpdateProject(string path)
         {
             if (string.IsNullOrEmpty(path)) return;
+
+            if (!Template.FormatsLoaded)
+            {
+                TextUpdate = $"Predloge se niso naložile ({Template.LoadError}) - preveri mapo Templates/ ob .exe datoteki.";
+                return;
+            }
 
             if (_importedVendor == null)
             {
