@@ -304,7 +304,7 @@ namespace TemplateGenerator.Core.ViewModels
                     }
                 }
                 TextUpdate = "Epson program generated: " + path;
-                Process.Start("explorer.exe", path);
+                OpenFolder(path);
                 // TO DO - Odpri direktori
 
             }
@@ -392,7 +392,7 @@ namespace TemplateGenerator.Core.ViewModels
 
                 }
                 TextUpdate = "KUKA program generated: " + path;
-                Process.Start("explorer.exe", path);
+                OpenFolder(path);
             }
             else if (SelectedTemplate == "ABB Simulacija")
             {
@@ -410,7 +410,7 @@ namespace TemplateGenerator.Core.ViewModels
                         }
                     }
                     TextUpdate = "ABB sim program generated: " + path;
-                    Process.Start("explorer.exe", path);
+                    OpenFolder(path);
                 }
             }
             else if (SelectedTemplate == "ABB Hidria")
@@ -475,7 +475,7 @@ namespace TemplateGenerator.Core.ViewModels
                         }              
 
                         TextUpdate = "ABB program generated: " + path;
-                        Process.Start("explorer.exe", path);
+                        OpenFolder(path);
                     }
                 }
             }
@@ -501,7 +501,7 @@ namespace TemplateGenerator.Core.ViewModels
                         }
                     }
                     TextUpdate = "Yamaha program generated: " + path;
-                    Process.Start("explorer.exe", path);
+                    OpenFolder(path);
                 }
             }
             else
@@ -537,9 +537,14 @@ namespace TemplateGenerator.Core.ViewModels
                     imported = EpsonProjectImporter.Import(path);
                     vendor = "Epson Hidria";
                 }
+                else if (Directory.GetFiles(path, "*.all").Length > 0)
+                {
+                    imported = YamahaProjectImporter.Import(path);
+                    vendor = "Yamaha";
+                }
                 else
                 {
-                    TextUpdate = "V izbrani mapi ni bilo mogoče zaznati Epson/KUKA Hella/ABB Hidria projekta.";
+                    TextUpdate = "V izbrani mapi ni bilo mogoče zaznati Epson/KUKA Hella/ABB Hidria/Yamaha projekta.";
                     return;
                 }
 
@@ -598,6 +603,7 @@ namespace TemplateGenerator.Core.ViewModels
                     case "Epson Hidria": backupPath = EpsonProjectUpdater.BackupFolder(path); break;
                     case "KUKA Hella": backupPath = KukaHellaProjectUpdater.BackupFolder(path); break;
                     case "ABB Hidria": backupPath = AbbHidriaProjectUpdater.BackupFolder(path); break;
+                    case "Yamaha": backupPath = YamahaProjectUpdater.BackupFolder(path); break;
                     default: throw new InvalidOperationException($"Neznan proizvajalec '{_importedVendor}'.");
                 }
 
@@ -611,19 +617,33 @@ namespace TemplateGenerator.Core.ViewModels
                         case "Epson Hidria": EpsonProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "KUKA Hella": KukaHellaProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "ABB Hidria": AbbHidriaProjectUpdater.UpdateProgram(program, newStations, path); break;
+                        case "Yamaha": YamahaProjectUpdater.UpdateProgram(program, newStations, path); break;
                     }
 
                     _stationBaseline[program] = program.Stations.Count;
                 }
 
                 TextUpdate = $"Projekt posodobljen ({programsToUpdate.Count} program(ov)). Varnostna kopija: {backupPath}";
-                Process.Start("explorer.exe", path);
+                OpenFolder(path);
             }
             catch (Exception ex)
             {
                 TextUpdate = "Napaka pri posodabljanju: " + ex.Message;
             }
         }
+        // Odpre generirano/posodobljeno mapo v Raziskovalcu. Med testi (nastavljena okoljska
+        // spremenljivka TGR_SUPPRESS_EXPLORER=1) se odpiranje preskoči, da avtomatizirani testi ne
+        // sprožijo množice oken Raziskovalca; enako se tiho preskoči, če zagon iz kakršnega koli
+        // razloga spodleti (npr. brezglavo okolje).
+        private static void OpenFolder(string path)
+        {
+            if (Environment.GetEnvironmentVariable("TGR_SUPPRESS_EXPLORER") == "1")
+                return;
+
+            try { Process.Start("explorer.exe", path); }
+            catch { /* odpiranje mape ni ključno za delovanje */ }
+        }
+
         #endregion
 
         //public void testTask (string s)

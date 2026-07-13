@@ -14,6 +14,7 @@ namespace TemplateGenerator.Tests
         [InlineData("Epson Hidria")]
         [InlineData("KUKA Hella")]
         [InlineData("ABB Hidria")]
+        [InlineData("Yamaha")]
         public void ImportProject_AutoDetectsCorrectVendor(string vendor)
         {
             TestHelpers.BuildAndGenerate(vendor, _outDir, ("Station1", true));

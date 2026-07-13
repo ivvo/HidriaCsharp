@@ -2136,7 +2136,10 @@ namespace TemplateGenerator.Core.Classes
         // vezani na fizično robotsko enoto, ne na razporeditev postaj, in jih je treba združiti iz
         // dejanskega backupa krmilnika.
 
-        private static string PrimaryPointName(StationModel station)
+        // Ime PRIMARNE (naučene) točke postaje. Yamaha ne podpira Pallet, zato je edino razlikovanje
+        // večpozicijskost: pri Positions != 1 se primarna točka imenuje "<Postaja>1" (sledijo ji
+        // "<Postaja>2".."<Postaja>N"), sicer preprosto "<Postaja>". Uporabljata jo tudi Importer/Updater.
+        public static string PrimaryPointName(StationModel station)
         {
             return station.Positions != 1 ? $"{station.RobotStationName}1" : station.RobotStationName;
         }
@@ -2159,14 +2162,21 @@ namespace TemplateGenerator.Core.Classes
         {
             var cases = new StringBuilder();
             for (int i = 0; i < program.Stations.Count; i++)
-            {
-                cases.AppendFormat("        CASE {0}\n", i);
-                cases.AppendFormat("            PositionFrom = {0}\n", program.Stations[i].RobotStationName);
-                cases.AppendFormat("            in_station=1\n");
-                cases.AppendFormat("            '\n");
-            }
+                cases.Append(BuildYamahaHomingCase(program.Stations[i], i));
 
             return string.Format(YamahaHoming, cases) + "\n";
+        }
+
+        // Ena "CASE <index>" veja v *robot_homing: SELECT closestPoint (za dano postajo na danem
+        // številčnem indeksu). Uporablja jo tudi YamahaProjectUpdater pri dodajanju nove postaje.
+        public static string BuildYamahaHomingCase(StationModel station, int index)
+        {
+            var sb = new StringBuilder();
+            sb.AppendFormat("        CASE {0}\n", index);
+            sb.AppendFormat("            PositionFrom = {0}\n", station.RobotStationName);
+            sb.Append("            in_station=1\n");
+            sb.Append("            '\n");
+            return sb.ToString();
         }
 
         public static string GetYamahaGoFunctions(ProgramModel program)
@@ -2174,13 +2184,16 @@ namespace TemplateGenerator.Core.Classes
             var sb = new StringBuilder();
             for (int i = 0; i < program.Stations.Count; i++)
             {
-                sb.Append(BuildYamahaGoFunction(program, program.Stations[i]));
+                sb.Append(GetYamahaGoFunction(program, program.Stations[i]));
                 sb.Append("\n");
             }
             return sb.ToString();
         }
 
-        private static string BuildYamahaGoFunction(ProgramModel program, StationModel station)
+        // Zgradi celoten "*robot_go<Postaja>:" blok. Notranja veriga "IF PositionFrom = ..." mora
+        // poznati VSE postaje programa kot možen izvor ("origin completeness"), zato sprejme celoten
+        // program. Uporablja jo tudi YamahaProjectUpdater pri dodajanju nove postaje.
+        public static string GetYamahaGoFunction(ProgramModel program, StationModel station)
         {
             string freeBlock = "";
             if (station.StationFreeEnabled)
@@ -2214,78 +2227,97 @@ namespace TemplateGenerator.Core.Classes
         {
             var cases = new StringBuilder();
             for (int i = 0; i < program.Stations.Count; i++)
-            {
-                string s = program.Stations[i].RobotStationName;
-                cases.AppendFormat("                CASE {0}\n", s);
-                cases.AppendFormat("                    GOSUB *robot_go{0}\n", s);
-                cases.AppendFormat("                    '\n");
-            }
+                cases.Append(BuildYamahaMainTaskCase(program.Stations[i]));
 
             return string.Format(YamahaMainTask, cases) + "\n";
+        }
+
+        // Ena "CASE <Postaja>" veja v *robot_mainTask: SELECT position. Uporablja jo tudi Updater.
+        public static string BuildYamahaMainTaskCase(StationModel station)
+        {
+            string s = station.RobotStationName;
+            var sb = new StringBuilder();
+            sb.AppendFormat("                CASE {0}\n", s);
+            sb.AppendFormat("                    GOSUB *robot_go{0}\n", s);
+            sb.Append("                    '\n");
+            return sb.ToString();
         }
 
         public static string GetYamahaMoveOnStation(ProgramModel program)
         {
             var ifChain = new StringBuilder();
             for (int i = 0; i < program.Stations.Count; i++)
+                ifChain.Append(BuildYamahaMoveOnStationBranch(program.Stations[i], i == 0));
+
+            return string.Format(YamahaMoveOnStation, ifChain) + "\n";
+        }
+
+        // Ena "IF/ELSEIF PositionTo = <Postaja> THEN ..." veja v *robot_moveOnStation:. Za
+        // večpozicijske postaje (Positions != 1) vsebuje še notranji "additional_pos" izbor.
+        // Uporablja jo tudi Updater (tam vedno kot ELSEIF, saj Home vedno obstaja pred njo).
+        public static string BuildYamahaMoveOnStationBranch(StationModel station, bool first)
+        {
+            string s = station.RobotStationName;
+            var ifChain = new StringBuilder();
+            ifChain.AppendFormat(first ? "        IF PositionTo = {0} THEN\n" : "        ELSEIF PositionTo = {0} THEN\n", s);
+
+            if (station.Positions != 1)
             {
-                var station = program.Stations[i];
-                string s = station.RobotStationName;
-                ifChain.AppendFormat(i == 0 ? "        IF PositionTo = {0} THEN\n" : "        ELSEIF PositionTo = {0} THEN\n", s);
-
-                if (station.Positions != 1)
+                ifChain.Append("            'define FINAL point in station\n");
+                for (int j = 1; j <= station.Positions; j++)
                 {
-                    ifChain.Append("            'define FINAL point in station\n");
-                    for (int j = 1; j <= station.Positions; j++)
-                    {
-                        ifChain.AppendFormat(j == 1 ? "            IF additional_pos={0} THEN\n" : "            ELSEIF additional_pos={0} THEN\n", j);
-                        ifChain.AppendFormat("                p{0}Final = p{0}{1}\n", s, j);
-                    }
-                    ifChain.Append("            ELSE\n");
-                    ifChain.Append("                SET O_PROGRAM_ERROR\n");
-                    ifChain.Append("                HOLD\n");
-                    ifChain.Append("            ENDIF\n");
-                    ifChain.Append("            '\n");
+                    ifChain.AppendFormat(j == 1 ? "            IF additional_pos={0} THEN\n" : "            ELSEIF additional_pos={0} THEN\n", j);
+                    ifChain.AppendFormat("                p{0}Final = p{0}{1}\n", s, j);
                 }
-
-                if (station.StationFreeEnabled)
-                    ifChain.AppendFormat("            RESET O_{0}_FREE\n", s);
-
-                ifChain.Append("            GOSUB *robot_fullWorkingSpeed\n");
-                string finalPoint = station.Positions != 1 ? $"p{s}Final" : $"p{PrimaryPointName(station)}";
-                ifChain.AppendFormat("            pAboveStation = {0}\n", finalPoint);
-                ifChain.Append("            LOC3(pAboveStation) = ROBOT_MAX_Z\n");
-                ifChain.Append("            MOVE P, pAboveStation, CONT\n");
-                ifChain.Append("            '\n");
-                ifChain.Append("            CALL *robot_slowWorkingSpeed (ROBOT_APPROACH_SPEED%, ROBOT_APPROACH_ACCEL%, ROBOT_APPROACH_DECEL%, power_mode)\n");
-                ifChain.AppendFormat("            MOVE P, {0}\n", finalPoint);
+                ifChain.Append("            ELSE\n");
+                ifChain.Append("                SET O_PROGRAM_ERROR\n");
+                ifChain.Append("                HOLD\n");
+                ifChain.Append("            ENDIF\n");
                 ifChain.Append("            '\n");
             }
 
-            return string.Format(YamahaMoveOnStation, ifChain) + "\n";
+            if (station.StationFreeEnabled)
+                ifChain.AppendFormat("            RESET O_{0}_FREE\n", s);
+
+            ifChain.Append("            GOSUB *robot_fullWorkingSpeed\n");
+            string finalPoint = station.Positions != 1 ? $"p{s}Final" : $"p{PrimaryPointName(station)}";
+            ifChain.AppendFormat("            pAboveStation = {0}\n", finalPoint);
+            ifChain.Append("            LOC3(pAboveStation) = ROBOT_MAX_Z\n");
+            ifChain.Append("            MOVE P, pAboveStation, CONT\n");
+            ifChain.Append("            '\n");
+            ifChain.Append("            CALL *robot_slowWorkingSpeed (ROBOT_APPROACH_SPEED%, ROBOT_APPROACH_ACCEL%, ROBOT_APPROACH_DECEL%, power_mode)\n");
+            ifChain.AppendFormat("            MOVE P, {0}\n", finalPoint);
+            ifChain.Append("            '\n");
+            return ifChain.ToString();
         }
 
         public static string GetYamahaMoveAway(ProgramModel program)
         {
             var ifChain = new StringBuilder();
             for (int i = 0; i < program.Stations.Count; i++)
-            {
-                var station = program.Stations[i];
-                string s = station.RobotStationName;
-                ifChain.AppendFormat(i == 0 ? "        IF PositionFrom = {0} THEN\n" : "        ELSEIF PositionFrom = {0} THEN\n", s);
-                ifChain.Append("            GOSUB *robot_fullWorkingSpeed\n");
-                ifChain.Append("            LOC3 (pAboveStation) = ROBOT_MAX_Z\n");
-                ifChain.Append("            MOVE P, pAboveStation, CONT\n");
-                ifChain.Append("            '\n");
-                if (station.StationFreeEnabled)
-                {
-                    ifChain.AppendFormat("            'turn ON station free signal\n");
-                    ifChain.AppendFormat("            SET O_{0}_FREE\n", s);
-                    ifChain.Append("            '\n");
-                }
-            }
+                ifChain.Append(BuildYamahaMoveAwayBranch(program.Stations[i], i == 0));
 
             return string.Format(YamahaMoveAway, ifChain) + "\n";
+        }
+
+        // Ena "IF/ELSEIF PositionFrom = <Postaja> THEN ..." veja v *robot_moveAway:. Uporablja jo
+        // tudi Updater (tam vedno kot ELSEIF).
+        public static string BuildYamahaMoveAwayBranch(StationModel station, bool first)
+        {
+            string s = station.RobotStationName;
+            var ifChain = new StringBuilder();
+            ifChain.AppendFormat(first ? "        IF PositionFrom = {0} THEN\n" : "        ELSEIF PositionFrom = {0} THEN\n", s);
+            ifChain.Append("            GOSUB *robot_fullWorkingSpeed\n");
+            ifChain.Append("            LOC3 (pAboveStation) = ROBOT_MAX_Z\n");
+            ifChain.Append("            MOVE P, pAboveStation, CONT\n");
+            ifChain.Append("            '\n");
+            if (station.StationFreeEnabled)
+            {
+                ifChain.Append("            'turn ON station free signal\n");
+                ifChain.AppendFormat("            SET O_{0}_FREE\n", s);
+                ifChain.Append("            '\n");
+            }
+            return ifChain.ToString();
         }
 
         public static string GetYamahaCommonPgm(ProgramModel program)

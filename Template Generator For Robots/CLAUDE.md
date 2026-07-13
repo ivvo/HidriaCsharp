@@ -71,10 +71,23 @@ to the view model, so in the running app it's stuck at its default (`true`).
 
 For each vendor there's a matching pair in `TemplateGenerator.Core\Classes\`:
 `EpsonProjectImporter`/`EpsonProjectUpdater`, `KukaHellaProjectImporter`/`KukaHellaProjectUpdater`,
-`AbbHidriaProjectImporter`/`AbbHidriaProjectUpdater`. `ShellViewModel.ImportProject(path)`
-auto-detects the vendor from folder shape (`*_Motion.mod` → ABB Hidria, `R1/Program/` → KUKA Hella,
-`*.prg` → Epson) and dispatches to the matching `Importer`; `UpdateProject(path)` remembers which
-vendor was imported (`_importedVendor`) and dispatches to the matching `Updater`.
+`AbbHidriaProjectImporter`/`AbbHidriaProjectUpdater`, `YamahaProjectImporter`/`YamahaProjectUpdater`.
+`ShellViewModel.ImportProject(path)` auto-detects the vendor from folder shape (`*_Motion.mod` → ABB
+Hidria, `R1/Program/` → KUKA Hella, `*.prg` → Epson, `*.all` → Yamaha) and dispatches to the matching
+`Importer`; `UpdateProject(path)` remembers which vendor was imported (`_importedVendor`) and
+dispatches to the matching `Updater`.
+
+Yamaha differs from the other three in two ways: the whole program (code + taught `[PNT]` points + IO
+labels) lives in a single self-contained `<ProgramName>.all` file per robot (so Yamaha has **no**
+one-robot-per-project constraint — each `.all` imports as its own program), and `YamahaProjectUpdater`
+edits that one file's regions in place. To avoid duplicating the generator skeletons, the Updater
+calls back into public per-station builders on `Template` (`GetYamahaGoFunction`,
+`BuildYamahaHomingCase`, `BuildYamahaMainTaskCase`, `BuildYamahaMoveOnStationBranch`,
+`BuildYamahaMoveAwayBranch`, `PrimaryPointName`) — the same ones the `Get*` generate loops use — so
+an updated project is byte-for-byte identical to a fresh `Generate` of the full station list (this
+equality is the oracle the Yamaha tests assert). Yamaha inherits Epson's numeric-index homing gotcha:
+`*findClosestPoint:` loops `FOR i = 0 TO N` over `P[i]` by index, so the same primary-point-placement
++ extra-point-renumber logic applies to the `.all` `[PNT]`/`[PCM]`/`[PNM]` sections.
 
 - **Importer**: regexes the vendor's per-station function name (e.g. Epson
   `Function {prog}_go(\w+)\(\)`) to recover station order, then inspects each function body for

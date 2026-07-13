@@ -8,6 +8,14 @@ namespace TemplateGenerator.Tests
 {
     public static class TestHelpers
     {
+        // Prepreči, da bi ShellViewModel med testi odpiral okna Raziskovalca (glej OpenFolder).
+        // ModuleInitializer se izvede enkrat ob nalaganju testne zbirke, pred katerimkoli testom.
+        [System.Runtime.CompilerServices.ModuleInitializer]
+        internal static void SuppressExplorer()
+        {
+            Environment.SetEnvironmentVariable("TGR_SUPPRESS_EXPLORER", "1");
+        }
+
         public static string CreateTempDir()
         {
             string dir = Path.Combine(Path.GetTempPath(), "tgr_test_" + Guid.NewGuid().ToString("N").Substring(0, 10));

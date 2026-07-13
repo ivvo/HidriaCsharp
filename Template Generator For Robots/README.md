@@ -59,13 +59,16 @@ naučene koordinate ali morebitni ročni popravki v generirani kodi.
 
 1. Klikni **Import Project**, izberi mapo z že generiranim projektom. Proizvajalec se zazna
    samodejno iz strukture mape (`*_Motion.mod` → ABB Hidria, `R1\Program\` → KUKA Hella, `*.prg` →
-   Epson Hidria). Tabela postaj se napolni z obstoječim stanjem.
+   Epson Hidria, `*.all` → Yamaha). Tabela postaj se napolni z obstoječim stanjem.
 2. Dodaj novo postajo enako kot zgoraj (korak 3): ime, po potrebi **Station free**, **Add Station**.
    Nova postaja se lahko doda samo **na konec** obstoječega seznama.
 3. Klikni **Update Project** na isti mapi. Orodje najprej naredi varnostno kopijo cele mape
    (`<ime_mape>_backup_<datum_ura>` poleg izvirne), nato v obstoječe datoteke kirurško vstavi samo
    kodo, ki se nanaša na novo postajo — preostala koda (vključno z ročnimi popravki in naučenimi
-   koordinatami v `.pts`/`*_motion.dat`/`Global.mod`) ostane bit-za-bit nedotaknjena.
+   koordinatami v `.pts`/`*_motion.dat`/`Global.mod`/`.all` `[PNT]`) ostane bit-za-bit nedotaknjena.
+
+Import/Update je podprt za **Epson Hidria, KUKA Hella, ABB Hidria in Yamaha** (za Yamaho je celoten
+program — koda, naučene točke `[PNT]` in IO oznake — v eni `.all` datoteki na robota).
 
 ## Znane omejitve
 
@@ -87,13 +90,16 @@ Polna arhitektura je opisana v [CLAUDE.md](CLAUDE.md). Na kratko:
 - **`TemplateGenerator.Core\Classes\Template.cs`** — ob zagonu prebere `.txt` predloge iz
   `Templates\<Proizvajalec>\` in jih z `string.Format` po postajah/programih sestavi v kodo. To je
   edina pot za **Generate**.
-- **`*ProjectImporter.cs`** (Epson/KukaHella/AbbHidria) — z regex vzorci prepozna postaje in njihove
-  zastavice (`StationFreeEnabled`/`Pallet`/`Positions`) iz že generirane kode nazaj v model.
+- **`*ProjectImporter.cs`** (Epson/KukaHella/AbbHidria/Yamaha) — z regex vzorci prepozna postaje in
+  njihove zastavice (`StationFreeEnabled`/`Pallet`/`Positions`) iz že generirane kode nazaj v model.
 - **`*ProjectUpdater.cs`** — v obstoječe datoteke vstavi samo kodo za na novo dodano postajo. Dve
   ključni pravili, ki ju je treba upoštevati ob vsakem dotiku te kode: (1) datoteke z na robotu
-  naučenimi koordinatami (`.pts`, `*_motion.dat`, `Global.mod`) se nikoli ne prepišejo v celoti,
-  samo dopolnijo; (2) vsaka "pojdi na postajo X" funkcija mora po dodajanju nove postaje znati
-  priti tudi **iz** te nove postaje (t. i. "origin completeness"), ne samo do nje.
+  naučenimi koordinatami (`.pts`, `*_motion.dat`, `Global.mod`, Yamaha `.all` `[PNT]`) se nikoli ne
+  prepišejo v celoti, samo dopolnijo; (2) vsaka "pojdi na postajo X" funkcija mora po dodajanju nove
+  postaje znati priti tudi **iz** te nove postaje (t. i. "origin completeness"), ne samo do nje.
+  Yamaha ima poleg tega isto številčno-indeksno past kot Epson: `*findClosestPoint:` išče najbližjo
+  naučeno točko po zaporednem indeksu (`FOR i = 0 TO N`, `P[i]`), zato mora primarna točka nove
+  postaje priti na pravo mesto, obstoječe dodatne točke pa se prenumerirajo navzgor.
 - **`ShellViewModel.cs`** — MVVM model UI-ja; `ImportProject`/`UpdateProject` samodejno zaznata
   proizvajalca in usmerita na pravi Importer/Updater.
 
