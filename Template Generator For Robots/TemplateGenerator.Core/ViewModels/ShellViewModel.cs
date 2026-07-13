@@ -51,7 +51,8 @@ namespace TemplateGenerator.Core.ViewModels
                 "Epson Hidria",
                 "KUKA Hella",
                 "ABB Hidria",
-                "ABB Simulacija"
+                "ABB Simulacija",
+                "Yamaha"
             };
         }
 
@@ -476,6 +477,31 @@ namespace TemplateGenerator.Core.ViewModels
                         TextUpdate = "ABB program generated: " + path;
                         Process.Start("explorer.exe", path);
                     }
+                }
+            }
+            else if (SelectedTemplate == "Yamaha")
+            {
+                if (path != String.Empty)
+                {
+                    // Yamaha zapakira kodo + točke + IO oznake v ENO ".all" datoteko na robota.
+                    foreach (ProgramModel robot in Program)
+                    {
+                        using (StreamWriter sw = File.CreateText(path + "//" + $"{robot.ProgramName}.all"))
+                        {
+                            sw.Write(Template.GetYamahaMainPgm());
+                            sw.Write(Template.GetYamahaRobotPgmHeader(robot));
+                            sw.Write(Template.GetYamahaHoming(robot));
+                            sw.Write(Template.GetYamahaMainTask(robot));
+                            sw.Write(Template.GetYamahaGoFunctions(robot));
+                            sw.Write(Template.GetYamahaMoveOnStation(robot));
+                            sw.Write(Template.GetYamahaMoveAway(robot));
+                            sw.Write(Template.GetYamahaCommonPgm(robot));
+                            sw.Write(Template.GetYamahaPoints(robot));
+                            sw.Write(Template.GetYamahaIO(robot));
+                        }
+                    }
+                    TextUpdate = "Yamaha program generated: " + path;
+                    Process.Start("explorer.exe", path);
                 }
             }
             else

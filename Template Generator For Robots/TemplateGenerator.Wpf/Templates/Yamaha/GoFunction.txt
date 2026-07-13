@@ -1,0 +1,31 @@
+*robot_go{0}:
+    '
+    'write to variable the current DESTINATION value
+    PositionTo = {0}
+    '
+{1}    'call the function to move the robot to OUTSIDE of the current station
+    GOSUB *robot_moveAway
+    '
+    'define the point OUTSIDE the destination station
+    pAboveStation = p{3}
+    LOC3(pAboveStation) = ROBOT_MAX_Z
+    '
+    'call the function to set the current power state (LOW or HIGH)
+    GOSUB *robot_setPowerMode
+    '
+    'set CONTPLS for continuous movements
+    CALL *robot_setCONTPLS ("horizontal")
+    '
+    'move the robot from OUTSIDE current station to OUTSIDE the destination station
+{2}
+    '
+    'call the function to move the robot to the FINAL POSITION in the destination station
+    GOSUB *robot_moveOnStation
+    '
+    'robot is at the destination
+    'write to variable the current POSITION value
+    PositionFrom = {0}
+    PositionTo = 0
+    '
+RETURN
+'

@@ -1,0 +1,71 @@
+NAME=ROBOT
+PGN=2
+'
+'---------------ROBOT INITIALISATION PROCESS---------------
+'
+'position variable values, one number for each station (has to match POINT number!)
+{0}
+'
+'SPEED and ACCELERATION of the robot for FAST inbetween station movements (0 - 100%)
+ROBOT_FULL_SPEED% = 100
+ROBOT_FULL_ACCEL% = 80
+ROBOT_FULL_DECEL% = 100         '100 means equal to accel
+'
+'SPEED and ACCELERATION of the robot for SLOW in station movements (0 - 100%)
+ROBOT_APPROACH_SPEED% = 8
+ROBOT_APPROACH_ACCEL% = 80
+ROBOT_APPROACH_DECEL% = 100     '100 means equal to accel
+'
+ROBOT_DEPART_SPEED% = 10
+ROBOT_DEPART_ACCEL% = 80
+ROBOT_DEPART_DECEL% = 100       '100 means equal to accel
+'
+'SPEED of the robot for VERY SLOW movement in station for Z_STATION_SLOW offset (0 - 100%)
+ROBOT_VERY_SLOW_SPEED% = 2      'dont change!
+ROBOT_VERY_SLOW_ACCEL% = 20     'dont change!
+ROBOT_VERY_SLOW_DECEL% = 50     'dont change!
+'
+'WEIGHT and INERTIA of the tool mounted on the robot flange - fix it depend on what you need
+TOOL_WEIGHT = 0                 'Tool weight [kg]
+TOOL_ROT_INERTIA = 0            'R axis inertia for [(kgm^2)*10^-4]
+'
+'The general DISTANCE to move outside of a station in Z direction
+Z_STATION_FREE = 180.0
+Z_STATION_SLOW = 10.0           'dont change!
+'
+'The maximum HEIGHT to move in Z direction - fix it depend on what you need
+ROBOT_MAX_Z = 0.0
+'
+'
+'START robot_init
+*robot_init:
+    '
+    'turn on servo motors
+    SERVO[1] ON
+    '
+    'set the WEIGHT and INERTIA
+    WEIGHT TOOL_WEIGHT
+    SCRINR TOOL_ROT_INERTIA
+    '
+    'set CONTPLS for continuous movements
+    CALL *robot_setCONTPLS ("homing")
+    '
+    'call the function to set all stations as BUSY
+    GOSUB *robot_stationsBusy
+    '
+    'call the function to reset robot_from and robot_to variable
+    GOSUB *robot_resetLocation
+    '
+    'call the function to reset OUTPUT bool signals
+    GOSUB *robot_resetProfinet
+    '
+    'call the function to reset INTERNAL bool signals
+    GOSUB *robot_resetFlags
+    '
+    'output homing request signal to PLC
+    SET O_HOMING_REQUEST
+    GOSUB *robot_homing
+    '
+RETURN
+'
+'

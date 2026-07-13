@@ -1,0 +1,171 @@
+'--------------------------------------------------------------
+'END OF PROGRAM
+NAME=COMMON
+PGN=3
+'
+'--------------------------------SIGNAL/VARIABLE RESETS:
+*robot_stationsBusy:
+    'Set all stations as BUSY
+{0}
+    '
+RETURN
+'
+'
+*robot_stationsFree:
+    'Set all stations as FREE
+{1}
+    '
+RETURN
+'
+'
+*robot_resetLocation:
+    'reset robot_to and robot_from variables
+    PositionFrom = 0
+    PositionTo = 0
+    '
+RETURN
+'
+'
+*robot_resetProfinet:
+    'Reset OUTPUT bool signals
+    RESET O_HOMING_REQUEST
+    RESET O_IN_MOTION
+    RESET O_END
+    RESET O_HOMING_OK
+    RESET O_RESET_OK
+    RESET O_PROGRAM_ERROR
+    '
+RETURN
+'
+'
+*robot_resetFlags:
+    'Reset INTERNAL bool signals
+    in_station = 0
+    homing_flag = 0
+    reset_flag = 0
+    power_mode = 0
+    '
+RETURN
+'
+'--------------------------------POWER MODE & SPEED:
+'
+*robot_setPowerMode:
+    'choose between LOW(safe) and HIGH(full power) power modes
+    '
+    IF I_STEP=1 OR homing_flag=1 OR reset_flag=1 THEN
+        'if the machine is in STEP mode, or robot is performing RESET or HOMING, set power mode to LOW
+        '
+        IF power_mode = 1 OR homing_flag = 1 THEN ' only change torque when changing power modes
+            power_mode=0 'LOW
+            GOSUB *robot_fullWorkingSpeed
+            '
+        ENDIF
+        '
+    ELSE
+        'if the machine is in AUTO mode set power mode to HIGH
+        '
+        IF power_mode = 0 THEN ' only change torque when changing power modes
+            power_mode=1 'HIGH
+            GOSUB *robot_fullWorkingSpeed
+            '
+        ENDIF
+        '
+    ENDIF
+    '
+RETURN
+'
+'
+*robot_fullWorkingSpeed:
+    'SPEED and ACCELERATION of the robot for FAST inbetween station movements
+    '
+    IF power_mode = 1 THEN 'if the power mode is set to HIGH use defined parameters
+        SPEED ROBOT_FULL_SPEED%
+        ACCEL ROBOT_FULL_ACCEL%
+        DECEL ROBOT_FULL_DECEL%
+        '
+    ELSE 'if the power mode is set to LOW use defined parameters
+        SPEED 5
+        ACCEL 50
+        DECEL 100
+        '
+    ENDIF
+    '
+RETURN
+'
+'
+SUB *robot_slowWorkingSpeed (spd%, acc%, dec%, power_mode%)
+    'SPEED and ACCELERATION of the robot for SLOW in station movements
+    '
+    IF power_mode% = 1 THEN 'if the power mode is set to HIGH use defined parameter
+        SPEED spd%
+        ACCEL acc%
+        DECEL dec%
+        '
+    ELSE 'if the power mode is set to LOW use defined parameters
+        IF spd%>5 THEN
+            SPEED 5
+        ELSE
+            SPEED spd%
+        ENDIF
+        '
+        ACCEL 30
+        DECEL 100
+        '
+    ENDIF
+    '
+END SUB
+'
+'
+SUB *robot_setCONTPLS (path$)
+    '
+    IF path$ = "vertical" THEN
+        CONTPLS (1) = 2000  'dont change!
+        CONTPLS (2) = 2000  'dont change!
+        CONTPLS (3) = 50000 'dont change!
+        CONTPLS (4) = 5000  'dont change!
+        '
+    ELSEIF path$ = "horizontal" THEN
+        CONTPLS (1) = 30000 'dont change!
+        CONTPLS (2) = 30000 'dont change!
+        CONTPLS (3) = 5000  'dont change!
+        CONTPLS (4) = 50000 'dont change!
+        '
+    ELSEIF path$ = "homing" THEN
+        CONTPLS 2000    'dont change!
+        '
+    ELSE
+        'output error
+        SET O_PROGRAM_ERROR
+        HOLD
+        '
+    ENDIF
+    '
+END SUB
+'
+'--------------------------------CLOSEST POINT FOR HOMING:
+'
+*findClosestPoint:
+    'Function measures the distances between current position and known points to find the closest one
+    'For use in HOMING process
+    '
+    distance=99999
+    closestPoint=0
+    '
+    'check arm status(Righty or Lefty)
+    currentArm=ARMCND  ' 1=Righty, 2=Lefty
+    '
+    FOR i = 0 TO {2}   '!!!!change the number equal to the number of points(stations) to check for homing!!!!!!
+        pointArm = LOCF(P[i]) 'check Arm type for each point
+        IF currentArm = pointArm THEN
+            curdist=SQR( ( LOC1(WHRXY) - LOC1(P[i]) )^2  + ( LOC2(WHRXY) - LOC2(P[i]) )^2 )
+            IF (curdist < distance)=-1 THEN
+                distance=curdist
+                closestPoint=i
+            ENDIF
+        ENDIF
+    NEXT i
+    '
+RETURN
+'
+'--------------------------------------------------------------
+'END OF PROGRAM

@@ -76,6 +76,18 @@ namespace TemplateGenerator.Core.Classes
         private static readonly string ABBHidriaEIORobotFunc = "";
         private static readonly string ABBHidriaEIOSimulationFunc = "";
 
+        //Yamaha//
+        private static readonly string YamahaMainPgm = "";
+        private static readonly string YamahaRobotPgmHeader = "";
+        private static readonly string YamahaHoming = "";
+        private static readonly string YamahaGoFunction = "";
+        private static readonly string YamahaMainTask = "";
+        private static readonly string YamahaMoveOnStation = "";
+        private static readonly string YamahaMoveAway = "";
+        private static readonly string YamahaCommonPgm = "";
+        private static readonly string YamahaPoints = "";
+        private static readonly string YamahaIO = "";
+
         static Template()
         {
             // Read all formats from files
@@ -145,6 +157,18 @@ namespace TemplateGenerator.Core.Classes
                 ABBHidriaSYSFunc = File.ReadAllText("./Templates/ABB Hidria/SYS.txt");
                 ABBHidriaEIORobotFunc = File.ReadAllText("./Templates/ABB Hidria/EIOrobot.txt");
                 ABBHidriaEIOSimulationFunc = File.ReadAllText("./Templates/ABB Hidria/EIOsimulation.txt");
+
+                //Yamaha//
+                YamahaMainPgm = File.ReadAllText("./Templates/Yamaha/MainPgm.txt");
+                YamahaRobotPgmHeader = File.ReadAllText("./Templates/Yamaha/RobotPgmHeader.txt");
+                YamahaHoming = File.ReadAllText("./Templates/Yamaha/Homing.txt");
+                YamahaGoFunction = File.ReadAllText("./Templates/Yamaha/GoFunction.txt");
+                YamahaMainTask = File.ReadAllText("./Templates/Yamaha/MainTask.txt");
+                YamahaMoveOnStation = File.ReadAllText("./Templates/Yamaha/MoveOnStation.txt");
+                YamahaMoveAway = File.ReadAllText("./Templates/Yamaha/MoveAway.txt");
+                YamahaCommonPgm = File.ReadAllText("./Templates/Yamaha/CommonPgm.txt");
+                YamahaPoints = File.ReadAllText("./Templates/Yamaha/Points.txt");
+                YamahaIO = File.ReadAllText("./Templates/Yamaha/IO.txt");
             }
             catch (Exception ex)
             {
@@ -2093,6 +2117,239 @@ namespace TemplateGenerator.Core.Classes
             }
             return string.Format(Fromat, GeneratePoints).ToString();
         }
+        #endregion
+
+        #region ////// YAMAHA //////
+
+        // Yamaha zapakira celoten program (kodo + naučene točke + IO oznake) v ENO ".all" datoteko
+        // na robota, v nasprotju z Epson/KUKA/ABB, ki uporabljajo več ločenih datotek. Postaje se
+        // primarno indeksirajo po svojem zaporednem mestu v Stations (0-based) - homing v
+        // *findClosestPoint: išče najbližjo NAUČENO točko po tem istem številčnem indeksu
+        // (FOR i = 0 TO N), zato morata seznam postaj in seznam točk ostati usklajena - enaka
+        // past kot pri Epsonu. Pallet ni podprt (v referenčnem primeru ni bilo zaslediti), Positions
+        // (več fizičnih točk na postajo) pa je podprt, ker se v referenčnem primeru dejansko pojavi.
+        //
+        // POMEMBNO: ta predloga je bila izpeljana iz ENEGA samega, že prilagojenega produkcijskega
+        // projekta (ne iz uradne Yamaha dokumentacije), zato je priporočljivo generirano datoteko
+        // pred uporabo na resničnem robotu preveriti/naložiti v Yamaha razvojno okolje. Odseki
+        // [PRM]/[RTO] (kalibracija strežnih pogonov robota) se namenoma NE generirajo - ti so
+        // vezani na fizično robotsko enoto, ne na razporeditev postaj, in jih je treba združiti iz
+        // dejanskega backupa krmilnika.
+
+        private static string PrimaryPointName(StationModel station)
+        {
+            return station.Positions != 1 ? $"{station.RobotStationName}1" : station.RobotStationName;
+        }
+
+        public static string GetYamahaMainPgm()
+        {
+            return YamahaMainPgm + "\n\n";
+        }
+
+        public static string GetYamahaRobotPgmHeader(ProgramModel program)
+        {
+            var positionVars = new StringBuilder();
+            for (int i = 0; i < program.Stations.Count; i++)
+                positionVars.AppendFormat("{0} = {1}\n", program.Stations[i].RobotStationName, i);
+
+            return string.Format(YamahaRobotPgmHeader, positionVars) + "\n";
+        }
+
+        public static string GetYamahaHoming(ProgramModel program)
+        {
+            var cases = new StringBuilder();
+            for (int i = 0; i < program.Stations.Count; i++)
+            {
+                cases.AppendFormat("        CASE {0}\n", i);
+                cases.AppendFormat("            PositionFrom = {0}\n", program.Stations[i].RobotStationName);
+                cases.AppendFormat("            in_station=1\n");
+                cases.AppendFormat("            '\n");
+            }
+
+            return string.Format(YamahaHoming, cases) + "\n";
+        }
+
+        public static string GetYamahaGoFunctions(ProgramModel program)
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < program.Stations.Count; i++)
+            {
+                sb.Append(BuildYamahaGoFunction(program, program.Stations[i]));
+                sb.Append("\n");
+            }
+            return sb.ToString();
+        }
+
+        private static string BuildYamahaGoFunction(ProgramModel program, StationModel station)
+        {
+            string freeBlock = "";
+            if (station.StationFreeEnabled)
+            {
+                freeBlock = "    'if going directly 'on station' then set the station immediately as BUSY (NOT FREE)\n" +
+                            "    IF I_ON_STATION=1 THEN\n" +
+                            $"        RESET O_{station.RobotStationName}_FREE\n" +
+                            "    ENDIF\n" +
+                            "    '\n";
+            }
+
+            var ifChain = new StringBuilder();
+            for (int i = 0; i < program.Stations.Count; i++)
+            {
+                string s = program.Stations[i].RobotStationName;
+                ifChain.AppendFormat(i == 0 ? "    IF PositionFrom = {0} THEN\n" : "    ELSEIF PositionFrom = {0} THEN\n", s);
+                ifChain.Append("        MOVE P, pAboveStation, CONT\n");
+                ifChain.Append("        '\n");
+            }
+            ifChain.Append("    ELSE\n");
+            ifChain.Append("        'output error\n");
+            ifChain.Append("        SET O_PROGRAM_ERROR\n");
+            ifChain.Append("        HOLD\n");
+            ifChain.Append("        '\n");
+            ifChain.Append("    ENDIF");
+
+            return string.Format(YamahaGoFunction, station.RobotStationName, freeBlock, ifChain, PrimaryPointName(station));
+        }
+
+        public static string GetYamahaMainTask(ProgramModel program)
+        {
+            var cases = new StringBuilder();
+            for (int i = 0; i < program.Stations.Count; i++)
+            {
+                string s = program.Stations[i].RobotStationName;
+                cases.AppendFormat("                CASE {0}\n", s);
+                cases.AppendFormat("                    GOSUB *robot_go{0}\n", s);
+                cases.AppendFormat("                    '\n");
+            }
+
+            return string.Format(YamahaMainTask, cases) + "\n";
+        }
+
+        public static string GetYamahaMoveOnStation(ProgramModel program)
+        {
+            var ifChain = new StringBuilder();
+            for (int i = 0; i < program.Stations.Count; i++)
+            {
+                var station = program.Stations[i];
+                string s = station.RobotStationName;
+                ifChain.AppendFormat(i == 0 ? "        IF PositionTo = {0} THEN\n" : "        ELSEIF PositionTo = {0} THEN\n", s);
+
+                if (station.Positions != 1)
+                {
+                    ifChain.Append("            'define FINAL point in station\n");
+                    for (int j = 1; j <= station.Positions; j++)
+                    {
+                        ifChain.AppendFormat(j == 1 ? "            IF additional_pos={0} THEN\n" : "            ELSEIF additional_pos={0} THEN\n", j);
+                        ifChain.AppendFormat("                p{0}Final = p{0}{1}\n", s, j);
+                    }
+                    ifChain.Append("            ELSE\n");
+                    ifChain.Append("                SET O_PROGRAM_ERROR\n");
+                    ifChain.Append("                HOLD\n");
+                    ifChain.Append("            ENDIF\n");
+                    ifChain.Append("            '\n");
+                }
+
+                if (station.StationFreeEnabled)
+                    ifChain.AppendFormat("            RESET O_{0}_FREE\n", s);
+
+                ifChain.Append("            GOSUB *robot_fullWorkingSpeed\n");
+                string finalPoint = station.Positions != 1 ? $"p{s}Final" : $"p{PrimaryPointName(station)}";
+                ifChain.AppendFormat("            pAboveStation = {0}\n", finalPoint);
+                ifChain.Append("            LOC3(pAboveStation) = ROBOT_MAX_Z\n");
+                ifChain.Append("            MOVE P, pAboveStation, CONT\n");
+                ifChain.Append("            '\n");
+                ifChain.Append("            CALL *robot_slowWorkingSpeed (ROBOT_APPROACH_SPEED%, ROBOT_APPROACH_ACCEL%, ROBOT_APPROACH_DECEL%, power_mode)\n");
+                ifChain.AppendFormat("            MOVE P, {0}\n", finalPoint);
+                ifChain.Append("            '\n");
+            }
+
+            return string.Format(YamahaMoveOnStation, ifChain) + "\n";
+        }
+
+        public static string GetYamahaMoveAway(ProgramModel program)
+        {
+            var ifChain = new StringBuilder();
+            for (int i = 0; i < program.Stations.Count; i++)
+            {
+                var station = program.Stations[i];
+                string s = station.RobotStationName;
+                ifChain.AppendFormat(i == 0 ? "        IF PositionFrom = {0} THEN\n" : "        ELSEIF PositionFrom = {0} THEN\n", s);
+                ifChain.Append("            GOSUB *robot_fullWorkingSpeed\n");
+                ifChain.Append("            LOC3 (pAboveStation) = ROBOT_MAX_Z\n");
+                ifChain.Append("            MOVE P, pAboveStation, CONT\n");
+                ifChain.Append("            '\n");
+                if (station.StationFreeEnabled)
+                {
+                    ifChain.AppendFormat("            'turn ON station free signal\n");
+                    ifChain.AppendFormat("            SET O_{0}_FREE\n", s);
+                    ifChain.Append("            '\n");
+                }
+            }
+
+            return string.Format(YamahaMoveAway, ifChain) + "\n";
+        }
+
+        public static string GetYamahaCommonPgm(ProgramModel program)
+        {
+            var busy = new StringBuilder();
+            var free = new StringBuilder();
+            foreach (var station in program.Stations)
+            {
+                if (!station.StationFreeEnabled) continue;
+                busy.AppendFormat("    RESET O_{0}_FREE\n", station.RobotStationName);
+                free.AppendFormat("    SET O_{0}_FREE\n", station.RobotStationName);
+            }
+
+            int totalPoints = program.Stations.Count + program.Stations.Sum(s => s.Positions != 1 ? s.Positions - 1 : 0);
+            int homingBound = totalPoints - 1;
+
+            return string.Format(YamahaCommonPgm, busy, free, homingBound) + "\n";
+        }
+
+        public static string GetYamahaPoints(ProgramModel program)
+        {
+            const string placeholderCoords = "0.000 0.000 0.000 0.000 0.000 0.000 1 0 0";
+            var pnt = new StringBuilder();
+            var pcm = new StringBuilder();
+            var pnm = new StringBuilder();
+
+            int index = 0;
+            foreach (var station in program.Stations)
+            {
+                pnt.AppendFormat("P{0}={1}\n", index, placeholderCoords);
+                pcm.AppendFormat("PC{0}=ni ustimano !!!\n", index);
+                pnm.AppendFormat("PN{0}=p{1}\n", index, PrimaryPointName(station));
+                index++;
+            }
+
+            foreach (var station in program.Stations)
+            {
+                if (station.Positions == 1) continue;
+                for (int j = 2; j <= station.Positions; j++)
+                {
+                    pnt.AppendFormat("P{0}={1}\n", index, placeholderCoords);
+                    pcm.AppendFormat("PC{0}=ni ustimano !!!\n", index);
+                    pnm.AppendFormat("PN{0}=p{1}{2}\n", index, station.RobotStationName, j);
+                    index++;
+                }
+            }
+
+            return string.Format(YamahaPoints, pnt.ToString().TrimEnd('\n'), pcm.ToString().TrimEnd('\n'), pnm.ToString().TrimEnd('\n')) + "\n";
+        }
+
+        public static string GetYamahaIO(ProgramModel program)
+        {
+            var freeSignals = new StringBuilder();
+            int k = 0;
+            foreach (var station in program.Stations)
+            {
+                if (!station.StationFreeEnabled) continue;
+                freeSignals.AppendFormat("SONM4({0})=O_{1}_FREE\n", k, station.RobotStationName);
+                k++;
+            }
+
+            return string.Format(YamahaIO, freeSignals.ToString().TrimEnd('\n')) + "\n";
+        }
+
+        #endregion
     }
-    #endregion
 }

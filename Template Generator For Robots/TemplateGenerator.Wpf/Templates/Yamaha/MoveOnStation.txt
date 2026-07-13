@@ -1,0 +1,33 @@
+'------------------------------------------------------------MOVE TO:
+*robot_moveOnStation:
+    '
+    'if movement ON station is allowed, move the robot to final point inside station
+    'if not, SKIP
+    IF I_ON_STATION = 1 THEN
+        '
+        'call the function to set the current power state (LOW or HIGH)
+        GOSUB *robot_setPowerMode
+        '
+        'set CONTPLS for continuous movements
+        CALL *robot_setCONTPLS ("vertical")
+        '
+        'move the robot to final point IN destination station
+{0}
+        ELSE
+            'output error
+            SET O_PROGRAM_ERROR
+            HOLD
+            '
+        ENDIF
+        '
+        'robot is INSIDE station
+        in_station=1
+        '
+    ENDIF
+    '
+    'wait for robot to complete current movement
+    WAIT ARM
+    '
+RETURN
+'
+'
