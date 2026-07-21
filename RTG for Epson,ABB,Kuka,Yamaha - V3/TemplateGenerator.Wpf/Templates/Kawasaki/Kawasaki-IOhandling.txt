@@ -1,0 +1,143 @@
+.PROGRAM IO_handling.pc() #0
+	; *******************************************************************
+	;
+	; Program:      IO_handling.pc
+	; Comment:
+	; Author:       User
+	;
+	; Date:         8/21/2023
+	;
+	; *******************************************************************
+	;
+	WHILE TRUE DO
+		;
+		;"handle from PLC(in) to Arm(out) signals (valves)"
+		;
+		IF SIG (1017) THEN     ;input signal from PLC
+		   SIGNAL 1             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -1
+		END
+		;
+		IF SIG (1018) THEN     ;input signal from PLC
+		   SIGNAL 2             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -2
+		END
+		;
+		IF SIG (1019) THEN     ;input signal from PLC
+		   SIGNAL 3             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -3
+		END
+		;
+		IF SIG (1020) THEN     ;input signal from PLC
+		   SIGNAL 4             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -4
+		END
+		;
+		IF SIG (1021) THEN     ;input signal from PLC
+		   SIGNAL 5             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -5
+		END
+		;
+		IF SIG (1022) THEN     ;input signal from PLC
+		   SIGNAL 6             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -6
+		END
+		;
+		IF SIG (1023) THEN     ;input signal from PLC
+		   SIGNAL 7             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -7
+		END
+		;
+		IF SIG (1024) THEN     ;input signal from PLC
+		   SIGNAL 8             ;controller output to Arm ID Board
+		ELSE
+		   SIGNAL -8
+		END
+		;
+		;
+		;
+		;"handle from Arm(in) to PLC(out) signals (sensors)"
+		;
+		IF SIG (1001) THEN     ;input signal from Arm ID Board
+		   SIGNAL 17             ;controller output to PLC
+		ELSE
+		   SIGNAL -17
+		END
+		;
+		IF SIG (1002) THEN     ;input signal from Arm ID Board
+		   SIGNAL 18             ;controller output to PLC
+		ELSE
+		   SIGNAL -18
+		END
+		;
+		IF SIG (1003) THEN     ;input signal from Arm ID Board
+			SIGNAL 19             ;controller output to PLC
+		ELSE
+			SIGNAL -19
+		END
+		;
+		IF SIG (1004) THEN     ;input signal from Arm ID Board
+			SIGNAL 20             ;controller output to PLC
+		ELSE
+			SIGNAL -20
+		END
+		;
+		IF SIG (1005) THEN     ;input signal from Arm ID Board
+			SIGNAL 21             ;controller output to PLC
+		ELSE
+			SIGNAL -21
+		END
+		;
+		IF SIG (1006) THEN     ;input signal from Arm ID Board
+			SIGNAL 22             ;controller output to PLC
+		ELSE
+			SIGNAL -22
+		END
+		;
+		IF SIG (1007) THEN     ;input signal from Arm ID Board
+			SIGNAL 23             ;controller output to PLC
+		ELSE
+			SIGNAL -23
+		END
+		;
+		IF SIG (1008) THEN     ;input signal from Arm ID Board
+			SIGNAL 24             ;controller output to PLC
+		ELSE
+			SIGNAL -24
+		END
+		;
+		IF SIG (1009) THEN     ;input signal from Arm ID Board
+			SIGNAL 25             ;controller output to PLC
+		ELSE
+			SIGNAL -25
+		END
+		;
+		IF SIG (1010) THEN     ;input signal from Arm ID Board
+			SIGNAL 26             ;controller output to PLC
+		ELSE
+			SIGNAL -26
+		END
+		;
+		IF SIG (1011) THEN     ;input signal from Arm ID Board
+		   SIGNAL 27             ;controller output to PLC
+		ELSE
+		   SIGNAL -27
+		END
+		;
+		IF SIG (1012) THEN     ;input signal from Arm ID Board
+		   SIGNAL 28             ;controller output to PLC
+		ELSE
+		   SIGNAL -28
+		END
+		;
+		TWAIT 0.01
+		;
+	END
+.END

@@ -1,0 +1,47 @@
+'---------------------------------------TEST PROG:
+'
+*{0}_testTask:
+    '
+    'gripper opening/closing time in ms
+    GRIPPER = 1000
+    '
+    additional_pos=1
+    GOSUB *{0}_goHome
+    '
+    WHILE 1
+        '
+        GOSUB *cycleTimer
+        '
+{1}
+    WEND
+    HOLD'HALT
+    '
+RETURN
+'
+*{0}_testAll:
+    '
+    additional_pos=1
+    '
+    FOR i=0 TO {2} 
+        FOR j=0 TO {2}
+            position=i
+            GOSUB *{0}_goPosition
+            position=j
+            GOSUB *{0}_goPosition
+        NEXT
+    NEXT
+    HOLD'HALT
+    '
+RETURN
+'
+*{0}_goPosition:
+    '
+    additional_pos=1
+    '
+    SELECT position
+        CASE Home
+            GOSUB *{0}_goHome
+{3}
+    END SELECT         
+    '
+RETURN

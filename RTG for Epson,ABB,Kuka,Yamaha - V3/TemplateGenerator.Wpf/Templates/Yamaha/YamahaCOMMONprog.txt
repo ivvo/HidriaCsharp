@@ -1,0 +1,241 @@
+NAME=COMMON
+PGN=3
+'       
+'--------------------------------SIGNAL/VARIABLE RESETS:
+*{0}_stationsBusy:
+    'Set all stations as BUSY
+{2}
+    '
+RETURN
+'
+'
+*{0}_stationsFree:
+    'Set all stations as FREE
+{3}
+    '
+RETURN
+'
+'
+*{0}_resetLocation:
+    'reset robot_to and robot_from variables
+    PositionFrom = 0
+    PositionTo = 0
+    '
+RETURN
+'
+'
+*{0}_resetProfinet:
+    'Reset OUTPUT bool signals
+    RESET O_HOMING_REQUEST
+    RESET O_IN_MOTION
+    RESET O_END
+    RESET O_HOMING_OK
+    RESET O_RESET_OK
+    RESET O_PROGRAM_ERROR
+    RESET O_GRIPPER_CONTRL
+    '
+RETURN
+'
+'
+*{0}_resetFlags:
+    'Reset INTERNAL bool signals
+    in_station = 0
+    homing_flag = 0
+    reset_flag = 0
+    power_mode = 0
+    '
+RETURN
+'
+'--------------------------------POWER MODE & SPEED:
+'
+*{0}_setPowerMode:
+    'choose between LOW(safe) and HIGH(full power) power modes
+    '
+    IF I_STEP=1 OR homing_flag=1 OR reset_flag=1 OR 1=1 THEN 'remove "OR 1=1" when it is safe to go to high power mode!!!!!
+        'if the machine is in STEP mode, or robot is performing RESET or HOMING, set power mode to LOW
+        '
+        IF power_mode = 1 OR homing_flag = 1 THEN ' only change torque when changing power modes
+            TORQUE(1) = 10
+            TORQUE(2) = 10
+            TORQUE(3) = 50
+            TORQUE(4) = 20
+            '
+            power_mode=0 'LOW
+            GOSUB *{0}_fullWorkingSpeed
+            '
+        ENDIF
+        '
+    ELSE 
+        'if the machine is in AUTO mode set power mode to HIGH
+        '
+        IF power_mode = 0 THEN ' only change torque when changing power modes
+            TORQUE(1) = 40
+            TORQUE(2) = 40
+            TORQUE(3) = 60
+            TORQUE(4) = 40
+            '
+            power_mode=1 'HIGH
+            GOSUB *{0}_fullWorkingSpeed
+            '
+        ENDIF
+        '
+    ENDIF
+    '
+RETURN
+'
+'
+*{0}_fullWorkingSpeed:
+    'SPEED and ACCELERATION of the robot for FAST inbetween station movements
+    '
+    IF power_mode = 1 THEN 'if the power mode is set to HIGH use defined parameters
+        SPEED {1}_FULL_SPEED%
+        ACCEL {1}_FULL_ACCEL%
+        DECEL {1}_FULL_DECEL%
+        '
+    ELSE 'if the power mode is set to LOW use defined parameters
+        SPEED 5
+        ACCEL 50
+        DECEL 100
+        '
+    ENDIF
+    '
+RETURN
+'
+'
+SUB *{0}_slowWorkingSpeed (spd%, acc%, dec%, power_mode%)
+    'SPEED and ACCELERATION of the robot for SLOW in station movements
+    '
+    IF power_mode% = 1 THEN 'if the power mode is set to HIGH use defined parameter
+        SPEED spd%
+        ACCEL acc%
+        DECEL dec%
+        '
+    ELSE 'if the power mode is set to LOW use defined parameters
+        IF spd%>5 THEN
+            SPEED 5
+        ELSE
+            SPEED spd%
+        ENDIF
+        '
+        ACCEL 30
+        DECEL 100
+        '
+    ENDIF
+    '   
+END SUB
+'
+'
+SUB *robot_setCONTPLS (path$)
+    ' 
+    IF path$ = "vertical" THEN
+        'vertical 10000pls == 6.1mm
+        CONTPLS (1) = 2000  'dont change!
+        CONTPLS (2) = 2000  'dont change!
+        CONTPLS (3) = 50000 'dont change!
+        CONTPLS (4) = 5000  'dont change!
+        '
+    ELSEIF path$ = "horizontal" THEN
+        '20k is optimal for precision, 50k for smoothness
+        CONTPLS (1) = 50000 'dont change!
+        CONTPLS (2) = 50000 'dont change!
+        CONTPLS (3) = 5000  'dont change!
+        CONTPLS (4) = 50000 'dont change!
+        '
+    ELSEIF path$ = "homing" THEN
+        CONTPLS 2000    'dont change!
+        '
+    ELSE
+        'output error 
+        SET O_PROGRAM_ERROR
+        HOLD
+        '
+    ENDIF
+    '
+END SUB
+'
+'--------------------------------TOOL STATE:
+*checkToolState:
+    '
+    IF I_GRIPPER_CLOSED=1 AND I_GRIPPER_OPENED=0 THEN 
+        part_in_gripper=1
+        '
+    ELSEIF I_GRIPPER_CLOSED=0 AND I_GRIPPER_OPENED=1 THEN
+        part_in_gripper=0
+        '
+    ELSE
+        'output error 
+        SET O_PROGRAM_ERROR
+        HOLD
+        '
+    ENDIF
+    '
+RETURN
+'
+'--------------------------------TIMERS:
+*timerSTART:
+    RESET TCOUNTER
+RETURN
+'
+'
+*timerSTOP:
+    timer%=TCOUNTER
+RETURN'
+'
+'
+*cycleTimer:
+    timer%=TCOUNTER
+    PRINT "Cycle time: ",timer%, "ms"
+    RESET TCOUNTER
+RETURN
+'
+'--------------------------------CLOSEST POINT FOR HOMING:
+'
+*findClosestPoint:
+    'Function measures the distances between current position and known points to find the closest one
+    'For use in HOMING process"
+    '
+    distance=99999
+    closestPoint=0
+    '
+    'check arm status(Righty or Lefty)
+    currentArm=ARMCND  ' 1=Righty, 2=Lefty
+    '
+    FOR i = 0 TO  {4}   '!!!!change the number equal to the number of points(stations) to check for homing!!!!!!
+        pointArm = LOCF(P[i]) 'check Arm type for each point
+        IF currentArm = pointArm THEN   
+            'curdist=DIST(WHRXY,P[i])
+            curdist=SQR( ( LOC1(WHRXY) - LOC1(P[i]) )^2  + ( LOC2(WHRXY) - LOC2(P[i]) )^2 )
+            IF (curdist < distance)=-1 THEN
+                distance=curdist
+                closestPoint=i
+            ENDIF
+        ENDIF
+    NEXT i
+    '
+RETURN 
+'
+'---------------------------------MOVES FOR ARM CHANGE:
+'
+*armChange:
+    'call this function when switching arm types using 2 points
+    '
+    IF ARMCND=1 THEN ' 1=Righty
+        MOVE P, pSafeR
+        MOVE P, pSafeL
+        '
+    ELSEIF ARMCND=2 THEN ' 2=Lefty
+        MOVE P, pSafeL
+        MOVE P, pSafeR
+        '
+    ELSE
+        'output error
+        SET O_PROGRAM_ERROR
+        HOLD
+    ENDIF
+    '
+RETURN
+'
+'
+'--------------------------------------------------------------
+'END OF PROGRAM
+

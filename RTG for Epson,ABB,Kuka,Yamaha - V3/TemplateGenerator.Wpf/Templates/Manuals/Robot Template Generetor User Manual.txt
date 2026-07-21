@@ -1,0 +1,17 @@
+﻿***************************************************************************
+Title: 		Robot Template Generetor User Manual (RTG User Manual)
+
+Description:	Instructions on how to use the “Robot Template Generator” 
+		program for generating robot program templates for Epson, 
+		ABB, Kuka, Yamaha, and Kawasaki robots.
+
+Last update: 	16.09.2024.
+
+By:		Luka Paladin
+
+***************************************************************************
+
+**Introduction***
+
+Robot programing inside Hidria uses a universal scheme for all robot types. 
+It defines how to initialize robot, define parameters, define I/O for communication with PLC, how to perform homing, how to define stations and movements in, out and between stations. All robot programs for all robot types follow this scheme which simplifies programing and comunication with PLC.

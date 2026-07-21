@@ -1,0 +1,27 @@
+MODULE Communication
+    PROC robot_stationsFree() 
+{0}    ENDPROC
+
+    PROC robot_stationBusy()	
+{1}    ENDPROC
+ 
+     PROC robot_resetProfibusOutputs()
+        Reset doRobotOEnd;
+	    Reset doRobotHomingOK;
+	    Reset doRobotHomingRequest;
+	    Reset doRobotInMotion;
+	    Reset doRobotResetOK;
+    ENDPROC
+    
+    ! Reset robot flags procedures
+    PROC robot_resetDepartLocations() 
+{2}    ENDPROC
+
+    PROC robot_resetDestLocations() 
+{3}    ENDPROC
+
+    PROC robot_resetFlags()
+	    bRobotLocalHomingFlag := FALSE;
+	    bRobotLocalResetFlag := FALSE;
+    ENDPROC
+ENDMODULE

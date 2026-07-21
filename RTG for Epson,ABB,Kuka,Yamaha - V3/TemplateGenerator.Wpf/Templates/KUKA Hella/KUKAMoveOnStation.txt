@@ -1,0 +1,18 @@
+GLOBAL DEF robot_moveOnStation()
+   ;Set power mode
+   robot_setPowerMode()
+	
+	; Go on the station only if bit is set
+	If (diROBOT_ON_STATION == TRUE) THEN
+	
+	   SWITCH TO_LOC
+{0}
+		DEFAULT
+			mainHalt ( )
+			
+		ENDSWITCH
+	EndIf
+	
+	; Wait to get in position
+	;WAIT SEC 0
+END

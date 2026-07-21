@@ -1,0 +1,78 @@
+GLOBAL DEFFCT E6POS goPallet( npalIndex : IN, n : IN)
+   INT npalIndex
+   INT n
+   INT rezRow
+   INT rezColumn
+   INT palletSize
+   INT tempX
+   INT nx
+   INT ny
+   
+   rezRow = 0
+   rezColumn = 0
+   palletSize = nColumnGlobal*nRowGlobal
+   tempX = nColumnGlobal
+   nx = n
+   ny = n
+   
+   IF (0 >= n) or (palletSize < n) THEN
+      bROBOT_ERROR_RESET = TRUE
+       ;error             
+   ELSE
+   
+      IF (nx <= nColumnGlobal) THEN
+         rezColumn = nx - 1
+      ELSE      
+         WHILE (nx > nColumnGlobal)      
+            IF (nx <= nColumnGlobal) THEN
+               rezColumn = nx - 1
+            ELSE
+               nx = nx - nColumnGlobal;
+               rezColumn = nx - 1;
+            ENDIF
+         ENDWHILE
+      ENDIF     
+      
+      IF (ny < tempX) THEN
+         rezRow = 0
+      ELSE
+         WHILE (ny > tempX)
+            tempX = tempX + nColumnGlobal;
+            rezRow = rezRow + 1;
+         ENDWHILE
+      ENDIF
+      ENDIF
+      
+      jPalletTemp[npalIndex] = jPallet[npalIndex]
+      jPalletTemp[npalIndex].x = jPallet[npalIndex].x + (rezRow*fRow[npalIndex].x) + (rezColumn*fColumn[npalIndex].x)
+      jPalletTemp[npalIndex].y = jPallet[npalIndex].y + (rezRow*fRow[npalIndex].y) + (rezColumn*fColumn[npalIndex].y)
+      jPalletTemp[npalIndex].z = jPallet[npalIndex].z + (rezRow*fRow[npalIndex].z) + (rezColumn*fColumn[npalIndex].z)
+      
+      RETURN jPalletTemp[npalIndex]
+ENDFCT
+
+GLOBAL DEF pallet ( npalIndex : IN, nColumn : IN, nRow :IN, fp1 : IN, fp2 : IN, fp3 : IN)
+   INT npalIndex
+   INT nColumn
+   INT nRow
+   FRAME fp1
+   FRAME fp2
+   FRAME fp3
+   
+   nColumnGlobal = nColumn
+   nRowGlobal = nRow
+   
+   fColumn[npalIndex]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+   fRow[npalIndex]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+   jPallet[npalIndex]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+   jPalletTemp[npalIndex]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+   jPallet[npalIndex] = fp1
+   
+   fRow[npalIndex].x = (fp3.x - fp1.x)/(nRow - 1)
+   fRow[npalIndex].y = (fp3.y - fp1.y)/(nRow - 1)
+   fRow[npalIndex].z = (fp3.z - fp1.z)/(nRow - 1)
+   
+   fColumn[npalIndex].x = (fp2.x - fp1.x)/(nColumn - 1)
+   fColumn[npalIndex].y = (fp2.y - fp1.y)/(nColumn - 1)
+   fColumn[npalIndex].z = (fp2.z - fp1.z)/(nColumn - 1)
+END

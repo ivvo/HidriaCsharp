@@ -41,5 +41,21 @@ namespace TemplateGenerator.Wpf.Views
             ShellViewModel.GenerateProject(path);
         }
 
+        private void ImportProjectClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK) return;
+            ShellViewModel.ImportProject(dialog.SelectedPath);
+        }
+
+        private void UpdateProjectClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK) return;
+            ShellViewModel.UpdateProject(dialog.SelectedPath);
+        }
+
     }
 }

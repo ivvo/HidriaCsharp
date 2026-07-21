@@ -1,0 +1,52 @@
+MODULE Global      
+    ! Speed variables [mm/s,re orientation of TCP degrees/s, linear external axes mm/s, rotation of external axes in degree/s]
+    VAR speeddata vFullSpeed := [2500,500,5000,1000];
+    VAR speeddata vMoveAway := [250,500,5000,1000];
+    VAR speeddata vMoveOnStation := [50,500,5000,1000];
+	
+    ! Speed from 1 to 2500 procent from 1 to 100
+    VAR num nRobotSpeed := 150;     !Keep it low (150) for testing
+    VAR num nRobotProcentSpeed := 100;
+	
+    ! Speed from 1 to 7500, acceleration and deceleration from 1 to 100 of the robot in LOW POWER working mode
+    VAR num nRobotLowPowerSpeed := 150;
+    VAR num nRobotProcLowPowerSpeed := 100;
+    VAR num nRobotLowPowerAccel := 10;
+    VAR num nRobotLowPowerAccRamp := 10;
+    
+    ! Accel and ramp from 1 to 100
+    VAR num nRobotAccel := 60;
+    VAR num nRobotAccelRamp := 60;
+	
+    ! Moving on or from station Z offset
+    CONST num nRobotStationZOffset := 150;
+    CONST num nRobotStationSlowZOffset := 50;
+    
+    ! Variable which holds the information about if the robot is on the station or not
+    VAR bool bRobot_onStation;
+    
+    ! Position(s) variables
+    VAR num nPosition;
+	VAR num nAdditionalPos;   
+	VAR num nType;
+
+    ! Flags and destination variables       
+    VAR BOOL bRobotLocalHomingFlag;
+    VAR BOOL bRobotLocalResetFlag; 
+
+	! Pallet variables
+{3}	
+    ! From
+{0}
+    ! To
+{1}
+    ! Error variables
+    VAR errnum enProgramError := -1;
+    
+    ! Curent position variables
+    VAR robtarget jCurPos;  
+    
+    ! POINTS DEFINITION   
+{2}
+    
+ENDMODULE

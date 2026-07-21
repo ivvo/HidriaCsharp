@@ -1,0 +1,33 @@
+'START {0}_init            
+*{0}_init:
+    '
+    'turn on servo motors
+    SERVO[{1}] ON
+    '
+    'set the WEIGHT and INERTIA
+    WEIGHT TOOL_WEIGHT
+    SCRINR TOOL_ROT_INERTIA 
+    '
+    'set CONTPLS for continuous movements
+    CALL *robot_setCONTPLS ("homing")
+    '
+    'call the function to set all stations as BUSY
+    GOSUB *{0}_stationsBusy
+    '
+    'call the function to reset robot_from and robot_to variable
+    GOSUB *{0}_resetLocation
+    '
+    'call the function to reset OUTPUT bool signals
+    GOSUB *{0}_resetProfinet
+    '
+    'call the function to reset INTERNAL bool signals
+    GOSUB *{0}_resetFlags
+    '
+    'output homing request signal to PLC
+    SET O_HOMING_REQUEST 
+    GOSUB *{0}_homing
+    '
+    '
+RETURN
+'
+'

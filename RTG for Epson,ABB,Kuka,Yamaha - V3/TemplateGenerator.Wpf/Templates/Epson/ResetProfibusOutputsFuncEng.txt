@@ -1,0 +1,8 @@
+Function {0}_resetProfibusOutputs	'reset OUTPUT bool signals
+	Off {1}_O_END
+	Off {1}_O_HOMING_OK
+	Off {1}_O_HOMING_REQUEST
+	Off {1}_O_IN_MOTION
+	Off {1}_O_RESET_OK
+	'Off {1}_O_GRIPPER_CONTRL
+Fend

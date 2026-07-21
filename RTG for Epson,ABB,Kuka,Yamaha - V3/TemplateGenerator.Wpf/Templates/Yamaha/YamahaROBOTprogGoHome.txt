@@ -1,0 +1,41 @@
+'-----------------------------GO FUNCTIONS-----------------------------
+'
+'--------------------------------------------------------*robot_goHome:
+'
+*{0}_goHome:
+    '
+    'write to variable the current DESTINATION value
+    PositionTo = Home
+    '
+    'call the function to move the robot to OUTSIDE of the current station
+    GOSUB *{0}_moveAway
+    '
+    'call the function to set the current power state (LOW or HIGH)
+    GOSUB *{0}_setPowerMode
+    '
+    'set CONTPLS for continuous movements
+    CALL *robot_setCONTPLS ("horizontal")
+    '
+    'move the robot from OUTSIDE current station to OUTSIDE the destination station
+    IF PositionFrom = Home THEN 
+        MOVE P, pHome
+        '
+{1}
+    ELSE
+        'output error 
+        SET O_PROGRAM_ERROR
+        HOLD
+        '
+    ENDIF
+    '
+    'call the function to move the robot to the FINAL POSITION in the destination station
+    GOSUB *{0}_moveOnStation
+    '
+    'robot is at the destination
+    'write to variable the current POSITION value
+    PositionFrom = Home
+    PositionTo = 0
+    '
+RETURN
+'
+'

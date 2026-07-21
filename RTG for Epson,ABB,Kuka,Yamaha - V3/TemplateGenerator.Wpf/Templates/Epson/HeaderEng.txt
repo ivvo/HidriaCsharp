@@ -1,0 +1,32 @@
+' Working mode of CP barrier
+#define {0}_CP_TURN_OFF_POWER_LOW 0
+#define {0}_CP_TURN_OFF 1
+
+' Speed and acceleration of the robot (between 0 and 1)
+#define {0}_SPEED 0.8
+#define {0}_ACCEL 0.8
+#define {0}_DECEL 0.8
+
+' Speed, acceleration and deceleration of the robot in slower working mode
+#define {0}_SLOWER_SPEED 0.1
+#define {0}_APPROACH_ACCEL 0.4
+#define {0}_APPROACH_DECEL 0.1
+#define {0}_DEPART_ACCEL 0.1
+#define {0}_DEPART_DECEL 0.4
+
+' Weight of the manupulator
+#define {0}_WEIGHT_MANIPULATOR 1
+
+' Inertia and eccentricity of the manipulator
+#define {0}_INERTION 0
+#define {0}_ECCENTRICITY 0
+
+' Variable which holds the information about if the robot is on the station or not
+Boolean {1}_inStation
+
+' Maximum robot height
+#define {0}_MAX_Z_HEIGHT 0	' Fix it depend on what you need
+#define {0}_STATION_Z_OFFSET 30
+
+Integer additionalPos
+Real gripper

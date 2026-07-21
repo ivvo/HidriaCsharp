@@ -1,0 +1,17 @@
+GLOBAL DEF robot_moveAway()
+	; Set power mode
+	robot_setPowerMode()
+	
+	If bRobot_onStation == TRUE THEN
+
+		SWITCH FROM_LOC
+	  
+	{0}	
+	   	DEFAULT
+			mainHalt ()
+			
+		ENDSWITCH
+		robot_fullWorkingSpeed() 
+		
+	EndIf	
+END

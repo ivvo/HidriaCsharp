@@ -1,0 +1,74 @@
+MODULE Module1
+
+    PROC main()     
+        ! Initialisation
+        robot_init;
+    ENDPROC
+	
+    PROC OnStartupExpitCycle()
+        ExitCycle;
+    ENDPROC
+ 
+    PROC robot_setPowerMode()  
+    	IF bRobotLocalResetFlag = TRUE Or diRobotStep = 1 Or bRobotLocalHomingFlag = TRUE THEN 
+            MotionSup\on\TuneValue:=150;         ! Activate MotionSupervision with low tune value, "power low"
+            velSet nRobotMaxLowPowerSpeed, nRobotLowPowerSpeed;
+            AccSet nRobotLowPowerAccel , nRobotLowPowerAccRamp ;
+        ELSE     
+            MotionSup\off;
+    	    velSet nRobotProcentSpeed , nRobotSpeed; 
+            AccSet nRobotAccel , nRobotAccelRamp;
+    	EndIf
+    ENDPROC
+	
+    PROC robot_slowerWorkingMode(var num maxspeed, var num procSpeed,var num acceler, var num ramp)     
+			! prob not using
+    	    velSet maxspeed,procSpeed;
+            AccSet acceler, ramp;
+    ENDPROC
+
+    PROC error_WrongAdditionalNumber(errstr inptext)
+        ! Error Handling
+        VAR num errorid := 4800;
+        VAR errstr my_title := "Programm error!";
+        VAR errstr unknownStation :="Unknown pallet number called from PLC.";
+        Bookerrno enProgramError;       
+	    ErrRaise "enProgramError", errorid,my_title,inptext,ERRSTR_TASK,unknownStation,ERRSTR_CONTEXT;     
+        ERROR
+        IF ERRNO = enProgramError THEN
+            TPWrite "Unknown pallet number called from PLC.";
+ !           set doRobotHomingRequest;
+            ErrLog errorid,my_title,ERRSTR_TASK,unknownStation,inptext,ERRSTR_CONTEXT; !ERRSTR_EMPTY    
+        ENDIF 
+    ENDPROC  
+    
+    PROC error_WrongTypeNumber(errstr inptext)
+        ! Error Handling
+        VAR num errorid := 4801;
+        VAR errstr my_title := "Programm error!";
+        VAR errstr unknownStation :="Unknown type number called from PLC.";
+        Bookerrno enProgramError;       
+	    ErrRaise "enProgramError", errorid,my_title,inptext,ERRSTR_TASK,unknownStation,ERRSTR_CONTEXT;     
+        ERROR
+        IF ERRNO = enProgramError THEN
+            TPWrite "Unknown Type number called from PLC.";
+ !           set doRobotHomingRequest;
+            ErrLog errorid,my_title,ERRSTR_TASK,unknownStation,inptext,ERRSTR_CONTEXT;   
+        ENDIF 
+    ENDPROC  
+    
+    PROC error_ProgramError(errstr inptext)
+        ! Error Handling
+        VAR num errorid := 4802;
+        VAR errstr my_title := "Programm error!";
+        !VAR errstr str1 := inptext;
+        Bookerrno enProgramError;       
+	    ErrRaise "enProgramError", errorid,inptext,ERRSTR_TASK,ERRSTR_EMPTY,ERRSTR_CONTEXT,ERRSTR_EMPTY;    
+        ERROR
+        IF ERRNO = enProgramError THEN
+            TPWrite inptext;
+ !           set doRobotHomingRequest;
+            ErrLog errorid,my_title,ERRSTR_TASK,ERRSTR_EMPTY,ERRSTR_CONTEXT,ERRSTR_EMPTY;     
+        ENDIF 
+    ENDPROC
+ENDMODULE

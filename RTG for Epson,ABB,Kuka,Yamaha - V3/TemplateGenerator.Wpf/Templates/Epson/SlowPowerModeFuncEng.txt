@@ -1,0 +1,28 @@
+Function {0}_slowerWorkingMode(spd As Double, acceler As Double, deceler As Double) 'SPEED and ACCELERATION of the robot for SLOW in station movements
+	Robot {2}
+	
+	If Power = High Then
+		'PTP
+		Speed spd * 100
+		Accel acceler * 100, deceler * 100
+
+		'linear
+		SpeedS spd * 2000
+		'AccelS {1}_ACCEL * 10000, {1}_ACCEL * 10000	'LS20-B, T series, VT series
+		AccelS {1}_ACCEL * 25000, {1}_ACCEL * 25000	'G series, GX series, RS series, LS3-B, LS6-B, LS10-B, C series(mostly)
+
+	Else
+		'PTP
+		If spd >= 0.05 Then
+			Speed 0.05 * 100
+		Else
+			Speed spd * 100
+		EndIf
+		Accel acceler * 100, deceler * 100
+
+		'linear
+		SpeedS spd * 2000
+		'AccelS {1}_ACCEL * 10000, {1}_ACCEL * 10000	'LS20-B, T series, VT series
+		AccelS {1}_ACCEL * 25000, {1}_ACCEL * 25000	'G series, GX series, RS series, LS3-B, LS6-B, LS10-B, C series(mostly)
+	EndIf
+Fend

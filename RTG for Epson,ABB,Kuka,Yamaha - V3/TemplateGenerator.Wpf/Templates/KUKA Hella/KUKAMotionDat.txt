@@ -1,0 +1,9 @@
+&ACCESS RVO
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\Template
+DEFDAT {0}_motion PUBLIC
+; Additional offsets
+
+; Points
+{1}
+ENDDAT

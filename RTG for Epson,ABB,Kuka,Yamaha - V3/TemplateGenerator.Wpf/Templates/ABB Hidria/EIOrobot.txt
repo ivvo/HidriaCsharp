@@ -1,0 +1,257 @@
+EIO:CFG_1.0:6:1::
+#
+SYSSIG_OUT:
+
+      -Status "MotOnState" -Signal "ROBOT_O_S_MOTORS_ON_STATE"
+
+      -Status "CycleOn" -Signal "ROBOT_O_S_CYCLE_ON"
+
+      -Status "AutoOn" -Signal "ROBOT_O_S_AUTO_ON"
+	  
+	  -Status "MotSupTrigg" -Signal "ROBOT_O_S_COLLISION_DETECTED"
+
+      -Status "MotOffState" -Signal "ROBOT_O_S_MOTORS_OFF_STATE"
+
+      -Status "Error" -Signal "ROBOT_O_S_EXE_ERROR" -Arg2 "T_ROB1"
+
+      -Status "EmStop" -Signal "ROBOT_O_S_EMG_STOP"
+
+      -Status "RunchOk" -Signal "ROBOT_O_S_RUNCHAIN_ON"
+	  
+	  
+#
+SYSSIG_IN:
+
+      -Signal "ROBOT_I_S_MOTORS_ON_AND_START" -Action "MotOnStart" -Arg1 "CONT"
+
+      -Signal "ROBOT_I_S_RESET_EMG_STOP" -Action "ResetEstop"
+
+      -Signal "ROBOT_I_S_RESET_EXE_ERROR" -Action "ResetError"
+
+      -Signal "ROBOT_I_S_MOTORS_ON" -Action "MotorOn"
+
+      -Signal "ROBOT_I_S_MOTORS_OFF" -Action "MotorOff"
+
+      -Signal "ROBOT_I_S_SOFT_STOP" -Action "SoftStop"
+
+      -Signal "ROBOT_I_S_STOP" -Action "Stop"
+
+      -Signal "ROBOT_I_S_QUICK_STOP" -Action "QuickStop"
+
+      -Signal "ROBOT_I_S_STOP_AT_END_OF_CYCLE" -Action "StopCycle"
+
+      -Signal "ROBOT_I_S_STOP_AT_END_OF_INST" -Action "StopInstr"
+
+      -Signal "ROBOT_I_S_PP_TO_MAIN" -Action "PpToMain"
+#
+INDUSTRIAL_NETWORK:
+
+      -Name "PROFINET_Anybus" -Label "PROFINET Anybus Network"\
+      -Address "0.0.0.0" -SubnetMask "0.0.0.0" -Gateway "0.0.0.0"
+#
+ETHERNETIP_DEVICE:
+
+      -Name "Local_IO" -VendorName "ABB Robotics" -ProductName "DSQC1030"\
+      -Label "ABB Local I/O Device" -Address "192.168.125.100" -VendorId 75\
+      -ProductCode 29 -DeviceType 12 -OutputAssembly 100 -InputAssembly 101\
+      -ConfigurationAssembly 102 -InputConnectionType "POINT2POINT"\
+      -ConnectionPriority "SCHEDULE" -OutputSize 2 -InputSize 2\
+      -ConfigurationSize 8\
+      -ConfigurationData00 "01 02 09 10 01 08 10 01 00 00 00 00 00 00 00 00"\
+      -O2T_RPI 40000 -T2O_RPI 40000
+#
+PROFINET_INTERNAL_ANYBUS_DEVICE:
+
+      -Name "PN_Internal_Anybus" -VendorName "ABB Robotics"\
+      -ProductName "PROFINET Internal Anybus Device"
+#
+EIO_SIGNAL:
+
+      -Name "ROBOT_O_S_AUTO_ON" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "0"
+
+      -Name "ROBOT_O_S_MOTORS_ON_STATE" -SignalType "DO"\
+      -Device "PN_Internal_Anybus" -DeviceMap "1"
+
+      -Name "ROBOT_O_S_CYCLE_ON" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "2"
+
+	  -Name "ROBOT_O_S_COLLISION_DETECTED" -SignalType "DO"\
+      -Device "PN_Internal_Anybus" -DeviceMap "3"
+
+      -Name "ROBOT_O_S_MOTORS_OFF_STATE" -SignalType "DO"\
+      -Device "PN_Internal_Anybus" -DeviceMap "4"
+
+      -Name "ROBOT_O_S_EXE_ERROR" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "5"
+
+      -Name "ROBOT_O_S_EMG_STOP" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "6"
+
+      -Name "ROBOT_O_S_RUNCHAIN_ON" -SignalType "DO"\
+      -Device "PN_Internal_Anybus" -DeviceMap "7"
+
+      -Name "ROBOT_I_S_MOTORS_ON_AND_START" -SignalType "DI"\
+      -Device "PN_Internal_Anybus" -DeviceMap "0"
+
+      -Name "ROBOT_I_S_EMG_STOP" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "1"
+	  
+      -Name "ROBOT_I_S_MOTORS_ON" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "2"
+
+      -Name "ROBOT_I_S_MOTORS_OFF" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "3"
+
+      -Name "ROBOT_I_S_SOFT_STOP" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "4"
+
+      -Name "ROBOT_I_S_STOP" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "5"
+
+      -Name "ROBOT_I_S_QUICK_STOP" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "6"
+
+      -Name "ROBOT_I_S_STOP_AT_END_OF_CYCLE" -SignalType "DI"\
+      -Device "PN_Internal_Anybus" -DeviceMap "7"
+
+      -Name "ROBOT_I_S_STOP_AT_END_OF_INST" -SignalType "DI"\
+      -Device "PN_Internal_Anybus" -DeviceMap "8"
+
+      -Name "ROBOT_I_S_RESET_EMG_STOP" -SignalType "DI"\
+      -Device "PN_Internal_Anybus" -DeviceMap "9"
+
+      -Name "ROBOT_I_S_RESET_EXE_ERROR" -SignalType "DI"\
+      -Device "PN_Internal_Anybus" -DeviceMap "10"
+
+      -Name "ROBOT_I_S_PP_TO_MAIN" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "11"
+
+      -Name "Local_IO_0_DO1" -SignalType "DO" -Device "Local_IO" -DeviceMap "0"
+
+      -Name "Local_IO_0_DO2" -SignalType "DO" -Device "Local_IO" -DeviceMap "1"
+
+      -Name "Local_IO_0_DO3" -SignalType "DO" -Device "Local_IO" -DeviceMap "2"
+
+      -Name "Local_IO_0_DO4" -SignalType "DO" -Device "Local_IO" -DeviceMap "3"
+
+      -Name "Local_IO_0_DO5" -SignalType "DO" -Device "Local_IO" -DeviceMap "4"
+
+      -Name "Local_IO_0_DO6" -SignalType "DO" -Device "Local_IO" -DeviceMap "5"
+
+      -Name "Local_IO_0_DO7" -SignalType "DO" -Device "Local_IO" -DeviceMap "6"
+
+      -Name "Local_IO_0_DO8" -SignalType "DO" -Device "Local_IO" -DeviceMap "7"
+
+      -Name "Local_IO_0_DO9" -SignalType "DO" -Device "Local_IO" -DeviceMap "8"
+
+      -Name "Local_IO_0_DO10" -SignalType "DO" -Device "Local_IO" -DeviceMap "9"
+
+      -Name "Local_IO_0_DO11" -SignalType "DO" -Device "Local_IO"\
+      -DeviceMap "10"
+
+      -Name "Local_IO_0_DO12" -SignalType "DO" -Device "Local_IO"\
+      -DeviceMap "11"
+
+      -Name "Local_IO_0_DO13" -SignalType "DO" -Device "Local_IO"\
+      -DeviceMap "12"
+
+      -Name "Local_IO_0_DO14" -SignalType "DO" -Device "Local_IO"\
+      -DeviceMap "13"
+
+      -Name "Local_IO_0_DO15" -SignalType "DO" -Device "Local_IO"\
+      -DeviceMap "14"
+
+      -Name "Local_IO_0_DO16" -SignalType "DO" -Device "Local_IO"\
+      -DeviceMap "15"
+
+      -Name "Local_IO_0_DI1" -SignalType "DI" -Device "Local_IO" -DeviceMap "0"
+
+      -Name "Local_IO_0_DI2" -SignalType "DI" -Device "Local_IO" -DeviceMap "1"
+
+      -Name "Local_IO_0_DI3" -SignalType "DI" -Device "Local_IO" -DeviceMap "2"
+
+      -Name "Local_IO_0_DI4" -SignalType "DI" -Device "Local_IO" -DeviceMap "3"
+
+      -Name "Local_IO_0_DI5" -SignalType "DI" -Device "Local_IO" -DeviceMap "4"
+
+      -Name "Local_IO_0_DI6" -SignalType "DI" -Device "Local_IO" -DeviceMap "5"
+
+      -Name "Local_IO_0_DI7" -SignalType "DI" -Device "Local_IO" -DeviceMap "6"
+
+      -Name "Local_IO_0_DI8" -SignalType "DI" -Device "Local_IO" -DeviceMap "7"
+
+      -Name "Local_IO_0_DI9" -SignalType "DI" -Device "Local_IO" -DeviceMap "8"
+
+      -Name "Local_IO_0_DI10" -SignalType "DI" -Device "Local_IO" -DeviceMap "9"
+
+      -Name "Local_IO_0_DI11" -SignalType "DI" -Device "Local_IO"\
+      -DeviceMap "10"
+
+      -Name "Local_IO_0_DI12" -SignalType "DI" -Device "Local_IO"\
+      -DeviceMap "11"
+
+      -Name "Local_IO_0_DI13" -SignalType "DI" -Device "Local_IO"\
+      -DeviceMap "12"
+
+      -Name "Local_IO_0_DI14" -SignalType "DI" -Device "Local_IO"\
+      -DeviceMap "13"
+
+      -Name "Local_IO_0_DI15" -SignalType "DI" -Device "Local_IO"\
+      -DeviceMap "14"
+
+      -Name "Local_IO_0_DI16" -SignalType "DI" -Device "Local_IO"\
+      -DeviceMap "15"
+	  
+      -Name "doRobotHomingRequest" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "16"
+	  
+      -Name "doRobotResetOK" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "17"
+	  
+      -Name "doRobotHomingOK" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "18"
+	  
+      -Name "doRobotOEnd" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "19"
+	  
+      -Name "doRobotInMotion" -SignalType "DO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "20"
+	  
+      -Name "diRobotHoming" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "16"
+
+      -Name "diRobotReset" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "17"
+	  
+      -Name "diRobotRun" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "18"
+	  
+      -Name "diRobotStep" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "19"
+	  
+      -Name "diRobotStart" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "20"
+	  
+      -Name "diRobotOnStation" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "21"
+	  
+      -Name "diRobotGrifferOppen" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "22"
+	  
+      -Name "diRobotGrifferClosed" -SignalType "DI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "23"
+	  
+      -Name "goPositionAt" -SignalType "GO" -Device "PN_Internal_Anybus"\
+      -DeviceMap "40-47"
+
+      -Name "goAdditionalPositions" -SignalType "GO"\
+      -Device "PN_Internal_Anybus" -DeviceMap "48-55"
+	  
+      -Name "giRobotPositionTo" -SignalType "GI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "40-47"
+	  
+      -Name "giAdditionalPos" -SignalType "GI" -Device "PN_Internal_Anybus"\
+      -DeviceMap "48-55"
+	  
+{0}

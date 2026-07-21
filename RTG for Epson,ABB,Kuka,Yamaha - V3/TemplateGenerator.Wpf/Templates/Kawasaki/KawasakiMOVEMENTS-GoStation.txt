@@ -1,0 +1,36 @@
+.PROGRAM go{0}() #78;
+	;
+	;"write to variable the current DESTINATION value"
+	robot_to = {0}
+	;
+{2}
+	;"call the function to move the robot to OUTSIDE of the current station"
+	CALL moveAway
+	;
+	;"call the function to set the current power state (LOW or HIGH)"
+	CALL setPowerMode
+	;
+	;"define the point OUTSIDE the destination station"
+{3}
+	;
+	;"move the robot from OUTSIDE current station to OUTSIDE the destination station"
+	CASE robot_from OF
+		VALUE HomePos:
+			JMOVE pOutsideStation
+			;
+{1}
+		ANY :
+			PRINT 2: "ERROR: robot_from data invalid"
+			SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+	END
+	;
+	;"move the robot to final point IN station"
+	CALL moveOnStation
+	;
+	;
+	;"robot is at the destination"
+	;"write to variable the current POSITION value"
+	robot_from = {0}
+	robot_to = 0
+	;
+.END

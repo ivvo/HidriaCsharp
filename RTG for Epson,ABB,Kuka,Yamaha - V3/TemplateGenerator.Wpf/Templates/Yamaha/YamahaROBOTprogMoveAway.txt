@@ -1,0 +1,49 @@
+'------------------------------------------------------------MOVE AWAY
+*{0}_moveAway:
+    '
+    'if robot is INSIDE station, move to OUTSIDE"
+    'if not, SKIP"
+    IF in_station=1 THEN
+        '
+        'call the function to set the current power state (LOW or HIGH)
+        GOSUB *{0}_setPowerMode
+        '
+        'set CONTPLS for continuous movements
+        CALL *robot_setCONTPLS ("vertical")
+        '
+        'write the current position to a point, for movement relative to current position
+        pAboveStation = WHRXY 
+        '
+        'move the robot to OUTSIDE of the current station
+        IF PositionFrom = Home THEN
+            CALL *robot_slowWorkingSpeed (ROBOT_DEPART_SPEED%, ROBOT_DEPART_ACCEL%, ROBOT_DEPART_DECEL%, power_mode)
+            MOVE P, pHome
+            '
+{1}
+        ELSE
+            'output error 
+            SET O_PROGRAM_ERROR
+            HOLD
+            '
+        ENDIF
+        '
+        'robot is OUTSIDE station
+        in_station=0
+        '
+    ENDIF
+    '
+    'robot is OUTSIDE of station so set fullWorkingSpeed
+    GOSUB *{0}_fullWorkingSpeed
+    '
+    'set stations free unless homing_flag
+    IF homing_flag = 0 THEN
+        'DO NOT UNCOMMENT THIS UNLESS CERTAIN IT'S OK TO CALL ALL STATIONS FREE"
+        'WAIT ARM
+        'GOSUB *{0}_stationsFree
+    ENDIF
+    '
+RETURN
+'
+'
+'--------------------------------------------------------------
+'END OF PROGRAM

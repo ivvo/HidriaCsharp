@@ -1,0 +1,153 @@
+.AUXDATA
+N_OX33    "O_S_MOTOR_ON  "
+N_OX34    "O_S_ERROR  "
+N_OX35    "O_S_AUTO_MODE  "
+N_OX36    "O_S_RUNNING  "
+N_OX37    "O_S_TEACH_MODE  "
+N_OX38    "O_S_POWER_ON  "
+N_OX39    "O_S_EMG_STOP  "
+N_OX40    "O_S_HOLD_MODE  "
+N_OX41    "O_GRIPP_CONTROL  "
+N_OX42    "O_GRIPPER_OPEN  "
+N_OX49    "O_HOMING_REQ  "
+N_OX50    "O_IN_MOTION  "
+N_OX51    "O_END  "
+N_OX52    "O_HOMING_OK  "
+N_OX53    "O_RESET_OK  "
+N_OX54    "O_PROGRAM_ERROR  "
+N_OX55    "O_VISION_ERROR  "
+{0}
+N_OX81    "O_POSITION_AT  Word (16 bit)"
+N_OX97    "O_ADD_POS  Word (16 bit)"
+N_OX113    "O_ERROR_CODE  Word (16 bit)"
+N_OX129    "O_J1_CORD  Word (16 bit)"
+N_OX145    "O_J2_CORD  Word (16 bit)"
+N_OX161    "O_J3_CORD  Word (16 bit)"
+N_OX177    "O_J4_CORD  Word (16 bit)"
+N_OX193    "O_J5_CORD  Word (16 bit)"
+N_OX209    "O_J6_CORD  Word (16 bit)"
+N_WX4    "I_GRIPPER_IN  "
+N_WX5    "I_GRIPPER_OUT  "
+N_WX33    "I_S_MOTOR_ON  "
+N_WX34    "I_S_ERROR_RESET  "
+N_WX35    "I_S_CYCLE_START  "
+N_WX36    "I_S_PROG_RESET  "
+N_WX49    "I_HOMING  "
+N_WX50    "I_RESET  "
+N_WX51    "I_STEP  "
+N_WX52    "I_START  "
+N_WX53    "I_ON_STATION  "
+N_WX81    "I_POSITION_TO  Word (16 bit)"
+N_WX97    "I_ADD_POS  Word (16 bit)"
+N_WX129    "I_X_CORD  Word (16 bit)"
+N_WX145    "I_Y_CORD  Word (16 bit)"
+N_WX161    "I_Z_CORD  Word (16 bit)"
+N_WX177    "I_O_CORD  Word (16 bit)"
+N_WX193    "I_A_CORD  Word (16 bit)"
+N_WX209    "I_T_CORD  Word (16 bit)"
+N_INT1    "USER_HOMING_ON  user controlled input"
+N_INT2    "USER_ON_STATION  user controlled input"
+N_INT3    "USER_START  user controlled input"
+N_INT4    "USER_RESET  user controlled input"
+N_INT9    "in_station  robot is currently in station"
+N_INT10    "homing_flag  robot is in the homing process"
+N_INT11    "reset_flag  robot is in the reset process"
+N_INT12    "gripper_in  gripper is in the IN position"
+N_INT13    "power_mode  power mode low or high"
+.END
+.REALS
+{1}
+addPos = 0
+approach_acc = 0
+approach_dec = 0
+closestpoint = 0
+depart_acc = 0
+depart_dec = 0
+dist = 0.0
+fast_accel = 0
+fast_decel = 0
+fast_speed = 0
+gripper_in = 2012
+HomePos = 0
+homing_flag = 2010
+I_ADD_POS = 1097
+I_GRIPPER_IN = 1004
+I_GRIPPER_OUT = 1005
+I_HOMING = 1049
+I_ON_STATION = 1053
+I_POSITION_TO = 1081
+I_RESET = 1050
+I_S_CYCLE_START = 1035
+I_S_ERROR_RESET = 1034
+I_S_MOTOR_ON = 1033
+I_S_PROG_RESET = 1036
+I_START = 1052
+I_STEP = 1051
+I_X_CORD = 1129
+I_Y_CORD = 1145
+I_Z_CORD = 1161
+I_O_CORD = 1177
+I_A_CORD = 1193
+I_T_CORD = 1209
+in_station = 2009
+max_z = 650
+O_ADD_POS = 97
+O_END = 51
+O_GRIPP_CONTROL = 41
+O_GRIPPER_OPEN = 42
+O_HOMING_OK = 52
+O_HOMING_REQ = 49
+O_IN_MOTION = 50
+O_J1_CORD = 129
+O_J2_CORD = 145
+O_J3_CORD = 161
+O_J4_CORD = 177
+O_J5_CORD = 193
+O_J6_CORD = 209
+O_POSITION_AT = 81
+O_ERROR_CODE = 113
+O_PROGRAM_ERROR = 54
+O_VISION_ERROR = 55
+O_RESET_OK = 53
+O_S_AUTO_MODE = 35
+O_S_EMG_STOP = 39
+O_S_ERROR = 34
+O_S_HOLD_MODE = 40
+O_S_MOTOR_ON = 33
+O_S_POWER_ON = 38
+O_S_RUNNING = 36
+O_S_TEACH_MODE = 37
+onlymoveaway = 99
+position = 0
+power_mode = 2013
+reset_flag = 2011
+robot_from = 0
+robot_t_cog_x = 0
+robot_t_cog_y = 0
+robot_t_cog_z = 600
+robot_t_weight = 40
+robot_to = 0
+slow_z = 30
+slower_speed = 10
+station_z = 200
+transO = 0
+transX = 53
+transY = 214
+transz = 0
+USER_HOMING_ON = 2001
+USER_ON_STATION = 2002
+USER_RESET = 2004
+USER_START = 2003
+very_slow_speed = 0.6
+vision_a_cord = -179.9
+vision_o_cord = 176.9
+vision_t_cord = 177.5
+vision_x_cord = 1044.1
+vision_y_cord = -1068.4
+vision_z_cord = -508.7
+.END
+.ROBOTDATA1
+OP_COLDET     ON  -4299
+OP_FIELDBUS   ON  -4657
+OP_CUBIC_S    ON  -4850
+.END

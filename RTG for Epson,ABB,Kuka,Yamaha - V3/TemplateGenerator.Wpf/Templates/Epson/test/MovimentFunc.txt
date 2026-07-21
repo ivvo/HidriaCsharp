@@ -1,0 +1,26 @@
+Function {0}_go{1}
+	' Set location to which the robot is going
+	MemOn {2}_TO_LOC_{3}
+	
+	' Move away
+	{0}_moveAway 
+	
+	' Set power mode 
+	{0}_setPowerMode 
+	
+    {4}
+	
+	Else
+		Error PROGRAM_ERROR
+	EndIf
+	
+	' Go on station
+	{0}_moveOnStation
+	
+	' Reset depart locations
+	Call {0}_resetDepartLocations
+	
+	' Set the depart location as {1} (for the next move -> robot needs to know from where it is starting in the next move) and reset the destination location (depart location is now the destination location)"
+	MemOn {2}_FROM_LOC_{3}
+	MemOff {2}_TO_LOC_{3}
+Fend

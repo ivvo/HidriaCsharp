@@ -1,0 +1,41 @@
+MODULE Module1
+    
+    PROC main()
+        robot_resetDepartLocations;
+        robot_resetDestLocations;
+        !robot_resetFlags;
+        
+        bRobotFromHome := TRUE;
+        
+        !Move Home
+         MoveJ jHome,vFullSpeed,z100,tool0;
+         
+         WHILE TRUE DO
+            robot_Cikel1;
+         ENDWHILE
+                
+    ENDPROC    
+    
+    PROC robot_Cikel1()
+        !robot_goHome;
+    ENDPROC
+
+!Gibi
+{0}	PROC robot_moveOnStation()
+{1}		!Wait for the robot to get on position
+        WaitRob\InPos;
+        WaitRob\ZeroSpeed ;
+
+    	!we are on station
+    	bRobot_onStation := TRUE;
+
+    ENDPROC
+    
+    PROC robot_moveAway()
+        
+        !Read curent positions     
+        jCurPos := CRobt(\Tool:=Tool0\WObj:=wobj0);
+		
+{2}	ENDPROC
+
+ENDMODULE

@@ -1,0 +1,865 @@
+.PROGRAM calibrate_cam() #0; calibration entry
+	;**********************************************************
+	;* FUNCTION: calibration Main program
+	;* 2021/4/21
+	;**********************************************************
+	;IP address, port, timeout of IPC
+	CALL mm_init_skt (192, 168, 1, 100, 50000);input PC address
+	ACCURACY 1 ALWAYS
+	SPEED 200 MM/S ALWAYS
+	POINT CalibLastTool = TOOL ;
+	BREAK
+	TOOL NULL
+	calib_ret = 0
+	;
+	POINT pOutsideStation = CalibStartPos
+	POINT/Z pOutsideStation = TRANS (0, 0, max_z)
+	;JMOVE pOutsideStation;move above start point
+	JMOVE CalibStartPos;move to start point
+	BREAK
+	;
+	TWAIT 2
+	CALL vis_open
+	TWAIT 0.1
+	calib_status = 0 ;
+	;call vis_command_901(ret0)
+	;if ret0<0 goto endl
+loop:
+	CALL mm_calib (calib_status, calib_ret)
+	IF calib_ret == calib_move_ok THEN
+		JMOVE TRANS (vis_calib_pos[1], vis_calib_pos[2], vis_calib_pos[3], vis_calib_pos[4], vis_calib_pos[5], vis_calib_pos[6])
+		BREAK
+		TWAIT 1
+		calib_status = 1 ;
+	ELSE
+		PRINT "Error: IPC error, Code: ", calib_ret
+		GOTO endl
+	END
+	IF vis_calib_state == 0 GOTO loop
+endl:
+	JMOVE CalibStartPosR;
+	TOOL CalibLastTool;
+	CALL vis_close
+	BREAK
+.END
+.PROGRAM vision_sample_1() #0; sample
+	;**********************************************************
+	;* FUNCTION: sample program with Vision
+	;* 2021/4/21
+	;**********************************************************
+	ACCURACY 10 ALWAYS
+	SPEED 5 ALWAYS
+	;HOME
+	;BREAK
+	pos_num = 0
+	CALL mm_init_skt (192, 168, 1, 100, 50000)
+	TWAIT 1
+	;switch recipe if needed
+	;call mm_switch_model(1,1)
+	CALL mm_start_vis (1, 1, 2, #start_vis)
+	TWAIT 1
+	CALL mm_get_visdata (1, pos_num, ret2)
+	IF ret2 <> 1100 THEN
+		HALT
+	END
+	;CALL mm_get_pose (1, &pick1, labell, speed1)
+	;LMOVE pick1
+	;BREAK
+	;HOME
+.END
+.PROGRAM vis_recv() #218;TCP/IP receive data
+	;**********************************************************
+	;* FUNCTION:TCP receive data
+	;* 2021/4/21
+	;**********************************************************
+	vis_ret_recv = -1
+	.retry = 0
+	max_length = 200
+	$recv_string = ""
+	$recv_buf[1] = ""
+	buf_num = 0
+start:
+	TCP_RECV vis_ret_recv, vis_socket, $recv_buf[1], buf_num, tout_recv, max_length
+	;***printing****
+	FOR .i = 1 TO buf_num
+		PRINT "TCP received string = ", $recv_buf[.i]
+	END
+	;***************
+	IF vis_ret_recv < 0 THEN
+		PRINT "Error: TCP_RECV Fault, code ", vis_ret_recv
+		IF .retry < recv_retry THEN
+			.retry = .retry + 1
+			TWAIT 0.05
+			GOTO start
+		ELSE
+			PRINT "Error: TCP_RECV Retry Counter Exceed limit"
+			HALT
+		END
+	END
+	buf_index = 1
+	$recv_string = $recv_buf[buf_index]
+	$recv_string = $DECODE ($recv_buf[1], $str_end, 0)
+	recv_index = 0
+	DO
+		$temp = $DECODE ($recv_string, ",", 0) ;
+		recv_data[recv_index] = VAL ($temp)  ;
+		IF $recv_string == "" GOTO over
+		$temp = $DECODE ($recv_string, ",", 1)
+		IF buf_index < buf_num AND LEN ($recv_string) < 20 THEN
+			$recv_string = $recv_string + $recv_buf[buf_index + 1]
+			buf_index = buf_index + 1
+		END
+		recv_index = recv_index + 1
+	UNTIL $recv_string == ""
+over:
+.END
+.PROGRAM vis_send() #227;TCP/IP send data
+	;**********************************************************
+	;* FUNCTION:TCP send data
+	;* 2021/4/21
+	;**********************************************************
+	.buf_num = 1
+	vis_ret_send = -1
+	.retry = 0
+start:
+	IF vis_socket > 0 THEN
+		IF $vis_data[1] <> "" THEN
+			TCP_SEND vis_ret_send, vis_socket, $vis_data[1], .buf_num, tout_send
+			PRINT "TCP send string = ", $vis_data[1]
+		ELSE
+			PRINT "Error  TCP_SEND Null String";
+		END
+	ELSE
+		PRINT "Error: Invalid TCP socket, code ", vis_socket
+		HALT
+	END
+	IF vis_ret_send < 0 THEN
+		.retry = .retry + 1
+		PRINT "Error: TCP_SEND Fault, code ", vis_ret_send
+		IF .retry < send_retry THEN
+			GOTO start
+		ELSE
+			PRINT "Error: TCP_SEND Retry Counter Exceed Limit"
+			HALT
+		END
+	END
+.END
+.PROGRAM vis_open() #27;TCP/IP socket connect
+	;**********************************************************
+	;* FUNCTION:TCP socket connect
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_disconnect
+	TCP_CONNECT vis_socket, vis_port, vis_ip[1], tout_open
+	IF vis_socket <= 0 THEN
+		PRINT "Error: TCP Connect Fault, code ", vis_socket
+		HALT
+	ELSE
+		PRINT "Status: TCP Socket Open Successfully...socket ", vis_socket
+	END
+.END
+.PROGRAM vis_close() #10;TCP/IP socket close
+	;**********************************************************
+	;* FUNCTION:TCP socket close
+	;* 2021/4/21
+	;**********************************************************
+	vis_ret_close = -1 ;
+	IF vis_socket > 0 THEN
+		TCP_CLOSE vis_ret_close, vis_socket; TCP_CLOSE
+	ELSE
+		PRINT "Invalid TCP socket, code ", vis_socket
+	END
+	IF vis_ret_close < 0 THEN
+		PRINT "Error: TCP_CLOSE Fault, code ", vis_ret_close
+	ELSE
+		PRINT "Socket closed succesfully"
+	END
+	vis_socket = 0
+.END
+.PROGRAM vis_disconnect() #30; sockets disconnect all
+	;**********************************************************
+	;* FUNCTION: clear TCP sockets
+	;* 2021/4/21
+	;**********************************************************
+	; Get Status of all open Sockets
+	TCP_STATUS sock_cnt, port_no[0], sock_ids[0], err_cd[0], sub_cd[0], $ip_adrs[0]
+	; Close sockets on specified port
+	FOR .i = 0 TO sock_cnt - 1
+		IF port_no[.i] == vis_port THEN
+			sock_id = sock_ids[.i]
+			TCP_CLOSE .err1, sock_id
+			IF .err1 < 0 THEN
+				PRINT "Error: TCP_CLOSE Fault, code ", .err1
+			ELSE
+				PRINT "Socket disconnected successfully"
+			END
+		END
+	END
+.END
+.PROGRAM mm_calib(.status,.ret) #209;calibration function
+	;**********************************************************
+	;* FUNCTION: 701 command to calibrate camera
+	;* 2021/4/21
+	;**********************************************************
+	.ret = 0
+	FOR .i = 1 TO 6
+		temp_pose[.i] = 0
+		temp_pose2[.i] = 0
+	END
+	POINT CalibCommandPos = HERE - TOOL
+	DECOMPOSE temp_pose[1] = CalibCommandPos
+	$send_pose = $ENCODE (temp_pose[1])
+	FOR .i = 2 TO 6
+		$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+	END
+	POINT #CalibCommandPos = HERE
+	DECOMPOSE temp_pose2[1] = #CalibCommandPos
+	FOR .i = 1 TO 6
+		$send_pose = $send_pose + "," + $ENCODE (temp_pose2[.i])
+	END
+	$vis_data[1] = "701" + "," + $ENCODE (.status) + "," + $send_pose + $str_end
+	CALL vis_send
+listen:
+	CALL vis_recv
+	IF .status == 0 AND vis_ret_recv < 0 THEN
+		GOTO listen
+	END
+	IF recv_data[0] <> 701 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	.ret = recv_data[1]
+	vis_calib_state = recv_data[2]
+	vis_calib_pos[1] = recv_data[3]
+	vis_calib_pos[2] = recv_data[4]
+	vis_calib_pos[3] = recv_data[5]
+	vis_calib_pos[4] = recv_data[6]
+	vis_calib_pos[5] = recv_data[7]
+	vis_calib_pos[6] = recv_data[8]
+	;vis_calib_j[1] = recv_data[9]
+	;vis_calib_j[2] = recv_data[10]
+	;vis_calib_j[3] = recv_data[11]
+	;vis_calib_j[4] = recv_data[12]
+	;vis_calib_j[5] = recv_data[13]
+	;vis_calib_j[6] = recv_data[14]
+	RETURN
+.END
+.PROGRAM mm_get_dolist() #0;get output signal list
+	;**********************************************************
+	;* FUNCTION: 206 command to get output signal list
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "206" + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 206 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_senddo_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	io_index = 0
+	WHILE recv_data[io_index + 2] <> -1 DO
+		setdo[io_index] = recv_data[2 + io_index]
+		io_index = io_index + 1
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_get_jps(.index,.#targetpos,.label,.speed) #0
+	;**********************************************************
+	;* FUNCTION:save jps into user variable
+	;* 2021/8/21
+	;**********************************************************
+	IF vis_pos_j1[.index] == 0 AND vis_pos_j2[.index] == 0 AND vis_pos_j3[.index] == 0 AND vis_pos_j4[.index] == 0 AND vis_pos_j5[.index] == 0 AND vis_pos_j6[.index] == 0 THEN
+		PRINT "Error: Pick point j1-j6 value are empty "
+		HALT
+	ELSE
+		POINT .#targetpos = #PPOINT (vis_pos_j1[.index], vis_pos_j2[.index], vis_pos_j3[.index], vis_pos_j4[.index], vis_pos_j5[.index], vis_pos_j6[.index])
+		.label = vis_pos_label[.index]
+		.speed = vis_pos_spd[.index]
+		vis_pos_j1[.index] = 0
+		vis_pos_j2[.index] = 0
+		vis_pos_j3[.index] = 0
+		vis_pos_j4[.index] = 0
+		vis_pos_j5[.index] = 0
+		vis_pos_j6[.index] = 0
+		vis_pos_label[.index] = 0
+		vis_pos_spd[.index] = 0
+	END
+.END
+.PROGRAM mm_get_status(.ret) #0;check software status
+	;**********************************************************
+	;* FUNCTION: 901 command to check software status
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	.ret = 0
+	$vis_data[1] = "901" + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 901 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	.ret = recv_data[1]
+	CALL vis_close
+	RETURN
+.END
+.PROGRAM mm_get_dy_data(.job,.pos_num,.ret) #0;get vision dynamic data
+	;**********************************************************
+	;* FUNCTION: 110 command to get vision dynamic data
+	;* procedure out in vision project uses port type "dynamic"
+	;* 2022/6/17
+	;**********************************************************
+	CALL vis_open
+	.ret = 0
+	.pos_num = 0
+resend:
+	$vis_data[1] = "110" + "," + $ENCODE (.job) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 110 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	.ret = recv_data[1]
+	.count = recv_data[3]
+	IF recv_data[1] == vis_has_pose THEN
+		vis_pos_x[.pos_num + 1] = recv_data[4]
+		vis_pos_y[.pos_num + 1] = recv_data[5]
+		vis_pos_z[.pos_num + 1] = recv_data[6]
+		vis_pos_o[.pos_num + 1] = recv_data[7]
+		vis_pos_a[.pos_num + 1] = recv_data[8]
+		vis_pos_t[.pos_num + 1] = recv_data[9]
+		vis_pos_label[.pos_num + 1] = recv_data[10]
+		FOR .i = 1 TO recv_data[3]
+			vis_custom_data[.pos_num + 1, .i] = recv_data[11 + .i - 1]
+		END
+		.pos_num = .pos_num + 1
+		IF recv_data[2] == 0 GOTO resend
+	END
+	CALL vis_close
+	RETURN
+.END
+.PROGRAM mm_init_skt(.ip1,.ip2,.ip3,.ip4,.port) #28;TCP/IP initial
+	;**********************************************************
+	;* FUNCTION:Vision variable initialization
+	;* 2021/4/21
+	;**********************************************************
+	vis_socket = 0
+	;vision comm port number
+	vis_port = .port ;port
+	;vision comm IP address
+	vis_ip[1] = .ip1 ;ip
+	vis_ip[2] = .ip2
+	vis_ip[3] = .ip3
+	vis_ip[4] = .ip4
+	;timeout
+	tout_open = 1
+	tout_send = 1
+	tout_recv = 60 ;60s timeout
+	;vision retry
+	connect_retry = 3
+	send_retry = 1
+	recv_retry = 5;1
+	;string termintor \r
+	$str_end = $CHR (13)
+	;status code
+	vis_has_pose = 1100
+	vis_is_ready = 1101
+	vis_trigger_ok = 1102
+	vis_planpath_ok = 1103
+	vis_set_recp_ok = 1107
+	vis_set_box_ok = 1108
+	viz_finish = 2100
+	viz_cmd_stop = 2101
+	viz_senddo_ok = 2102
+	viz_run_ok = 2103
+	viz_stop_ok = 2104
+	viz_branch_ok = 2105
+	viz_index_ok = 2106
+	viz_outmove_ok = 2107
+	viz_set_prop_ok = 2108
+	viz_get_prop_ok = 2109
+	calib_move_ok = 7101
+.END
+.PROGRAM mm_set_branch(.branch_num,.exit_num) #0;set viz branch
+	;**********************************************************
+	;* FUNCTION: 203 command to set viz branch
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "203" + "," + $ENCODE (.branch_num) + "," + $ENCODE (.exit_num) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 203 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_branch_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_get_plandata(.getpos_type,.pos_num,.vispos_num,.ret) #0
+	;**********************************************************
+	;* FUNCTION: 210 command to get visualmove planned result
+	;* 2022/7/5
+	;**********************************************************
+	size_basicdata = 13
+	size_planresult = 20
+	CALL vis_open
+	.ret = 0
+	.pos_num = 0
+resend:
+	$vis_data[1] = "210" + "," + $ENCODE (.getpos_type) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 210 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	.ret = recv_data[1]
+	vis_pos_vismove[.pos_num + 1] = recv_data[3]
+	IF recv_data[3] == 1 THEN
+		.vispos_num = .pos_num + 1
+	END
+	IF recv_data[1] == viz_finish THEN
+		IF .getpos_type == 2 OR .getpos_type == 4 THEN
+			vis_pos_x[.pos_num + 1] = recv_data[4]
+			vis_pos_y[.pos_num + 1] = recv_data[5]
+			vis_pos_z[.pos_num + 1] = recv_data[6]
+			vis_pos_o[.pos_num + 1] = recv_data[7]
+			vis_pos_a[.pos_num + 1] = recv_data[8]
+			vis_pos_t[.pos_num + 1] = recv_data[9]
+			vis_pos_type[.pos_num + 1] = recv_data[10]
+			vis_pos_tool[.pos_num + 1] = recv_data[11]
+			vis_pos_spd[.pos_num + 1] = recv_data[12]
+		ELSE
+			vis_pos_j1[.pos_num + 1] = recv_data[4]
+			vis_pos_j2[.pos_num + 1] = recv_data[5]
+			vis_pos_j3[.pos_num + 1] = recv_data[6]
+			vis_pos_j4[.pos_num + 1] = recv_data[7]
+			vis_pos_j5[.pos_num + 1] = recv_data[8]
+			vis_pos_j6[.pos_num + 1] = recv_data[9]
+			vis_pos_type[.pos_num + 1] = recv_data[10]
+			vis_pos_tool[.pos_num + 1] = recv_data[11]
+			vis_pos_spd[.pos_num + 1] = recv_data[12]
+		END
+		IF recv_data[3] == 1 THEN
+			IF .getpos_type == 1 OR .getpos_type == 2 THEN
+				num_customdata[.pos_num + 1] = recv_data[size_basicdata]
+				FOR .i = 1 TO recv_data[size_basicdata]
+					vis_custom_data[.pos_num + 1, .i] = recv_data[size_basicdata + .i]
+				END
+			ELSE
+				num_customdata[.pos_num + 1] = recv_data[size_basicdata + size_planresult]
+				FOR .i = 1 TO size_planresult
+					vis_plan_result[.pos_num + 1, .i] = recv_data[size_basicdata + .i - 1]
+				END
+				FOR .i = 1 TO recv_data[size_basicdata + size_planresult]
+					vis_custom_data[.pos_num + 1, .i] = recv_data[size_basicdata + size_planresult + .i]
+				END
+			END
+		END
+		.pos_num = .pos_num + 1
+		IF recv_data[2] == 0 GOTO resend
+	END
+	CALL vis_close
+	RETURN
+.END
+.PROGRAM mm_get_vispath(.job,.getpos_type,.pos_num,.vispos_num,.ret) #0;get vis planpath
+	;**********************************************************
+	;* FUNCTION: 105 command to get vis planned path
+	;* 2022/11/25
+	;**********************************************************
+	CALL vis_open
+	.ret = 0
+	.pos_num = 0
+resend:
+	$vis_data[1] = "105" + "," + $ENCODE (.job) + "," + $ENCODE (.getpos_type) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 105 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	.ret = recv_data[1]
+	IF recv_data[1] == vis_planpath_ok THEN
+		FOR .i = 1 TO recv_data[3]
+			IF .getpos_type == 2 THEN
+				vis_pos_x[.pos_num + .i] = recv_data[5 + (.i - 1) * 8]
+				vis_pos_y[.pos_num + .i] = recv_data[6 + (.i - 1) * 8]
+				vis_pos_z[.pos_num + .i] = recv_data[7 + (.i - 1) * 8]
+				vis_pos_o[.pos_num + .i] = recv_data[8 + (.i - 1) * 8]
+				vis_pos_a[.pos_num + .i] = recv_data[9 + (.i - 1) * 8]
+				vis_pos_t[.pos_num + .i] = recv_data[10 + (.i - 1) * 8]
+				vis_pos_label[.pos_num + .i] = recv_data[11 + (.i - 1) * 8]
+				vis_pos_spd[.pos_num + .i] = recv_data[12 + (.i - 1) * 8]
+			ELSE
+				vis_pos_j1[.pos_num + .i] = recv_data[5 + (.i - 1) * 8]
+				vis_pos_j2[.pos_num + .i] = recv_data[6 + (.i - 1) * 8]
+				vis_pos_j3[.pos_num + .i] = recv_data[7 + (.i - 1) * 8]
+				vis_pos_j4[.pos_num + .i] = recv_data[8 + (.i - 1) * 8]
+				vis_pos_j5[.pos_num + .i] = recv_data[9 + (.i - 1) * 8]
+				vis_pos_j6[.pos_num + .i] = recv_data[10 + (.i - 1) * 8]
+				vis_pos_label[.pos_num + .i] = recv_data[11 + (.i - 1) * 8]
+				vis_pos_spd[.pos_num + .i] = recv_data[12 + (.i - 1) * 8]
+			END
+		END
+		.pos_num = .pos_num + recv_data[3]
+		IF recv_data[2] == 0 GOTO resend
+		.vispos_num = recv_data[4]
+	END
+	CALL vis_close
+	RETURN
+.END
+.PROGRAM mm_get_property(.group_num,.return_value) #0;get task property
+	;**********************************************************
+	;* FUNCTION: 207 command to get task property
+	;* 2022/6/17
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "207" + "," + $ENCODE (.group_num) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 207 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_get_prop_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	.return_value = recv_data[2]
+	CALL vis_close
+.END
+.PROGRAM mm_set_index(.skill_num,.index_num) #0;set viz index
+	;**********************************************************
+	;* FUNCTION: 204 command to set viz index
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "204" + "," + $ENCODE (.skill_num) + "," + $ENCODE (.index_num) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 204 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_index_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_switch_model(.job,.model_number) #0;switch vision recipe
+	;**********************************************************
+	;* FUNCTION: 103 command to switch vision recipe
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "103" + "," + $ENCODE (.job) + "," + $ENCODE (.model_number) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 103 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> vis_set_recp_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_start_viz(.sendpos_type,.#start_viz) #0;run viz
+	;**********************************************************
+	;* FUNCTION: 201 command to run viz
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	FOR .i = 1 TO 6
+		temp_pose[.i] = 0
+	END
+	IF .sendpos_type == 0 THEN
+		$send_pose = "0,0,0,0,0,0"
+	ELSE
+		IF .sendpos_type == 1 THEN
+			POINT #CalibCommandPos = HERE
+			DECOMPOSE temp_pose[1] = #CalibCommandPos
+			$send_pose = $ENCODE (temp_pose[1])
+			FOR .i = 2 TO 6
+				$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+			END
+			POINT CalibCommandPos = HERE - TOOL
+			DECOMPOSE temp_pose[1] = CalibCommandPos
+			FOR .i = 1 TO 6
+				$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+			END
+		ELSE
+			IF .sendpos_type == 2 THEN
+				DECOMPOSE temp_pose[1] = .#start_viz
+				$send_pose = $ENCODE (temp_pose[1])
+				FOR .i = 2 TO 6
+					$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+				END
+			ELSE
+				PRINT "Error: Input argument out of range "
+			END
+		END
+	END
+	$vis_data[1] = "201" + "," + $ENCODE (.sendpos_type) + "," + $send_pose + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 201 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_run_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_set_property(.group_num) #0;set task property
+	;**********************************************************
+	;* FUNCTION: 208 command to set task property
+	;* 2022/6/17
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "208" + "," + $ENCODE (.group_num) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 208 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_set_prop_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_stop_viz() #0;stop viz
+	;**********************************************************
+	;* FUNCTION: 202 command to stop viz
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "202" + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 202 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_stop_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_set_boxsize(.job,.length,.width,.height) #0;set object size to vision
+	;**********************************************************
+	;* FUNCTION: 501 command to set object size to vision project
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	$vis_data[1] = "501" + "," + $ENCODE (.job) + "," + $ENCODE (.length) + "," + $ENCODE (.width) + "," + $ENCODE (.height) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 501 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> vis_set_box_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_start_vis(.job,.pos_num_need,.sendpos_type,.#start_vis) #3;run vision project
+	;**********************************************************
+	;* FUNCTION: 101 command to run vision project
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	FOR .i = 1 TO 6
+		temp_pose[.i] = 0
+	END
+	IF .sendpos_type == 0 THEN
+		$send_pose = "0,0,0,0,0,0"
+	ELSE
+		IF .sendpos_type == 1 THEN
+			POINT #CalibCommandPos = HERE
+			DECOMPOSE temp_pose[1] = #CalibCommandPos
+			$send_pose = $ENCODE (temp_pose[1])
+			FOR .i = 2 TO 6
+				$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+			END
+			POINT CalibCommandPos = HERE - TOOL
+			DECOMPOSE temp_pose[1] = CalibCommandPos
+			FOR .i = 1 TO 6
+				$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+			END
+		ELSE
+			IF .sendpos_type == 2 THEN
+				POINT CalibCommandPos = HERE - TOOL
+				DECOMPOSE temp_pose[1] = CalibCommandPos
+				$send_pose = $ENCODE (temp_pose[1])
+				FOR .i = 2 TO 6
+					$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+				END
+			ELSE
+				IF .sendpos_type == 3 THEN
+					POINT #CalibCommandPos = .#start_vis
+					DECOMPOSE temp_pose[1] = #CalibCommandPos
+					$send_pose = $ENCODE (temp_pose[1])
+					FOR .i = 2 TO 6
+						$send_pose = $send_pose + "," + $ENCODE (temp_pose[.i])
+					END
+				ELSE
+					PRINT "Error: Input argument out of range"
+				END
+			END
+		END
+	END
+	$vis_data[1] = "101" + "," + $ENCODE (.job) + "," + $ENCODE (.pos_num_need) + "," + $ENCODE (.sendpos_type) + "," + $send_pose + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 101 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> vis_trigger_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_set_pos(.&pos) #0;set robot pose to outer_move
+	;**********************************************************
+	;* FUNCTION: 502 command to set robot pose to outer_move
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	DECOMPOSE .pt[1] = .pos
+	$vis_data[1] = "502" + "," + $ENCODE (.pt[1]) + "," + $ENCODE (.pt[2]) + "," + $ENCODE (.pt[3]) + "," + $ENCODE (.pt[4]) + "," + $ENCODE (.pt[5]) + "," + $ENCODE (.pt[6]) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 502 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	IF recv_data[1] <> viz_outmove_ok THEN
+		PRINT "Error: IPC error, Code: ", recv_data[1]
+		HALT
+	END
+	CALL vis_close
+.END
+.PROGRAM mm_get_vizdata(.getpos_type,.pos_num,.vispos_num,.ret) #0;get viz result
+	;**********************************************************
+	;* FUNCTION: 205 command to get viz result
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	.ret = 0
+	.pos_num = 0
+resend:
+	$vis_data[1] = "205" + "," + $ENCODE (.getpos_type) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 205 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	.ret = recv_data[1]
+	IF recv_data[1] == viz_finish THEN
+		FOR .i = 1 TO recv_data[3]
+			IF .getpos_type == 2 THEN
+				vis_pos_x[.pos_num + .i] = recv_data[5 + (.i - 1) * 8]
+				vis_pos_y[.pos_num + .i] = recv_data[6 + (.i - 1) * 8]
+				vis_pos_z[.pos_num + .i] = recv_data[7 + (.i - 1) * 8]
+				vis_pos_o[.pos_num + .i] = recv_data[8 + (.i - 1) * 8]
+				vis_pos_a[.pos_num + .i] = recv_data[9 + (.i - 1) * 8]
+				vis_pos_t[.pos_num + .i] = recv_data[10 + (.i - 1) * 8]
+				vis_pos_label[.pos_num + .i] = recv_data[11 + (.i - 1) * 8]
+				vis_pos_spd[.pos_num + .i] = recv_data[12 + (.i - 1) * 8]
+			ELSE
+				vis_pos_j1[.pos_num + .i] = recv_data[5 + (.i - 1) * 8]
+				vis_pos_j2[.pos_num + .i] = recv_data[6 + (.i - 1) * 8]
+				vis_pos_j3[.pos_num + .i] = recv_data[7 + (.i - 1) * 8]
+				vis_pos_j4[.pos_num + .i] = recv_data[8 + (.i - 1) * 8]
+				vis_pos_j5[.pos_num + .i] = recv_data[9 + (.i - 1) * 8]
+				vis_pos_j6[.pos_num + .i] = recv_data[10 + (.i - 1) * 8]
+				vis_pos_label[.pos_num + .i] = recv_data[11 + (.i - 1) * 8]
+				vis_pos_spd[.pos_num + .i] = recv_data[12 + (.i - 1) * 8]
+			END
+		END
+		.pos_num = .pos_num + recv_data[3]
+		IF recv_data[2] == 0 GOTO resend
+		.vispos_num = recv_data[4]
+	END
+	CALL vis_close
+	RETURN
+.END
+.PROGRAM mm_get_visdata(.job,.pos_num,.ret) #3;get vision result
+	;**********************************************************
+	;* FUNCTION: 102 command to get vision result
+	;* 2021/4/21
+	;**********************************************************
+	CALL vis_open
+	.ret = 0
+	.pos_num = 0
+resend:
+	$vis_data[1] = "102" + "," + $ENCODE (.job) + $str_end
+	CALL vis_send
+	CALL vis_recv
+	IF recv_data[0] <> 102 THEN
+		PRINT "Error: CMD error"
+		HALT
+	END
+	.ret = recv_data[1]
+	IF recv_data[1] == vis_has_pose THEN
+		FOR .i = 1 TO recv_data[3]
+			vis_pos_x[.pos_num + .i] = recv_data[5 + (.i - 1) * 8]
+			vis_pos_y[.pos_num + .i] = recv_data[6 + (.i - 1) * 8]
+			vis_pos_z[.pos_num + .i] = recv_data[7 + (.i - 1) * 8]
+			vis_pos_o[.pos_num + .i] = recv_data[8 + (.i - 1) * 8]
+			vis_pos_a[.pos_num + .i] = recv_data[9 + (.i - 1) * 8]
+			vis_pos_t[.pos_num + .i] = recv_data[10 + (.i - 1) * 8]
+			vis_pos_label[.pos_num + .i] = recv_data[11 + (.i - 1) * 8]
+			vis_pos_spd[.pos_num + .i] = recv_data[12 + (.i - 1) * 8]
+		END
+		.pos_num = .pos_num + recv_data[3]
+		IF recv_data[2] == 0 GOTO resend
+	END
+	CALL vis_close
+	RETURN
+.END
+.PROGRAM mm_get_pose(.index,.&targetpos,.label,.speed) #1
+	;**********************************************************
+	;* FUNCTION:save pose into user variable
+	;* 2021/8/21
+	;**********************************************************
+	IF vis_pos_x[.index] == 0 AND vis_pos_y[.index] == 0 AND vis_pos_z[.index] == 0 AND vis_pos_o[.index] == 0 AND vis_pos_a[.index] == 0 AND vis_pos_t[.index] == 0 THEN
+		PRINT "Error: Pick point XYZOAT value is empty "
+		HALT
+	ELSE
+		POINT .targetpos = TRANS (vis_pos_x[.index], vis_pos_y[.index], vis_pos_z[.index], vis_pos_o[.index], vis_pos_a[.index], vis_pos_t[.index])
+		.label = vis_pos_label[.index]
+		.speed = vis_pos_spd[.index]
+		vis_pos_x[.index] = 0
+		vis_pos_y[.index] = 0
+		vis_pos_z[.index] = 0
+		vis_pos_o[.index] = 0
+		vis_pos_a[.index] = 0
+		vis_pos_t[.index] = 0
+		vis_pos_label[.index] = 0
+		vis_pos_spd[.index] = 0
+	END
+.END

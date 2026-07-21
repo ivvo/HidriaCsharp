@@ -1,0 +1,46 @@
+MODULE {0}_Motion
+{1}
+    PROC {0}_moveAway()      
+        ! Set power mode
+ 	    robot_setPowerMode;
+        
+        !Read curent positions, change tool1 with the tool you are using
+        jCurPos := CRobt(\Tool:=tool0\WObj:=wobj0);
+        
+    	If bRobot_onStation = TRUE THEN
+ 
+{2}         		ELSE                   
+    			error_ProgramError("Function {0}_moveAway");
+    		ENDIF
+			
+			! We are not on station anymore
+			bRobot_onStation := FALSE;
+    	ENDIF
+    	
+    	If bRobotLocalHomingFlag = FALSE Then
+    		! Set all stations as free
+    		!robot_stationsFree;
+        ENDIF   
+    ENDPROC
+	
+    PROC {0}_moveOnStation() 
+		! Set power mode
+        robot_setPowerMode;	
+        
+    	! Go on the station only if bit is set
+    	If diRobotOnStation = 1 then 	
+{3}         	ELSE                   
+    			error_ProgramError("Function {0}_moveOnStation");
+    		ENDIF
+			
+			!Wait for the robot to get on position
+			WaitRob\InPos;
+			WaitRob\ZeroSpeed ;
+
+			!we are on station
+			bRobot_onStation := TRUE;
+    	ENDIF
+
+    ENDPROC
+	
+{4}ENDMODULE

@@ -1,0 +1,4 @@
+Function {0}_resetFlags		'reset INTERNAL memory bits
+	MemOff {1}_LOCAL_HOMING_FLAG
+	MemOff {1}_LOCAL_RESET_FLAG
+Fend

@@ -1,0 +1,54 @@
+Function {0}_testTask
+	
+	CP On
+	Wait 0.5
+	Power High
+	Wait 0.5
+		
+	additionalPos = 1
+	gripper = 0.4
+
+	Call {0}_goHome()
+
+	Do While True
+
+		Print Tmr(0)
+		TmReset 0
+			
+{2}
+
+	Loop		
+Fend
+
+Function {0}_testAll
+
+	Byte i
+	Byte j
+	Byte pos
+
+	CP On
+	Wait 0.5
+	Power Low  'Set to low for first test
+	Wait 0.5
+		
+	additionalPos = 1
+		
+	For i = 0 To {1}
+		For j = 0 To {1}
+			pos = i
+			GoSub {0}_goPosition
+			pos = j
+			GoSub {0}_goPosition
+		Next
+	Next
+	Quit All
+	
+	{0}_goPosition:
+		Select pos
+			Case 0
+				Call robot_goHome()
+{3}
+		Send
+	Return
+	
+Fend

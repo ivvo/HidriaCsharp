@@ -1,0 +1,52 @@
+'START {0}_homing
+*{0}_homing:
+    '
+    'wait for homing input signal from PLC
+    WAIT I_HOMING = 1       
+    RESET O_HOMING_REQUEST
+    homing_flag = 1
+    '
+    'check TOOL state (OPEN or CLOSED)
+    'GOSUB *checkToolState  
+    '
+    'call the function to find a known point that the robot is currently closest to
+    GOSUB *findClosestPoint
+    '
+    'set in motion output
+    SET O_IN_MOTION 
+    '
+    'set the PositionFrom signal for moveAway function
+    SELECT closestPoint
+{2}
+        CASE ELSE
+            'output error 
+            SET O_PROGRAM_ERROR
+            HOLD
+            '
+    END SELECT
+    '
+    'move robot to HOME position
+    GOSUB *{0}_goHome
+    WAIT ARM
+    '
+    'send the current location to the PLC
+    SOW(2)=0 
+    'reset in motion output
+    RESET O_IN_MOTION
+    'set motion end output
+    SET O_END
+    'set homing ok output
+    SET O_HOMING_OK
+    'set reset ok output
+    SET O_RESET_OK
+    'reset homing flag 
+    homing_flag = 0
+    ' set all stations as free
+    GOSUB *{0}_stationsFree
+    '
+    'Start main task
+    'GOSUB *{0}_mainTask
+    GOSUB *{0}_testTask
+    'GOSUB *{0}_testAll
+    '
+RETURN

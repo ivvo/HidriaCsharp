@@ -16,6 +16,7 @@ namespace TemplateGenerator.Core.Classes
     class Template
     {
         public static bool FormatsLoaded = false;
+        public static string LoadError = null;
         //EPSON//
         private static readonly string EpsonHeaderFormatEng = "";
         private static readonly string EpsonMainFuncFormatEng = "";
@@ -221,10 +222,11 @@ namespace TemplateGenerator.Core.Classes
                 KawasakiCOMMENT = File.ReadAllText("./Templates/Kawasaki/KawasakiCOMMENT______().txt");
 
             }
-            catch
+            catch (Exception ex)
             {
-                // Formats not loaded
+                // Formats not loaded - shrani sporočilo, da ga lahko prikažemo uporabniku
                 FormatsLoaded = false;
+                LoadError = ex.Message;
             }
         }
 

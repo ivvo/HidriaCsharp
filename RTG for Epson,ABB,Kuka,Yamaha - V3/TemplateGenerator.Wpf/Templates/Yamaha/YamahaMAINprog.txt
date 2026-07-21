@@ -1,0 +1,20 @@
+[PGM]
+NAME=MAIN
+PGN=1
+' --------------------------------------------------------------
+' Project name:     write project number and name (ex. 8601-089A - LamtecOS BMW GEN6 SSM)
+' Station name:     write station namber (ex. BT1)
+' Robot task:       write short task description (ex. Moving fresh and baked rotor stacks)
+' --------------------------------------------------------------
+'
+'
+'
+'
+' switch to Robot program
+SWI <{0}>
+'
+'
+'
+'
+' --------------------------------------------------------------
+' END OF PROGRAM

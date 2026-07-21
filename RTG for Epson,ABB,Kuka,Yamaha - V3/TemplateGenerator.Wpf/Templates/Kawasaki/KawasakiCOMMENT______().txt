@@ -1,0 +1,221 @@
+.PROGRAM Comment___ () ; Comments for IDE. Do not use.
+	; @@@ PROJECT @@@
+	; @@@ PROJECTNAME @@@
+	; KawasakiGeneratedProgram
+	; @@@ HISTORY @@@
+	; @@@ INSPECTION @@@
+	; @@@ CONNECTION @@@
+	; 
+	; 
+	; 
+	; @@@ PROGRAM @@@
+	; MainProg:Main
+	; 0:Documentation_:F
+	; Group:Testing:1
+	; 1:goPosition:F
+	; 1:testAll:F
+	; .n 
+	; .m 
+	; Group:Main:2
+	; 2:Main:F
+	; 2:robot_init:F
+	; 2:robot_homing:F
+	; 2:mainTask:F
+	; .position 
+	; Group:Movements:3
+	; 3:moveAway:F
+	; 3:moveOnStation:F
+	; 3:goHome:F
+{0}
+	; Group:Functions:4
+	; 4:parameters:F
+	; 4:resetFlags:F
+	; 4:resetProfinet:F
+	; 4:resetDestLoc:F
+	; 4:resetDepartLoc:F
+	; 4:stationsFree:F
+	; 4:stationsBusy:F
+	; 4:slowerWorkingMd:F
+	; .spd 
+	; .acc 
+	; .dec 
+	; 4:fullWorkingSpd:F
+	; 4:setPowerMode:F
+	; 4:findClosePoint:F
+	; 4:checkToolState:F
+	; 4:readVisionCord:F
+	; 4:writeJointCord:F
+	; Group:Calibration:5
+	; 5:calibrate_cam:F
+	; 5:vision_sample_1:F
+	; 5:vis_recv:F
+	; .retry 
+	; .i 
+	; 5:vis_send:F
+	; .buf_num 
+	; .retry 
+	; 5:vis_open:F
+	; 5:vis_close:F
+	; 5:vis_disconnect:F
+	; .i 
+	; .err1 
+	; 5:mm_calib:F
+	; .status 
+	; .ret 
+	; .i 
+	; 5:mm_get_dolist:F
+	; 5:mm_get_jps:F
+	; .index 
+	; .label 
+	; .speed 
+	; 5:mm_get_status:F
+	; .ret 
+	; 5:mm_get_dy_data:F
+	; .job 
+	; .pos_num 
+	; .ret 
+	; .count 
+	; .i 
+	; 5:mm_init_skt:F
+	; .ip1 
+	; .ip2 
+	; .ip3 
+	; .ip4 
+	; .port 
+	; 5:mm_set_branch:F
+	; .branch_num 
+	; .exit_num 
+	; 5:mm_get_plandata:F
+	; .getpos_type 
+	; .pos_num 
+	; .vispos_num 
+	; .ret 
+	; .i 
+	; 5:mm_get_vispath:F
+	; .job 
+	; .getpos_type 
+	; .pos_num 
+	; .vispos_num 
+	; .ret 
+	; .i 
+	; 5:mm_get_property:F
+	; .group_num 
+	; .return_value 
+	; 5:mm_set_index:F
+	; .skill_num 
+	; .index_num 
+	; 5:mm_switch_model:F
+	; .job 
+	; .model_number 
+	; 5:mm_start_viz:F
+	; .sendpos_type 
+	; .i 
+	; 5:mm_set_property:F
+	; .group_num 
+	; 5:mm_stop_viz:F
+	; 5:mm_set_boxsize:F
+	; .job 
+	; .length 
+	; .width 
+	; .height 
+	; 5:mm_start_vis:F
+	; .job 
+	; .pos_num_need 
+	; .sendpos_type 
+	; .i 
+	; 5:mm_set_pos:F
+	; .pt 
+	; .pos 
+	; 5:mm_get_vizdata:F
+	; .getpos_type 
+	; .pos_num 
+	; .vispos_num 
+	; .ret 
+	; .i 
+	; 5:mm_get_visdata:F
+	; .job 
+	; .pos_num 
+	; .ret 
+	; .i 
+	; 5:mm_get_pose:F
+	; .index 
+	; .label 
+	; .speed 
+	; .targetpos 
+	; 0:IO_handling.pc:B
+	; @@@ TRANS @@@
+{1}
+	; CalibStartPos start position for MechMind calibration
+	; pOutsideStation variable outside station point
+	; @@@ JOINTS @@@
+	; #pHome
+	; @@@ REALS @@@
+	; @@@ STRINGS @@@
+	; @@@ INTEGER @@@
+	; @@@ SIGNALS @@@
+{2}
+	; gripper_in gripper is in the IN position
+	; homing_flag robot is in the homing process
+	; I_A_CORD Word (16 bit)
+	; I_ADD_POS Word (16 bit)
+	; I_GRIPPER_IN 
+	; I_GRIPPER_OUT 
+	; I_HOMING 
+	; I_O_CORD Word (16 bit)
+	; I_ON_STATION 
+	; I_POSITION_TO Word (16 bit)
+	; I_RESET 
+	; I_S_CYCLE_START 
+	; I_S_ERROR_RESET 
+	; I_S_MOTOR_ON 
+	; I_S_PROG_RESET 
+	; I_START 
+	; I_STEP 
+	; I_T_CORD Word (16 bit)
+	; I_X_CORD Word (16 bit)
+	; I_Y_CORD Word (16 bit)
+	; I_Z_CORD Word (16 bit)
+	; in_station robot is currently in station
+	; O_ADD_POS Word (16 bit)
+	; O_END 
+	; O_GRIPP_CONTROL 
+	; O_GRIPPER_OPEN 
+	; O_HOMING_OK 
+	; O_HOMING_REQ 
+	; O_IN_MOTION 
+	; O_J1_CORD Word (16 bit)
+	; O_J2_CORD Word (16 bit)
+	; O_J3_CORD Word (16 bit)
+	; O_J4_CORD Word (16 bit)
+	; O_J5_CORD Word (16 bit)
+	; O_J6_CORD Word (16 bit)
+	; O_POSITION_AT Word (16 bit)
+	; O_PROGRAM_ERROR 
+	; O_VISION_ERROR 
+	; O_ERROR_CODE Word (16 bit)
+	; O_RESET_OK 
+	; O_S_AUTO_MODE 
+	; O_S_EMG_STOP 
+	; O_S_ERROR 
+ 	; O_S_HOLD_MODE 
+	; O_S_MOTOR_ON 
+	; O_S_POWER_ON 
+	; O_S_RUNNING 
+	; O_S_TEACH_MODE 
+	; power_mode power mode low or high
+	; reset_flag robot is in the reset process
+	; USER_HOMING_ON user controlled input
+	; USER_ON_STATION user controlled input
+	; USER_RESET user controlled input
+	; USER_START user controlled input
+	; @@@ TOOLS @@@
+	; Tool0
+	; Tool1
+	; @@@ BASE @@@
+	; BasePlate
+	; @@@ FRAME @@@
+	; @@@ BOOL @@@
+	; @@@ DEFAULTS @@@
+	; BASE: BasePlate
+	; TOOL: Tool1
+.END

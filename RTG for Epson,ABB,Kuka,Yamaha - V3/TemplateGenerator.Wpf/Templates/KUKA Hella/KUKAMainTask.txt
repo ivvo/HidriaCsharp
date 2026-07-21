@@ -1,0 +1,54 @@
+DEF {0}_mainTask()
+   	;WAIT SEC 0.5
+		
+	LOOP
+		IF diROBOT_RESET == TRUE Then
+			; Reset "reset ok" flag
+			doROBOT_RESET_OK = FALSE
+		   ; Set local reset flag
+			bROBOT_LOCAL_RESET_FLAG = FALSE
+			; Turn off signal for motion end
+			doROBOT_END = FALSE
+			; Set in motion signal
+			doROBOT_IN_MOTION = TRUE
+			; Go home
+			robot_goHome()
+			; Send the current location to the PLC
+			goROBOT_POSITION_AT = 0
+			; Reset in motion signal
+			doROBOT_IN_MOTION  = FALSE
+			; Turn off local reset flag
+			bROBOT_LOCAL_RESET_FLAG = FALSE
+			; Set reset ok signal
+			doROBOT_RESET_OK = TRUE
+			
+		ELSE 
+		   IF diROBOT_START == TRUE Then
+			; Read next position
+			nPosition = giROBOT_POSITION_TO
+			nAdditionalPosition = giROBOT_ADDIT_POS_TO
+		
+			; Turn off signal for motion end. Reset also local end flag
+			doROBOT_END = FALSE
+			
+			; Set in motion signal
+			doROBOT_IN_MOTION = TRUE
+							
+			SWITCH nPosition				
+				{1}
+				Default
+					robot_moveAway()
+			ENDSWITCH
+			
+			; Send the current location to the PLC
+			goROBOT_POSITION_AT = nPosition
+			goROBOT_ADDIT_POS_AT = nAdditionalPosition
+			
+			; Turn off in motion signal
+			doROBOT_IN_MOTION = FALSE
+		   ENDIF
+      ENDIF
+		; Set signal for motion end
+		doROBOT_END = TRUE
+	ENDLOOP
+END

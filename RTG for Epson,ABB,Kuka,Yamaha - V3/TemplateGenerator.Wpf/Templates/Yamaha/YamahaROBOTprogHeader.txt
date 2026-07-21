@@ -1,0 +1,43 @@
+NAME={0}
+PGN={2}
+'
+'---------------ROBOT INITIALISATION PROCESS---------------
+'
+'position variable values, one number for each station (has to match POINT number!)
+{1}
+'
+'SPEED and ACCELERATION of the robot for FAST inbetween station movements (0 - 100%)
+{0}_FULL_SPEED% = 20'80
+{0}_FULL_ACCEL% = 80
+{0}_FULL_DECEL% = 100     	'100 means equal to accel
+'
+'SPEED and ACCELERATION of the robot for SLOW in station movements (0 - 100%)
+{0}_APPROACH_SPEED% = 8
+{0}_APPROACH_ACCEL% = 80
+{0}_APPROACH_DECEL% = 100 	'100 means equal to accel
+'
+{0}_DEPART_SPEED% = 10
+{0}_DEPART_ACCEL% = 80
+{0}_DEPART_DECEL% = 100   	'100 means equal to accel
+'
+'SPEED of the robot for VERY SLOW movement in station for Z_STATION_SLOW offset (0 - 100%)
+ROBOT_VERY_SLOW_SPEED% = 2      'dont change!
+ROBOT_VERY_SLOW_ACCEL% = 20     'dont change!
+ROBOT_VERY_SLOW_DECEL% = 50     'dont change!
+'
+'WEIGHT and INERTIA of the tool mounted on the robot flange
+TOOL_WEIGHT = 25    	    	'Tool weight [kg]
+TOOL_ROT_INERTIA = 1000'500 	'R axis inertia for [(kgm^2)*10^-4] 
+'
+'The general DISTANCE to move outside of a station in Z direction
+Z_STATION_FREE = 180.0
+Z_STATION_SLOW = 10.0   	'dont change!
+'
+'The maximum HEIGHT to move in Z direction
+{0}_MAX_Z = 0.0
+'
+'select shift if robot cordinate shift is used
+S0= 0.000 0.000 0.000 0.000	'add rotation if needed to align robot coordinate system to machine!!
+SHIFT S0
+'
+'

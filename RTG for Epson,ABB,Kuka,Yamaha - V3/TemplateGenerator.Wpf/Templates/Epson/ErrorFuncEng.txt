@@ -1,0 +1,8 @@
+Function robot_errorHandling
+	Wait ErrorOn
+	
+	' Reset in motion
+{0}
+	
+	Quit All
+Fend

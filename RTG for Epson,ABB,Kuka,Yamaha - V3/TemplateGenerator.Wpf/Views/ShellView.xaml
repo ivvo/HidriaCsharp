@@ -33,6 +33,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="10*"/>
             <RowDefinition Height="45"/>
+            <RowDefinition Height="45"/>
         </Grid.RowDefinitions>
 
         <Rectangle Grid.Column="1" HorizontalAlignment="Center" Height="160" Margin="0,15,0,0" Grid.RowSpan="5" Grid.Row="0" Stroke="Gray" Width="296"  Grid.ColumnSpan="2">
@@ -262,6 +263,10 @@
         <Image Grid.Column="6" HorizontalAlignment="Left" VerticalAlignment="Top" Height="136" Grid.RowSpan="4"  Width="183" Source="/Views/Yamaha_YK1200X_Picture_2.png" Margin="99,4,0,0" Grid.ColumnSpan="2" Grid.Row="1"/>
         <Image Grid.Column="5" HorizontalAlignment="Left" VerticalAlignment="Top" Height="170" Grid.RowSpan="6"  Width="240" Source="/Views/202-2025470_robot-industrial-kawasaki-hd-png-download-removebg-preview.png" Margin="273,10,0,0" Grid.ColumnSpan="2"/>
         <Button mvx:Bi.nd="Command ManualButtonCommand" Grid.Row="11" Grid.Column="6" Content="MANUALS" FontSize="15" Margin="170,7,0,8" Grid.ColumnSpan="1"/>
+
+        <!-- Uvoz obstoječega projekta + posodobitev (dodane postaje). Epson/KUKA/ABB; Yamaha/Kawasaki še ni podprt. -->
+        <Button Click="ImportProjectClick" Grid.Row="12" Grid.Column="3" Content="Import Project" FontSize="15" Margin="10,5,5,8"/>
+        <Button Click="UpdateProjectClick" Grid.Row="12" Grid.Column="4" Content="Update Project" FontSize="15" Margin="5,5,10,8"/>
 
     </Grid>
 </views:MvxWpfView>

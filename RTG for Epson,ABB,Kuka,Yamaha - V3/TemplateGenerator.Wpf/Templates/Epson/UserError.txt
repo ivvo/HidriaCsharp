@@ -1,0 +1,28 @@
+ENVT0100,LM:2021/11/05 07:00:02:008,DS:0000000462,CS:30814,MA:C8-D9-D2-AE-3E-19,EI:           
+sRCVersion="7.5.0"
+nNumberOfLabels=5
+Label1 {
+	nError=8000
+	sLabel="PROGRAM_ERROR"
+	sMessage=""
+}
+Label2 {
+	nError=8001
+	sLabel="GRIPPER_ERROR"
+	sMessage=""
+}
+Label3 {
+	nError=8002
+	sLabel="POSITION_ERROR"
+	sMessage=""
+}
+Label4 {
+	nError=8003
+	sLabel="VISION_ERROR"
+	sMessage=""
+}
+Label5 {
+	nError=8004
+	sLabel="TYPE_ERROR"
+	sMessage=""
+}

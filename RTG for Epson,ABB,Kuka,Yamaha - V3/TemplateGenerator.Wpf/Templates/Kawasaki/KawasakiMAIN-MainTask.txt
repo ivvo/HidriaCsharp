@@ -1,0 +1,68 @@
+.PROGRAM mainTask() #0; main loop
+	TWAIT 0.5
+	PRINT "START mainProgram"
+	;
+	;"Main program loop that waits for RESET or START(and position) input from the PLC"
+	WHILE TRUE DO
+		IF SIG (I_RESET) OR SIG (USER_RESET) THEN
+			PRINT "RESET"
+			SIGNAL -O_RESET_OK
+			SIGNAL reset_flag
+			SIGNAL -O_END
+			SIGNAL O_IN_MOTION
+			;
+			;"check TOOL state (OPEN or CLOSED)"
+			CALL checkToolState
+			;"move the robot to HOME position"
+			CALL goHome
+			;
+			BITS O_POSITION_AT, 16 = 0
+			SIGNAL -O_IN_MOTION
+			SIGNAL -reset_flag
+			SIGNAL O_RESET_OK
+			SIGNAL O_END
+			TWAIT 0.1
+			;
+		END
+		;
+		IF SIG (I_START) OR SIG (USER_START) THEN
+			PRINT "START"
+			;"read destination position from PLC"
+			position = BITS (I_POSITION_TO, 16)
+			;addPos = BITS (I_ADD_POS, 16)
+			SIGNAL -O_END
+			SIGNAL O_IN_MOTION
+			;
+			;"check TOOL state (OPEN or CLOSED)"
+			CALL checkToolState
+			;
+			;"send the robot to the destination position"
+			CASE position OF
+				VALUE HomePos:
+					CALL goHome
+					;
+					;
+{0}
+				VALUE onlymoveaway:
+					robot_to = onlymoveaway
+					CALL moveAway
+					BREAK
+					;
+					;
+				ANY :
+					PRINT 2: "ERROR: I_POSITION_TO data invalid"
+					SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+					;
+			END
+			;
+			;"write the current position to PLC"
+			BITS O_POSITION_AT, 16 = position
+			;BITS O_ADD_POS, 16 = addPos
+			SIGNAL -O_IN_MOTION
+			SIGNAL O_END
+		END
+		;
+		;"always use a small time period in loops!"
+		TWAIT 0.02
+	END
+.END

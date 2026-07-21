@@ -1,0 +1,39 @@
+EIO:CFG_1.0:6:1::
+#
+EIO_SIGNAL:
+
+      -Name "oStopWatch" -SignalType "DO" -Label "0"
+
+      -Name "doRobotOEnd" -SignalType "DO"
+
+      -Name "doRobotHomingOK" -SignalType "DO"
+
+      -Name "doRobotHomingRequest" -SignalType "DO"
+
+      -Name "doRobotInMotion" -SignalType "DO"
+
+      -Name "doRobotResetOK" -SignalType "DO"
+
+      -Name "diRobotStep" -SignalType "DI"
+
+      -Name "diRobotOnStation" -SignalType "DI"
+
+      -Name "diRobotStart" -SignalType "DI"
+
+      -Name "diRobotReset" -SignalType "DI"
+
+      -Name "diRobotHoming" -SignalType "DI"
+
+      -Name "diRobotGrifferOppen" -SignalType "DI" 
+	  
+      -Name "diRobotGrifferClosed" -SignalType "DI" 	  
+
+      -Name "goAdditionalPositions" -SignalType "GO"
+
+      -Name "goPositionAt" -SignalType "GO"
+
+      -Name "giRobotPositionTo" -SignalType "GI"
+	  
+      -Name "giAdditionalPos" -SignalType "GI"
+	  
+{0}

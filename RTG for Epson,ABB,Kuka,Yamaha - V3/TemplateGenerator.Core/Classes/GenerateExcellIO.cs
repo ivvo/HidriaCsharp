@@ -126,7 +126,9 @@ namespace TemplateGenerator.Core.Classes
                         {
                             UpdateCellText(path + "//" + "IOTable.xlsx", $"ROBOT_O_{program.Stations[i].RobotStationNameToUpper}_FREE", line + k, "A");
                             UpdateCellText(path + "//" + "IOTable.xlsx", $"Bool", line + k, "B");
-                            UpdateCellNumber(path + "//" + "IOTable.xlsx", $"{firstFreeByte}.{n}", line + k, "C");
+                            // byte.bit naslov (npr. "3.0") je OZNAKA, ne število - zapisati ga kot
+                            // Number bi ga skrčilo na "3" (izguba bita), zato gre skozi UpdateCellText.
+                            UpdateCellText(path + "//" + "IOTable.xlsx", $"{firstFreeByte}.{n}", line + k, "C");
 
                             n++;
                             k++;
@@ -256,7 +258,11 @@ namespace TemplateGenerator.Core.Classes
                 {
                     Cell cell = GetCell(worksheetPart.Worksheet, columnName, rowIndex);
 
-                    cell.CellValue = new CellValue(text);
+                    // Vrednosti so besedilo (oznake, byte.bit naslovi kot "3.0" ipd.). Če ostane
+                    // cell.CellValue nastavljen HKRATI z InlineString, dobi celica neveljaven <v>
+                    // poleg <is> in Excel javi "najdena nečitljiva vsebina / popravljeno". Zato
+                    // CellValue ponastavimo na null in besedilo zapišemo izključno kot InlineString.
+                    cell.CellValue = null;
 
                     //cell.DataType = new EnumValue<CellValues>(CellValues.Number);
                     cell.DataType = new EnumValue<CellValues>(CellValues.InlineString);

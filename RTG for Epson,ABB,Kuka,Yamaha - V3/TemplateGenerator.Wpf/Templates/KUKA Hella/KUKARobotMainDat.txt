@@ -1,0 +1,22 @@
+&ACCESS RVP
+&REL 74
+&PARAM DISKPATH = KRC:\R1\Program
+DEFDAT  MAIN PUBLIC
+; Speed from 1 to 100%, LIN speed 0 to 2 m/s
+GLOBAL CONST INT nROBOT_SPEED=80 ;     !Keep it low for testing  
+GLOBAL CONST REAL nROBOT_LIN_SPEED=1.60000
+  
+; Accel from 1 to 100
+GLOBAL CONST INT nROBOT_ACCEL=80 ; 
+  
+; Speed from 1 to 100, acceleration and deceleration from 1 to 100 of the robot in slower working mode !!!Ce sploh rabim
+GLOBAL CONST INT nROBOT_SLOW_PTP_SPEED=40 ; 
+GLOBAL CONST REAL nROBOT_SLOW_LIN_SPEED=0.80000 ;  
+GLOBAL CONST INT nROBOT_DEPART_ACCEL=40 ; 
+  
+; Speed from 1 to 100, acceleration and deceleration from 1 to 100 of the robot in LOW POWER working mode
+GLOBAL CONST INT nROBOT_LOW_POWER_SPEED=20 ; 
+GLOBAL CONST REAL nROBOT_LOW_PWR_LIN_SPEED=0.500000
+GLOBAL CONST INT nROBOT_LOW_POWER_ACCEL=40 ; 
+
+ENDDAT

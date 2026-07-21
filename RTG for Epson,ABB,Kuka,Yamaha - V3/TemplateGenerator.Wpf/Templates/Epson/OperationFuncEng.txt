@@ -1,0 +1,73 @@
+Function {0}_mainTask
+	Robot {2}
+	
+	' Turn on CP globally
+	CP On
+	Wait 0.5
+	
+	Integer position
+	
+	Do While True
+		if Sw({1}_I_RESET) = on then
+			' Reset "reset ok" flag
+			Off {1}_O_RESET_OK
+			' Set local reset flag
+			MemOn {1}_LOCAL_RESET_FLAG
+			' Turn off signal for motion end
+			Off {1}_O_END
+			' Set in motion signal
+			On {1}_O_IN_MOTION
+			' Go home
+			Call {0}_goHome
+			' Send the current location to the PLC
+			Out {1}_O_POSITION_AT, 0
+			' Reset in motion signal
+			Off {1}_O_IN_MOTION
+			' Turn off local reset flag
+			MemOff {1}_LOCAL_RESET_FLAG
+			' Set reset ok signal
+			On {1}_O_RESET_OK
+			' Set all station as free
+			Call robot_stationsFree
+			Wait 0.1
+
+		ElseIf Sw({1}_I_START) = On then
+			' Turn on CP globally
+			If CP <> On Then
+				CP On
+			EndIf
+			
+			' Read next position
+			position = In({1}_I_POSITION_TO)
+			additionalPos = In(ROBOT_I_ADDITIONAL_POS)	
+			
+			' Turn off signal for motion end
+			Off {1}_O_END
+			
+			' Set in motion signal
+			On {1}_O_IN_MOTION
+			
+			Select position
+				{3}			
+				Default
+					Call {0}_moveAway
+					
+				' Set cp barrier in both power modes
+				Call robot_CPBarrier(ROBOT_CP_TURN_OFF)
+			Send
+			
+			' Send the current location to the PLC
+			Out {1}_O_POSITION_AT, position
+			
+			' Send the current additional position to the PLC
+			Out {1}_O_ADDITIONAL_POS, additionalPos
+			
+			
+			' Turn off in motion signal
+			Off {1}_O_IN_MOTION
+		EndIf
+		' Set signal for motion end
+		On {1}_O_END
+		'Wait 0.1
+	Loop
+Fend

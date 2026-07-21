@@ -1,0 +1,93 @@
+MODULE OtherFunctions   
+    ! Pallet global variables
+    VAR num nColumnGlobal{{10}};
+    VAR num nRowGlobal{{10}};
+    VAR robtarget jPallet{{10}};
+    VAR robtarget jPalletTemp{{10}};
+    VAR robtarget jRow{{10}};
+    VAR robtarget jColumn{{10}};    
+    var num X;
+       
+    PROC CreatePallet(num nIndex, robtarget jP1, robtarget jP2, robtarget jP3, num nColumn, num nRow)
+        
+        nColumnGlobal{{nIndex}} := nColumn;
+        nRowGlobal{{nIndex}} := nRow;
+        
+        jPallet{{nIndex}} := jP1;
+        
+        jRow{{nIndex}}.trans.x := (jP3.trans.x - jP1.trans.x)/(nRow -1);
+        jRow{{nIndex}}.trans.y := (jP3.trans.y - jP1.trans.y)/(nRow -1);
+        jRow{{nIndex}}.trans.z := (jP3.trans.z - jP1.trans.z)/(nRow -1);
+        
+        jColumn{{nIndex}}.trans.x := (jP2.trans.x -jP1.trans.x)/(nColumn -1);
+        jColumn{{nIndex}}.trans.y := (jP2.trans.y -jP1.trans.y)/(nColumn -1);
+        jColumn{{nIndex}}.trans.z := (jP2.trans.z -jP1.trans.z)/(nColumn -1);
+    ENDPROC
+                                                                    
+    PROC GetPalletTarget(var num nIndex,var num nPos)
+        VAR num nPalletSize;
+        VAR num nRezColumn;
+        VAR num nRezRow;
+        VAR num nTempX;
+        VAR num nY;
+        VAR num nX; 
+
+		nRezRow := 0;
+		nRezColumn := 0;
+		nTempX := nColumnGlobal{{nIndex}};
+        
+        nY := nPos;
+        nX := nPos;
+        
+        nPalletSize := nColumnGlobal{{nIndex}} * nRowGlobal{{nIndex}};
+        
+        IF (nPos <= 0) OR (nPos > nPalletSize) THEN
+            error_WrongAdditionalNumber("Function GetPalletTarget, Wrong Pallet number");
+        ELSE       
+            IF nX <= nColumnGlobal{{nIndex}} THEN
+                nRezColumn := nX -1;
+            ELSE
+                WHILE nX > nColumnGlobal{{nIndex}} DO
+                    IF nx <= nColumnGlobal{{nIndex}} THEN
+                        nRezColumn := nx -1;
+                    ELSE
+                        nX := nX - nColumnGlobal{{nIndex}};
+                        nRezColumn := nX -1;
+                    ENDIF
+                ENDWHILE
+            ENDIF
+            
+            IF nY < nTempX THEN
+                nRezRow :=0;
+            ELSE
+                WHILE nY > ntempX DO
+                    nTempX := nTempX + nColumnGlobal{{nIndex}};
+                    nRezRow := nRezRow + 1;
+                ENDWHILE
+            ENDIF
+        ENDIF    
+        
+        jPalletTemp{{nIndex}} := jPallet{{nIndex}};
+        jPalletTemp{{nIndex}}.trans.x := jPallet{{nIndex}}.trans.x +(nRezRow*jRow{{nIndex}}.trans.x) + (nRezColumn*jColumn{{nIndex}}.trans.x);
+        jPalletTemp{{nIndex}}.trans.y := jPallet{{nIndex}}.trans.y +(nRezRow*jRow{{nIndex}}.trans.y) + (nRezColumn*jColumn{{nIndex}}.trans.y);
+        jPalletTemp{{nIndex}}.trans.z := jPallet{{nIndex}}.trans.z +(nRezRow*jRow{{nIndex}}.trans.z) + (nRezColumn*jColumn{{nIndex}}.trans.z);
+                                    
+        jPallett := jPalletTemp{{nIndex}};
+
+    ENDPROC
+       
+    PROC GetCurentLocation()
+        VAR num nDist;
+        nDist := 99999;
+        jCurPos := CRobt(\Tool:=tool0\WObj:=wobj0);
+		
+		!Corect with things like :
+		!IF jCurPos.trans.z < (jPartTake.trans.z + 150) THEN
+        !    bRobot_onStation := TRUE;
+        !ENDIF
+		!bRobot_onStation := TRUE;
+		! If needed Delete this
+                        
+{0}    ENDPROC 
+
+ENDMODULE

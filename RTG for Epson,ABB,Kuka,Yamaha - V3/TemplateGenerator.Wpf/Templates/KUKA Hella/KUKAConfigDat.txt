@@ -1,0 +1,43 @@
+;*******************************************
+;Make your modifications -ONLY- here
+;*******************************************
+; Variable which holds the information about if the robot is on the station or not
+BOOL bRobot_onStation
+
+; Variable holds the info about the position where robot is going
+INT nPosition
+INT nAdditionalPosition
+
+; Profinet variables
+SIGNAL giROBOT_POSITION_TO $IN[9]  TO $IN[16]
+SIGNAL giROBOT_ADDIT_POS_TO $IN[17]  TO $IN[24]
+SIGNAL diROBOT_HOMING $IN[25]
+SIGNAL diROBOT_RESET $IN[26]
+SIGNAL diROBOT_START $IN[27]
+SIGNAL diROBOT_ON_STATION $IN[28]
+SIGNAL diROBOT_STEP $IN[29]
+
+SIGNAL goROBOT_POSITION_AT $OUT[9]  TO $OUT[16]
+SIGNAL goROBOT_ADDIT_POS_AT $OUT[17]  TO $OUT[24]
+SIGNAL doROBOT_HOMING_REQUEST $OUT[25]
+SIGNAL doROBOT_HOMING_OK $OUT[26]
+SIGNAL doROBOT_RESET_OK $OUT[27]
+SIGNAL doROBOT_IN_MOTION $OUT[28]
+SIGNAL doROBOT_END $OUT[29]
+
+; Station free bits
+{0}
+; Flags
+BOOL bROBOT_LOCAL_HOMING_FLAG=FALSE
+BOOL bROBOT_LOCAL_RESET_FLAG=FALSE
+BOOL bROBOT_ERROR_RESET=FALSE
+
+; Station from and to variables
+ENUM ROBOT_FROM_LOC FROM_NONE{1}
+ENUM ROBOT_TO_LOC TO_NONE{2}
+
+DECL ROBOT_FROM_LOC FROM_LOC
+DECL ROBOT_TO_LOC TO_LOC
+
+;ENDFOLD (USER GLOBALS)
+ENDDAT

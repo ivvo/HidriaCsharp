@@ -1,0 +1,26 @@
+Point{0} {{
+	nNumber={1}
+	sLabel="p{2}"
+	sDescription="{3}"
+	nUndefined=448
+	rX={4}
+	rY={5}
+	rZ={6}
+	rU=0
+	rV=180
+	rW=0
+	rR=0
+	rS=0
+	rT=0
+	nLocal=0
+	nHand=1
+	nElbow=1
+	nWrist=1
+	nJ1Flag=0
+	nJ2Flag=0
+	nJ4Flag=0
+	nJ6Flag=0
+	rJ1Angle=0
+	rJ4Angle=0
+	bSimVisible=False
+}}

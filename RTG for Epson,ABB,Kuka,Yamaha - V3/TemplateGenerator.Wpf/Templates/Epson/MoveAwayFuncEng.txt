@@ -1,0 +1,21 @@
+Function {0}_moveAway
+	Robot {2}
+	
+	' Set power mode
+	Call {0}_setPowerMode
+	
+	If {0}_inStation = True Then
+{3}
+	
+		' We are not on station anymore
+		{0}_inStation = False
+	EndIf
+	
+	' Set CP barrier	
+	'Call {0}_CPBarrier({1}_CP_TURN_OFF)
+	
+	If MemSw({1}_LOCAL_HOMING_FLAG) = Off Then
+		' Set all stations as free
+		'Call {0}_stationsFree
+	EndIf
+Fend

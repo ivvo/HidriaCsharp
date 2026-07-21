@@ -1,0 +1,34 @@
+.PROGRAM goHome() #133;
+   ;
+   ;"write to variable the current DESTINATION value"
+   robot_to = HomePos
+   ;
+   ;"call the function to move the robot to OUTSIDE of the current station"
+   CALL moveAway
+   ;
+   ;"call the function to set the current power state (LOW or HIGH)"
+   CALL setPowerMode
+   ;
+   ;"move the robot from OUTSIDE current station to OUTSIDE the destination station"
+   CASE robot_from OF
+      VALUE HomePos:
+         JMOVE #pHome
+         ;
+{0}
+      ANY :
+         PRINT 2: "ERROR: robot_from data invalid"
+         SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+   END
+   ;
+   ;"call the function to move the robot to the FINAL POSITION in the current station"
+   CALL moveOnStation
+   ;
+   ;"if robot is in HOME position then set all stations as FREE"
+   CALL stationsFree
+   ;
+   ;"robot is at the destination"
+   ;"write to variable the current POSITION value"
+   robot_from = HomePos
+   robot_to = 0
+   ;
+.END

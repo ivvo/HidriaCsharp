@@ -38,6 +38,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Predloge (Template.cs jih bere iz "./Templates/..." relativno na delovni direktorij).
+         Hranjene v virski kontroli in kopirane ob gradnji poleg .exe datoteke. -->
+    <Content Include="Templates\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Views\202-2025470_robot-industrial-kawasaki-hd-png-download-removebg-preview.png" />
     <Resource Include="Views\c3_005_trans_690x460.png" />
     <Resource Include="Views\png-transparent-scara-epson-robots-epson-robots-industrial-robot-robot-electronics-arm-industry-removebg-preview.png" />

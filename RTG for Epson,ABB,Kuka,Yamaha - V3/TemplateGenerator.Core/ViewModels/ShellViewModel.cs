@@ -33,6 +33,12 @@ namespace TemplateGenerator.Core.ViewModels
         public ObservableCollection<ProgramModel> Program { get; set; } = new ObservableCollection<ProgramModel>();
         GenerateExcelIO excell = new GenerateExcelIO();
 
+        // Za uvoz/posodobitev: koliko postaj je imel vsak program ob zadnjem uvozu (da UpdateProject
+        // ve, katere postaje na koncu seznama so nove), in kateri proizvajalec je bil uvožen (da
+        // UpdateProject pokliče pravi *ProjectUpdater).
+        private readonly Dictionary<ProgramModel, int> _stationBaseline = new Dictionary<ProgramModel, int>();
+        private string _importedVendor;
+
         public static List<string> Templates { get; set; }
 
         public ShellViewModel()
@@ -268,6 +274,12 @@ namespace TemplateGenerator.Core.ViewModels
         //public IMvxCommand GenerateProjectCommand { get; set; }
         public void GenerateProject(string s)
         {
+            if (!Template.FormatsLoaded)
+            {
+                TextUpdate = $"Predloge se niso naložile ({Template.LoadError}) - preveri mapo Templates/ ob .exe datoteki.";
+                return;
+            }
+
             string path = s;
 
             if (SelectedTemplate == "Epson Hidria")
@@ -345,7 +357,7 @@ namespace TemplateGenerator.Core.ViewModels
                     }
                 }
                 TextUpdate = "Epson program generated: " + path;
-                Process.Start("explorer.exe", path);
+                OpenFolder(path);
                 // TO DO - Odpri direktori
 
             }
@@ -433,7 +445,7 @@ namespace TemplateGenerator.Core.ViewModels
 
                 }
                 TextUpdate = "KUKA program generated: " + path;
-                Process.Start("explorer.exe", path);
+                OpenFolder(path);
             }
             else if (SelectedTemplate == "ABB Simulacija")
             {
@@ -451,7 +463,7 @@ namespace TemplateGenerator.Core.ViewModels
                         }
                     }
                     TextUpdate = "ABB sim program generated: " + path;
-                    Process.Start("explorer.exe", path);
+                    OpenFolder(path);
                 }
             }
             else if (SelectedTemplate == "ABB Hidria")
@@ -516,7 +528,7 @@ namespace TemplateGenerator.Core.ViewModels
                         }              
 
                         TextUpdate = "ABB program generated: " + path;
-                        Process.Start("explorer.exe", path);
+                        OpenFolder(path);
                     }
                 }
             }
@@ -568,7 +580,7 @@ namespace TemplateGenerator.Core.ViewModels
                     }
                 }
                 TextUpdate = "Yamaha program generated: " + path;
-                Process.Start("explorer.exe", path);
+                OpenFolder(path);
                 // TO DO - Odpri direktori
 
             }
@@ -621,7 +633,7 @@ namespace TemplateGenerator.Core.ViewModels
                     }
                 }
                 TextUpdate = "Kawasaki program generated: " + path;
-                Process.Start("explorer.exe", path);
+                OpenFolder(path);
                 // TO DO - Odpri direktori
             }
 
@@ -629,7 +641,154 @@ namespace TemplateGenerator.Core.ViewModels
             {
                 TextUpdate = "select a template";
             }
-        } 
+        }
+
+        // Prebere obstoječi, s tem orodjem že generiran projekt nazaj v model (Program), da lahko
+        // uporabnik nadaljuje delo (npr. doda novo postajo). Proizvajalec se zazna samodejno iz
+        // strukture izbrane mape. OPOMBA: Yamaha in Kawasaki uvoz/posodobitev v tej različici (V3)
+        // še nista podprta (V3 uporablja drugačen Yamaha generator; Kawasaki nima parserja).
+        // Za Epson izberi mapo, ki NEPOSREDNO vsebuje generirane datoteke (npr. EpsonGeneratedTemplate_...).
+        public void ImportProject(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+
+            try
+            {
+                ObservableCollection<ProgramModel> imported;
+                string vendor;
+
+                if (Directory.GetFiles(path, "*_Motion.mod").Length > 0)
+                {
+                    imported = AbbHidriaProjectImporter.Import(path);
+                    vendor = "ABB Hidria";
+                }
+                else if (Directory.Exists(Path.Combine(path, "R1", "Program")))
+                {
+                    imported = KukaHellaProjectImporter.Import(path);
+                    vendor = "KUKA Hella";
+                }
+                else if (Directory.GetFiles(path, "*.prg").Length > 0)
+                {
+                    imported = EpsonProjectImporter.Import(path);
+                    vendor = "Epson Hidria";
+                }
+                else if (Directory.GetFiles(path, "*.all").Length > 0)
+                {
+                    imported = YamahaProjectImporter.Import(path);
+                    vendor = "Yamaha Hidria";
+                }
+                else
+                {
+                    TextUpdate = "V izbrani mapi ni bilo mogoče zaznati Epson/KUKA Hella/ABB Hidria projekta. (Za Epson izberi mapo z generiranimi datotekami, npr. EpsonGeneratedTemplate_...)";
+                    return;
+                }
+
+                Program.Clear();
+                _stationBaseline.Clear();
+                foreach (var program in imported)
+                {
+                    Program.Add(program);
+                    _stationBaseline[program] = program.Stations.Count;
+                }
+
+                i = Program.Count;
+                SelectedProgram = Program.Count > 0 ? Program[0] : null;
+                _importedVendor = vendor;
+                SelectedTemplate = vendor;
+                TextUpdate = $"Uvoženih programov ({vendor}): {Program.Count}. Dodaj postaje in klikni Update Project.";
+            }
+            catch (Exception ex)
+            {
+                TextUpdate = "Napaka pri uvozu: " + ex.Message;
+            }
+        }
+
+        // Kirurško vstavi na novo dodane postaje (dodane po zadnjem uvozu) v obstoječe generirane
+        // datoteke na disku, brez polnega prepisa. Pred urejanjem naredi varnostno kopijo mape.
+        public void UpdateProject(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+
+            if (!Template.FormatsLoaded)
+            {
+                TextUpdate = $"Predloge se niso naložile ({Template.LoadError}) - preveri mapo Templates/ ob .exe datoteki.";
+                return;
+            }
+
+            if (_importedVendor == null)
+            {
+                TextUpdate = "Najprej uvozite projekt (Import Project), šele nato ga lahko posodobite.";
+                return;
+            }
+
+            // Epson posodobitev (Update) za V3 še ni prilagojena: V3 ima strukturno drugačen Epson
+            // generator kot referenčna verzija (robot_inStation namesto onStation, gripper/testAll,
+            // drugačen homing "For i/For j", shema premikov prek pAboveStation), zato bi obstoječi
+            // Updater ustvaril nepravilno kodo. Uvoz (branje) deluje; posodobitev je v pripravi.
+            // KUKA Hella in ABB Hidria posodobitev delujeta (generatorja sta identična referenčnim).
+            if (_importedVendor == "Epson Hidria")
+            {
+                TextUpdate = "Epson posodobitev (Update) za to različico (V3) še ni prilagojena - V3 uporablja drugačen Epson generator. Uvoz deluje, posodobitev pa je v pripravi. (KUKA Hella in ABB Hidria posodobitev delujeta.)";
+                return;
+            }
+
+            try
+            {
+                var programsToUpdate = Program
+                    .Where(p => _stationBaseline.ContainsKey(p) && p.Stations.Count > _stationBaseline[p])
+                    .ToList();
+
+                if (programsToUpdate.Count == 0)
+                {
+                    TextUpdate = "Ni novih postaj za posodobitev (najprej uvozite projekt in dodajte novo postajo).";
+                    return;
+                }
+
+                string backupPath;
+                switch (_importedVendor)
+                {
+                    case "Epson Hidria": backupPath = EpsonProjectUpdater.BackupFolder(path); break;
+                    case "KUKA Hella": backupPath = KukaHellaProjectUpdater.BackupFolder(path); break;
+                    case "ABB Hidria": backupPath = AbbHidriaProjectUpdater.BackupFolder(path); break;
+                    case "Yamaha Hidria": backupPath = YamahaProjectUpdater.BackupFolder(path); break;
+                    default: throw new InvalidOperationException($"Neznan proizvajalec '{_importedVendor}'.");
+                }
+
+                foreach (var program in programsToUpdate)
+                {
+                    int baseline = _stationBaseline[program];
+                    var newStations = program.Stations.Skip(baseline).ToList();
+
+                    switch (_importedVendor)
+                    {
+                        case "Epson Hidria": EpsonProjectUpdater.UpdateProgram(program, newStations, path); break;
+                        case "KUKA Hella": KukaHellaProjectUpdater.UpdateProgram(program, newStations, path); break;
+                        case "ABB Hidria": AbbHidriaProjectUpdater.UpdateProgram(program, newStations, path); break;
+                        case "Yamaha Hidria": YamahaProjectUpdater.UpdateProgram(program, newStations, path); break;
+                    }
+
+                    _stationBaseline[program] = program.Stations.Count;
+                }
+
+                TextUpdate = $"Projekt posodobljen ({programsToUpdate.Count} program(ov)). Varnostna kopija: {backupPath}";
+                OpenFolder(path);
+            }
+            catch (Exception ex)
+            {
+                TextUpdate = "Napaka pri posodabljanju: " + ex.Message;
+            }
+        }
+
+        // Odpre generirano/posodobljeno mapo v Raziskovalcu. Med testi (TGR_SUPPRESS_EXPLORER=1) se
+        // preskoči, prav tako tiho, če zagon spodleti.
+        private static void OpenFolder(string path)
+        {
+            if (Environment.GetEnvironmentVariable("TGR_SUPPRESS_EXPLORER") == "1")
+                return;
+
+            try { Process.Start("explorer.exe", path); }
+            catch { /* odpiranje mape ni ključno */ }
+        }
         #endregion
 
         //public void testTask (string s)

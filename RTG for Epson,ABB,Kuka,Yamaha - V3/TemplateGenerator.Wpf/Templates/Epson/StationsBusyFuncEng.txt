@@ -1,0 +1,3 @@
+Function {0}_stationsBusy	'set all stations as BUSY
+{1}
+Fend

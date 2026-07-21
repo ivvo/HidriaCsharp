@@ -1,0 +1,58 @@
+.PROGRAM robot_init() #7; Initializing parameters, signals, and other
+   ;
+   ;"call the function in which important parameters are defined"
+   CALL parameters
+   ;
+   ;"call the function to set all stations as BUSY"
+   CALL stationsBusy
+   ;
+   ;"call the function to reset robot_from variable"
+   CALL resetDepartLoc
+   ;
+   ;"call the function to reset robot_to variable"
+   CALL resetDestLoc
+   ;
+   ;"call the function to reset INTERNAL bool signals"
+   CALL resetFlags
+   ;
+   ;"call the function to reset OUTPUT bool signals"
+   CALL resetProfinet
+   ;
+   ;
+   ;"set the WEIGHT and COG of the tool mounted on the robot flange"
+   WEIGHT robot_t_weight, robot_t_cog_x, robot_t_cog_y, robot_t_cog_z; WEIGHT <Mass>, <x>, <y>, <z> (center of gravity)
+   ;
+   ;"if needed check the state of the tool/gripper"
+   ;CALL checkToolState
+   ;
+   ;"set the default BASE and TOOL translations"
+   BASE BasePlate
+   TOOL Tool1
+   ;
+   ;
+   ;"set the important System Switches"
+   AUTOSTART.PC ON
+   CP ON
+   QTOOL OFF                           ; Switch off block tool
+   MESSAGES ON
+   HOLD.STEP OFF
+   ;SLOW_START OFF
+   ABS.SPEED OFF                       ; Switch off absolute speed
+   DISP.EXESTEP ON
+   STAT_ON_KYBD OFF
+   ;SF_OPEN_ERROR OFF
+   PALMODE OFF                         ; Switch off palletizing mode
+   ZTCHSPDCHKAS ON                     ; Switch on speed check for real robot
+   ;ZTCHSPDCHKAS OFF                    ; Switch off speed check for virtual robot (K-Roset)
+   ;
+   ;"set the COLLISION monitoring System Switches"
+   ;COLRON      ;collision detection monitoring in repeat mode
+   ;COLRJON     ;shock detection monitoring in repeat mode
+   ;COLTON     ;collision detection monitoring in teach and check modes
+   ;COLTJON    ;shock detection monitoring in teach and check modes.
+   ;COLMVON     ;execute the stress remove motion after a collision is detected.
+   ;
+   ;"output homing request signal to PLC"
+   SIGNAL (O_HOMING_REQ)
+   ;
+.END

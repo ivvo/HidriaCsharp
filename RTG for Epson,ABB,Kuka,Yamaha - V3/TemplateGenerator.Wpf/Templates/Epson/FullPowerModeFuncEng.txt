@@ -1,0 +1,14 @@
+Function {0}_fullWorkingSpeed 'SPEED and ACCELERATION of the robot for FAST inbetween station movements
+	Robot {2}
+	
+	If Power = High Then
+		'PTP
+		Speed {1}_SPEED * 100
+		Accel {1}_ACCEL * 100, {1}_ACCEL * 100
+
+		'linear
+		SpeedS {1}_SPEED * 2000
+		'AccelS {1}_ACCEL * 10000, {1}_ACCEL * 10000	'LS20-B, T series, VT series
+		AccelS {1}_ACCEL * 25000, {1}_ACCEL * 25000	'G series, GX series, RS series, LS3-B, LS6-B, LS10-B, C series(mostly)
+	EndIf
+Fend

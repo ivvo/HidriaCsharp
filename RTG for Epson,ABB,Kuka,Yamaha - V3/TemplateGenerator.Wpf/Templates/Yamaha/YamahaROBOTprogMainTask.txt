@@ -1,0 +1,65 @@
+'-------------------------------------------------------------------------
+'
+'-----------------------------MAIN ROBOT LOOP-----------------------------
+'
+'START mainTask
+*{0}_mainTask: 'Main program loop that waits for RESET or START(and position) input from the PLC
+    '
+    WHILE 1
+        '
+        IF I_RESET=1 THEN
+            'reset reset ok output
+            RESET O_RESET_OK
+            'set reset flag
+            reset_flag=1
+            'reset end output
+            RESET O_END
+            'set in motion output
+            SET O_IN_MOTION   
+            '
+            'go Home
+            GOSUB *{0}_goHome
+            '
+            'send the current location to the PLC
+            SOW(2)=0 
+            'reset in motion output
+            RESET O_IN_MOTION
+            'set reset ok output
+            SET O_RESET_OK
+            'set all stations as FREE
+            GOSUB *robot_stationsFree
+            'reset reset flag
+            reset_flag = 0
+            '
+        ELSEIF I_START=1 THEN
+            '
+            'read destination position from PLC
+            position=SIW(2)
+            additional_pos=SIW(3)
+            'reset end output
+            RESET O_END
+            'set in motion output
+            SET O_IN_MOTION   
+            '
+            'send the robot to the destination position
+            SELECT position
+{1}
+                CASE ELSE
+                    GOSUB *{0}_moveAway
+                    '
+            END SELECT
+            '
+            'send the current location to the PLC
+            SOW(2)=position
+            SOW(3)=additional_pos
+            'reset in motion output
+            RESET O_IN_MOTION
+            '
+        ENDIF
+        '
+        'set end output
+        SET O_END
+        '
+    WEND
+    '
+RETURN

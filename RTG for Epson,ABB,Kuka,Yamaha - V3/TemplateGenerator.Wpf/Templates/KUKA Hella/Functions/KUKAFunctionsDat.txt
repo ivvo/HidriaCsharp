@@ -1,0 +1,48 @@
+&ACCESS RVO1
+&REL 11
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\Functions
+DEFDAT robotFunctions PUBLIC
+
+; Variable for Dist fuction
+REAL twoPdist
+
+;Stations offsets
+GLOBAL INT nABOVE_STATION_OFFSET
+GLOBAL INT nNEAR_STATION_OFFSET
+GLOBAL FRAME frABOVE_STATION_Z_OFFSET={{X 0.0,Y 0.0,Z 0,A 0.0,B 0.0,C 0.0}}
+GLOBAL FRAME frNEAR_STATION_OFFSET={{X 0.0,Y 0.0,Z 0,A 0.0,B 0.0,C 0.0}}
+GLOBAL FRAME frABOVE_STAT_TOOL_Z_OFF={{X 0.0,Y 0.0,Z 0,A 0.0,B 0.0,C 0.0}}
+GLOBAL FRAME frNEAR_STAT_TOOL_OFFSET={{X 0.0,Y 0.0,Z 0,A 0.0,B 0.0,C 0.0}}
+
+; !!! PALLET FUNCTION VARIABLES!!!
+GLOBAL INT nColumnGlobal
+GLOBAL INT nRowGlobal
+GLOBAL FRAME fColumn[5]
+fColumn[1]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fColumn[2]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fColumn[3]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fColumn[4]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fColumn[5]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+
+GLOBAL FRAME fRow[5]
+fRow[1]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fRow[2]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fRow[3]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fRow[4]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+fRow[5]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+
+GLOBAL E6POS jPallet[5]
+jPallet[1]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPallet[2]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPallet[3]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPallet[4]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPallet[5]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+
+GLOBAL E6POS jPalletTemp[5]
+jPalletTemp[1]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPalletTemp[2]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPalletTemp[3]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPalletTemp[4]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+jPalletTemp[5]={{X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}}
+ENDDAT
