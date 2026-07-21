@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Views\ShellView - Copy.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Views\202-2025470_robot-industrial-kawasaki-hd-png-download-removebg-preview.png" />
+    <None Remove="Views\c3_005_trans_690x460.png" />
+    <None Remove="Views\ls20_a04s_013_gespiegelt.png" />
+    <None Remove="Views\png-transparent-scara-epson-robots-epson-robots-industrial-robot-robot-electronics-arm-industry-removebg-preview.png" />
+    <None Remove="Views\png-transparent-scara-epson-robots-epson-robots-industrial-robot-robot-electronics-arm-industry.png" />
+    <None Remove="Views\samo robot flange 2.png" />
+    <None Remove="Views\samo robot flange.png" />
+    <None Remove="Views\samo robot SCARA flange.png" />
+    <None Remove="Views\scara-robot-500x500 %281%29.png" />
+    <None Remove="Views\SCARA_T3_PB2_b4282a04-removebg-preview.png" />
+    <None Remove="Views\Yamaha_YK1200X_Picture_2.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Views\ShellView - Copy.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MvvmCross.Platforms.Wpf" Version="7.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TemplateGenerator.Core\TemplateGenerator.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Views\202-2025470_robot-industrial-kawasaki-hd-png-download-removebg-preview.png" />
+    <Resource Include="Views\c3_005_trans_690x460.png" />
+    <Resource Include="Views\png-transparent-scara-epson-robots-epson-robots-industrial-robot-robot-electronics-arm-industry-removebg-preview.png" />
+    <Resource Include="Views\samo robot flange 2.png" />
+    <Resource Include="Views\samo robot flange.png" />
+    <Resource Include="Views\samo robot SCARA flange.png" />
+    <Resource Include="Views\SCARA_T3_PB2_b4282a04-removebg-preview.png" />
+    <Resource Include="Views\Yamaha_YK1200X_Picture_2.png" />
+  </ItemGroup>
+
+</Project>
