@@ -76,16 +76,18 @@ Namenjeno **že delujoči celici**, kjer je treba dodati postajo brez izgube nau
 
 | Proizvajalec | Import (branje) | Update (dodaj postajo) |
 |---|---|---|
-| **KUKA Hella** | ✅ | ✅ |
-| **ABB Hidria** | ✅ | ✅ (glej omejitve – EIO/OtherFunctions) |
-| **Yamaha** | ✅ | ✅ (re-generacija + ohranitev naučenih točk) |
-| **Epson Hidria** | ✅ | ⛔ zaklenjeno (V3 ima strukturno drugačen Epson generator) |
-| **Kawasaki** | ⛔ (ni parserja) | ⛔ |
+| **KUKA Hella** | ✅ | ✅ (kirurško vstavljanje) |
+| **ABB Hidria** | ✅ | ✅ kirurško (glej omejitve – EIO/OtherFunctions) |
+| **Yamaha** | ✅ | ✅ re-generacija + ohranitev naučenih točk |
+| **Epson Hidria** | ✅ | ✅ re-generacija + ohranitev naučenih točk (.pts) |
+| **Kawasaki** | ✅ | ✅ re-generacija + ohranitev naučenih točk |
 
 ## Kaj je novo v tej različici
 
-- **Import/Update** za KUKA Hella, ABB Hidria in Yamaha (branje obstoječega projekta + dodajanje
-  postaj); gumba **Import Project** / **Update Project** v vmesniku.
+- **Import/Update za vse proizvajalce** (Epson, KUKA Hella, ABB Hidria, Yamaha, Kawasaki) — branje
+  obstoječega projekta + dodajanje postaj; gumba **Import Project** / **Update Project** v vmesniku.
+  Pri Epson/Yamaha/Kawasaki posodobitev deluje z re-generacijo kode + ohranitvijo naučenih točk (po
+  imenu točke); pri KUKA/ABB s kirurškim vstavljanjem.
 - **Popravek Excel IO tabele** (`IOTable.xlsx`): odpravljena korupcija ("nečitljiva vsebina /
   popravljeno") in napačno formatiranje byte.bit naslovov (npr. `3.0` → `3`).
 - **Popravek KUKA `$config.dat`**: nova SIGNAL vrstica se ne prilepi več na obstoječo.
@@ -93,19 +95,16 @@ Namenjeno **že delujoči celici**, kjer je treba dodati postajo brez izgube nau
 
 ## Znane omejitve
 
-- **Epson posodobitev (Update) je zaklenjena** – V3-jev Epson generator se strukturno razlikuje od
-  referenčnega (`inStation`, `gripper`/`testAll`, `For i/For j` homing, shema premikov prek
-  `pAboveStation`). Uvoz Epsona deluje, posodobitev pa bi ustvarila nepravilno kodo.
 - **Nove postaje samo na konec** seznama (ne vrivanje na sredino, preimenovanje ali brisanje prek
   Import/Update poti).
-- **Yamaha**: en robot na projekt; ob Update se koda **re-generira**, zato morebitni ročni popravki v
-  `.all` kodi niso ohranjeni – **naučene točke (`[PNT]`) in komentarji pa SO** (ohranijo se po imenu
-  točke, vključno z `pSafeL`/`pSafeR`/`pAboveStation`).
-- **KUKA/ABB Import/Update**: en robot na projekt (projektno skupne datoteke se pri več robotih
-  podvojijo – obstoječa omejitev generatorja).
+- **Epson / Yamaha / Kawasaki**: en robot/program na projekt; ob Update se koda **re-generira**, zato
+  morebitni ročni popravki v generirani kodi niso ohranjeni – **naučene točke in komentarji pa SO**
+  (ohranijo se po imenu točke: Epson `.pts` po `sLabel`, Yamaha `[PNT]` vključno z
+  `pSafeL`/`pSafeR`/`pAboveStation`, Kawasaki po imenu točke `p<Postaja>` in `#pHome`).
+- **KUKA/ABB Import/Update** (kirurško): en robot na projekt (projektno skupne datoteke se pri več
+  robotih podvojijo – obstoječa omejitev generatorja); ohranijo se tudi ročni popravki kode.
 - **ABB**: ob Update se `OtherFunctions.mod` (iskanje najbližje točke ob homingu) in
   `EIORobot.cfg`/`EIOSimulacija.cfg` ne osvežijo – zanje je potreben poln **Generate**.
-- **Kawasaki** ni podprt za Import/Update.
 - Nekaj elementov vmesnika ni funkcionalnih (neodvisno od teh sprememb): **Remove Robot/Station** in
   gumb **test button**.
 

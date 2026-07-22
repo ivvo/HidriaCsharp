@@ -645,9 +645,9 @@ namespace TemplateGenerator.Core.ViewModels
 
         // Prebere obstoječi, s tem orodjem že generiran projekt nazaj v model (Program), da lahko
         // uporabnik nadaljuje delo (npr. doda novo postajo). Proizvajalec se zazna samodejno iz
-        // strukture izbrane mape. OPOMBA: Yamaha in Kawasaki uvoz/posodobitev v tej različici (V3)
-        // še nista podprta (V3 uporablja drugačen Yamaha generator; Kawasaki nima parserja).
-        // Za Epson izberi mapo, ki NEPOSREDNO vsebuje generirane datoteke (npr. EpsonGeneratedTemplate_...).
+        // strukture izbrane mape (Epson/KUKA Hella/ABB Hidria/Yamaha/Kawasaki).
+        // Za Epson/Yamaha/Kawasaki izberi mapo, ki NEPOSREDNO vsebuje generirane datoteke
+        // (npr. EpsonGeneratedTemplate_...).
         public void ImportProject(string path)
         {
             if (string.IsNullOrEmpty(path)) return;
@@ -677,9 +677,14 @@ namespace TemplateGenerator.Core.ViewModels
                     imported = YamahaProjectImporter.Import(path);
                     vendor = "Yamaha Hidria";
                 }
+                else if (Directory.GetFiles(path, "*.as").Length > 0)
+                {
+                    imported = KawasakiProjectImporter.Import(path);
+                    vendor = "Kawasaki Hidria";
+                }
                 else
                 {
-                    TextUpdate = "V izbrani mapi ni bilo mogoče zaznati Epson/KUKA Hella/ABB Hidria projekta. (Za Epson izberi mapo z generiranimi datotekami, npr. EpsonGeneratedTemplate_...)";
+                    TextUpdate = "V izbrani mapi ni bilo mogoče zaznati projekta (Epson/KUKA Hella/ABB Hidria/Yamaha/Kawasaki). Za Epson/Yamaha/Kawasaki izberi mapo z generiranimi datotekami (npr. EpsonGeneratedTemplate_...).";
                     return;
                 }
 
@@ -721,17 +726,6 @@ namespace TemplateGenerator.Core.ViewModels
                 return;
             }
 
-            // Epson posodobitev (Update) za V3 še ni prilagojena: V3 ima strukturno drugačen Epson
-            // generator kot referenčna verzija (robot_inStation namesto onStation, gripper/testAll,
-            // drugačen homing "For i/For j", shema premikov prek pAboveStation), zato bi obstoječi
-            // Updater ustvaril nepravilno kodo. Uvoz (branje) deluje; posodobitev je v pripravi.
-            // KUKA Hella in ABB Hidria posodobitev delujeta (generatorja sta identična referenčnim).
-            if (_importedVendor == "Epson Hidria")
-            {
-                TextUpdate = "Epson posodobitev (Update) za to različico (V3) še ni prilagojena - V3 uporablja drugačen Epson generator. Uvoz deluje, posodobitev pa je v pripravi. (KUKA Hella in ABB Hidria posodobitev delujeta.)";
-                return;
-            }
-
             try
             {
                 var programsToUpdate = Program
@@ -751,6 +745,7 @@ namespace TemplateGenerator.Core.ViewModels
                     case "KUKA Hella": backupPath = KukaHellaProjectUpdater.BackupFolder(path); break;
                     case "ABB Hidria": backupPath = AbbHidriaProjectUpdater.BackupFolder(path); break;
                     case "Yamaha Hidria": backupPath = YamahaProjectUpdater.BackupFolder(path); break;
+                    case "Kawasaki Hidria": backupPath = KawasakiProjectUpdater.BackupFolder(path); break;
                     default: throw new InvalidOperationException($"Neznan proizvajalec '{_importedVendor}'.");
                 }
 
@@ -765,6 +760,7 @@ namespace TemplateGenerator.Core.ViewModels
                         case "KUKA Hella": KukaHellaProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "ABB Hidria": AbbHidriaProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "Yamaha Hidria": YamahaProjectUpdater.UpdateProgram(program, newStations, path); break;
+                        case "Kawasaki Hidria": KawasakiProjectUpdater.UpdateProgram(program, newStations, path); break;
                     }
 
                     _stationBaseline[program] = program.Stations.Count;

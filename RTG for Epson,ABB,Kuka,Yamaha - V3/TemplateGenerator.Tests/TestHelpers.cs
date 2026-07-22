@@ -90,6 +90,40 @@ namespace TemplateGenerator.Tests
             return true;
         }
 
+        // Primerja besedilne datoteke (po pripadajočih imenih) v dveh mapah. Vrne null, če so vse
+        // enake, sicer opis prve razlike. Uporablja se za "bajt-identičnost" (update == svež generate).
+        public static string? FirstDirDifference(string dirA, string dirB, params string[] extensions)
+        {
+            string Rel(string root, string f) => f.Substring(root.Length).TrimStart('\\', '/');
+            bool Wanted(string f) => extensions.Contains(Path.GetExtension(f).ToLower());
+
+            var a = Directory.GetFiles(dirA, "*.*", SearchOption.AllDirectories)
+                .Where(Wanted).Where(f => !f.Contains("_backup_"))
+                .ToDictionary(f => Rel(dirA, f).ToLower(), f => f);
+            var b = Directory.GetFiles(dirB, "*.*", SearchOption.AllDirectories)
+                .Where(Wanted).Where(f => !f.Contains("_backup_"))
+                .ToDictionary(f => Rel(dirB, f).ToLower(), f => f);
+
+            foreach (var key in a.Keys)
+            {
+                if (!b.ContainsKey(key)) return $"Datoteka '{key}' obstaja v gold, ne pa v work.";
+                string ca = File.ReadAllText(a[key]);
+                string cb = File.ReadAllText(b[key]);
+                if (ca == cb) continue;
+
+                var la = ca.Replace("\r", "").Split('\n');
+                var lb = cb.Replace("\r", "").Split('\n');
+                int n = Math.Min(la.Length, lb.Length);
+                for (int i = 0; i < n; i++)
+                    if (la[i] != lb[i])
+                        return $"'{key}' vrstica {i + 1}:\n  gold=[{la[i]}]\n  work=[{lb[i]}]";
+                return $"'{key}': enako do {n} vrstic; dolžini gold={la.Length} work={lb.Length}";
+            }
+            foreach (var key in b.Keys)
+                if (!a.ContainsKey(key)) return $"Datoteka '{key}' obstaja v work, ne pa v gold.";
+            return null;
+        }
+
         public static string ExtractBetween(string content, string startMarker, string endMarker)
         {
             int startIdx = content.IndexOf(startMarker, StringComparison.Ordinal);
