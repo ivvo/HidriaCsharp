@@ -1,0 +1,38 @@
+.PROGRAM moveAway() #878;
+	;
+	;"call the function to set the current power state (LOW or HIGH)"
+	CALL setPowerMode
+	;
+	;"if robot is INSIDE station, move to OUTSIDE"
+	;"if not, SKIP"
+	IF SIG (in_station) THEN
+		;
+		;"write the current position to a point, for movement relative to current position"
+		HERE pOutsideStation
+		;
+		;"move the robot to OUTSIDE of the current station"
+		CASE robot_from OF
+			VALUE HomePos:
+				CALL fullWorkingSpd
+				JMOVE #pHome
+				SIGNAL (-in_station)
+				;
+{0}
+			ANY :
+				PRINT 2: "ERROR: robot_from data invalid"
+				SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+		END
+		;
+		;SIGNAL (-in_station)
+		;
+	END
+	;
+	;"DO NOT UNCOMMENT THIS UNLESS CERTAIN IT'S OK TO CALL ALL STATIONS FREE"
+	;IF SIG (-homing_flag) THEN
+	;   CALL stationsFree
+	;END
+	;
+	;"robot is OUTSIDE of station so set fullWorkingSpd"
+	CALL fullWorkingSpd
+	;
+.END

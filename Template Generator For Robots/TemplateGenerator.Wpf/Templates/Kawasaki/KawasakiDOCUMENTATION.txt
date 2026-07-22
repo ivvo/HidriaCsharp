@@ -1,0 +1,48 @@
+.PROGRAM Documentation ()
+   ; *******************************************************************
+   ;
+   ; Program:      Documentation
+   ; Comment:      WRITE HERE THE IMPORTANAT STEPS FOR PROPER PROGRAMING AND HANDLING THE ROBOT
+   ; Author:       Luka Paladin
+   ;
+   ; Date:         12.04.2024
+   ;
+   ; *******************************************************************
+   ;
+   ;"BEFORE TURNING ON THE ROBOT:"
+   ;  "Install Profinet board and Cubic-S device inside the controller. link: https://www.youtube.com/watch?v=sdbFkAIe298"
+   ;  "Check that the safety circuit is connected properly to Cubis-S: Cubic-S_Instruction_Manual.pdf  page:119"
+   ;
+   ;"AFTER TURNING ON THE ROBOT:"
+   ;  "Using a USB stick load the >opcije.as< file on the robot controller. This unlocks Profinet, Cubis-S and Collision detection functions
+   ;  "Restart controller and deal with possible remaining errors""
+   ;  "using KIDE on PC connect to robot and save a backup of everything into a >initial_backup< folder"
+   ;
+   ;"LOADING THE PROGRAM AND IMPORTANT SETTINGS"
+   ;  "Open the prepared project inside KIDE and under toolbar >Connection< choose >wedding project with robot< to merge program files and robot files
+   ;  "Save the merged project separately"
+   ;  "On the toolbar choose >AS Toolbox< >signal allocation< >Simple signal allocation<". Set Local: 16, Master: 0, Slave: 512, Internal: 512, 
+   ;   unit: Bit, order: local,slave,master. upload to robot.
+   ;  "On the teach pendant(TP) set dedicated inputs and outputs same as previous projects"
+   ;  "On the teach pendant(TP) set teach speeds: 1=0.2mm, 2=1mm/s, 3=20mm/s, 4=80mm/s, 5=250mm/s"
+   ;
+   ;"CUBIC-S SETTINGS"
+   ;  "On the TP set switch >CBS_REFLECT_CBSTOOL< to ON. This lets the CS-configurator define >ToolShape<"
+   ;  "Connect to robot with USB cable. Open CS-configurator."
+   ;  "click in order >Read Cubic-S parameters< >Read Robot parameters< >Write parameters to Cubic-S< password: khi. Restart the controller"
+   ;  "Under >Motion Area Monitoring Common Settings< set >Stop distance estimation< to INVALID"
+   ;  "Under >Safety Input Settings< >User Safety Input 1< allocate >External Emergency Stop 1<. This connects the Robot with external safety circuit"
+   ;  "Create the monitoring zones or load from similar project"
+   ;
+   ;
+   ;
+   ;
+   ;
+   ;
+   ;
+   ;
+   ;
+   ;
+   ;
+   ;
+.END

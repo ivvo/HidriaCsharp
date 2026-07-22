@@ -1,0 +1,341 @@
+.PROGRAM parameters() #7;function in which important parameters are defined
+   ;
+   ;"CAUTION:"
+   ;"--->USE a MAX OF 15 CHARACTERS FOR VARIABLE NAMES, OR THE NAME WILL BE AUTOMATICLY SHORTEN!!<---"
+   ;
+   ;
+   ;"position values, one number for each station"
+   HomePos = 0
+{0}
+   onlymoveaway = 99
+   ;
+   ;
+   ;"SPEED and ACCELERATION of the robot for FAST inbetween station movements (0 - 100%)"
+   fast_speed = 60
+   fast_accel = 60
+   fast_decel = 60
+   ;
+   ;"SPEED and ACCELERATION of the robot for SLOW in station movements (0 - 100%)"
+   slower_speed = 5
+   approach_acc = 40
+   approach_dec = 10
+   depart_acc = 10
+   depart_dec = 40
+   ;
+   ;"SPEED of the robot for EXTRA SLOW movements where contact with objects is possible (0 - 100%)"
+   very_slow_speed = 0.5
+   ;
+   ;
+   ;"WEIGHT and COG of the tool mounted on the robot flange" nadodat pravu inerciju oko COG za sve 3 osi !
+   robot_t_weight = 40
+   robot_t_cog_x = 0
+   robot_t_cog_y = 0
+   robot_t_cog_z = 600
+   ;
+   ;"The general MAX robot height"
+   max_z = 600
+   ;
+   ;"The general DISTANCE to move outside of a station in Z direction"
+   station_z = 200
+   slow_z = 30
+   ;
+   ;
+.END
+.PROGRAM resetFlags() #75;
+	;
+	;"Reset INTERNAL bool signals"
+	;
+	;"internal flags"
+	SIGNAL -homing_flag
+	SIGNAL -in_station
+	SIGNAL -reset_flag
+	SIGNAL -power_mode
+	;
+	;"internal USER controlled signals"
+	SIGNAL -USER_RESET
+	SIGNAL -USER_START
+	SIGNAL -USER_ON_STATION
+	SIGNAL -USER_HOMING_ON
+	;
+.END
+.PROGRAM resetProfinet() #75;
+	;
+	;"Reset OUTPUT bool signals"
+	;
+	SIGNAL -O_HOMING_REQ
+	SIGNAL -O_IN_MOTION
+	SIGNAL -O_END
+	SIGNAL -O_HOMING_OK
+	SIGNAL -O_RESET_OK
+	SIGNAL -O_PROGRAM_ERROR
+	SIGNAL -O_VISION_ERROR
+	SIGNAL -O_GRIPP_CONTROL
+	;
+.END
+.PROGRAM resetDestLoc() #75;
+	;
+	;"reset robot_to variable"
+	;
+	robot_to = 0
+	;
+.END
+.PROGRAM resetDepartLoc() #660;
+	;
+	;"reset robot_from variable"
+	;
+	robot_from = 0
+	;
+.END
+.PROGRAM stationsFree() #226
+	;
+	;"Set all stations as FREE"
+	;
+{1}
+	;
+.END
+.PROGRAM stationsBusy() #7;
+	;
+	;"Set all stations as BUSY"
+	;
+{2}
+	;
+.END
+.PROGRAM slowerWorkingMd(.spd,.acc,.dec) #1955
+	;
+	;"SPEED and ACCELERATION of the robot for SLOW in station movements"
+	;
+	IF SIG (power_mode) THEN
+		;"if the power mode is set to HIGH use defined parameters"
+		SPEED .spd ALWAYS
+		ACCEL .acc ALWAYS
+		DECEL .dec ALWAYS
+		ACCURACY 1 ALWAYS
+		;
+	ELSE
+		;"if the power mode is set to LOW use given parameters"
+		IF .spd >= slower_speed THEN
+			SPEED 2 ALWAYS
+		ELSE
+			SPEED .spd ALWAYS
+		END
+		;
+		ACCEL 10 ALWAYS
+		DECEL 10 ALWAYS
+		ACCURACY 1 ALWAYS
+		;
+	END
+.END
+.PROGRAM fullWorkingSpd() #3412
+	;
+	;"SPEED and ACCELERATION of the robot for FAST inbetween station movements"
+	;
+	IF SIG (power_mode) THEN
+		;"if the power mode is set to HIGH use defined parameters"
+		SPEED fast_speed ALWAYS
+		ACCEL fast_accel ALWAYS
+		DECEL fast_decel ALWAYS
+		ACCURACY 100 ALWAYS
+		;
+	ELSE
+		;"if the power mode is set to LOW use given parameters"
+		SPEED 10 ALWAYS
+		ACCEL 50 ALWAYS
+		DECEL 50 ALWAYS
+		ACCURACY 50 ALWAYS
+		;
+		;
+	END
+.END
+.PROGRAM setPowerMode() #3106
+   ;
+   ;"COLR(collision detection) 0-500% for each axis"
+   ;"COLRJ(shock detection) 0-200%/msec"
+   ;
+   IF SIG (I_STEP) OR SIG (reset_flag) OR SIG (homing_flag) OR 1 == 1 THEN  ;(OR 1 == 1)
+      ;"if the machine is in STEP mode, or robot is performing RESET or HOMING, set power mode to LOW"
+      ;"add (OR 1 == 1) when testing, remove when going into production"
+      ;
+      SIGNAL (-power_mode)
+      CALL fullWorkingSpd
+      ;
+      ;"set collision and shock detection values for each axis"
+      ;COLR 100, 50, 50, 50, 50, 50 ;"0-500% for each axis"
+      ;COLRJ 3, 3, 3, 3, 3, 3 ;"0-200%/msec"
+      ;
+      ;
+   ELSE
+      ;"if the machine is in AUTO mode set power mode to HIGH"
+      ;
+      SIGNAL (power_mode)
+      CALL fullWorkingSpd
+      ;
+      ;"set collision and shock detection values for each axis"
+      ;COLR 200, 200, 200, 200, 200, 200;0-500% for each axis
+      ;COLRJ 5, 5, 5, 5, 5, 5;0-200%/msec
+      ;
+   END
+.END
+.PROGRAM findClosePoint() #7;
+	;
+	;"Function measures the distances between current position and known points to find the closest one"
+	;"For use in HOMING process"
+	;
+	dist = 999999
+	closestpoint = 0
+	;
+	POINT phome = #pHome
+	a = DISTANCE (HERE, phome)
+	IF a < dist THEN
+		dist = a
+		closestpoint = HomePos
+	END
+	;
+{3}
+	;
+	;
+	PRINT "Approximate point: ", closestpoint, ", Distance: ", dist
+	;
+.END
+.PROGRAM checkToolState() #1173;
+	;
+	;"Check input sensors for gripper position"
+	;"if needed set the different WEIGHT (when gripping heavy pieces or pallets)"
+	;
+	IF SIG (I_GRIPPER_IN) AND SIG (-I_GRIPPER_OUT) THEN
+		SIGNAL (gripper_in)
+		;WEIGHT robot_tP_weight, robot_tP_cog_x, robot_tP_cog_y, robot_tP_cog_z
+		;
+	END
+	;
+	IF SIG (-I_GRIPPER_IN) AND SIG (I_GRIPPER_OUT) THEN
+		SIGNAL (-gripper_in)
+		;WEIGHT robot_t_weight, robot_t_cog_x, robot_t_cog_y, robot_t_cog_z
+		;
+	END
+	;
+	IF SIG (I_GRIPPER_IN) AND SIG (I_GRIPPER_OUT) OR SIG (-I_GRIPPER_IN) AND SIG (-I_GRIPPER_OUT) THEN
+		PRINT 2: "ERROR: I_GRIPPER data invalid"
+		;SIGNAL O_PROGRAM_ERROR, O_S_ERROR                   ;UKLJUČIT!!!!!
+	END
+	;
+.END
+.PROGRAM readVisionCord() #398
+	;
+	;"read input 16bit INTEGERS from PLC and write to variables"
+	;"modified to also read negative numbers, and with 0.1 precision"
+	;
+	;
+	IF (BITS (I_X_CORD, 16) > 32767) THEN
+		; negative value
+		vision_x_cord = (BITS (I_X_CORD, 16) - 65536) / 10
+	ELSE
+		vision_x_cord = (BITS (I_X_CORD, 16)) / 10
+	END
+	;
+	;
+	IF (BITS (I_Y_CORD, 16) > 32767) THEN
+		; negative value
+		vision_y_cord = (BITS (I_Y_CORD, 16) - 65536) / 10
+	ELSE
+		vision_y_cord = (BITS (I_Y_CORD, 16)) / 10
+	END
+	;
+	;
+	IF (BITS (I_Z_CORD, 16) > 32767) THEN
+		; negative value
+		vision_z_cord = (BITS (I_Z_CORD, 16) - 65536) / 10
+	ELSE
+		vision_z_cord = (BITS (I_Z_CORD, 16)) / 10
+	END
+	;
+	;
+	IF (BITS (I_O_CORD, 16) > 32767) THEN
+		; negative value
+		vision_o_cord = (BITS (I_O_CORD, 16) - 65536) / 10
+	ELSE
+		vision_o_cord = (BITS (I_O_CORD, 16)) / 10
+	END
+	;
+	;
+	IF (BITS (I_A_CORD, 16) > 32767) THEN
+		; negative value
+		vision_a_cord = (BITS (I_A_CORD, 16) - 65536) / 10
+	ELSE
+		vision_a_cord = (BITS (I_A_CORD, 16)) / 10
+	END
+	;
+	;
+	IF (BITS (I_T_CORD, 16) > 32767) THEN
+		; negative value
+		vision_t_cord = (BITS (I_T_CORD, 16) - 65536) / 10
+	ELSE
+		vision_t_cord = (BITS (I_T_CORD, 16)) / 10
+	END
+	;
+	;
+	;
+	IF vision_x_cord == 0 OR vision_y_cord == 0 OR vision_z_cord == 0 THEN
+		PRINT 2: "ERROR: Vision data invalid"
+		SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+	END
+	;
+.END
+.PROGRAM writeJointCord() #131;
+	;
+	;"read current JOINT values and write 16bit INTEGERS to PLC"
+	;"modified to also send negative numbers, and with 0.01 precision"
+	;
+	;
+	DECOMPOSE curjoint[1] = #HERE
+	;
+	;
+	IF curjoint[1] >= 0 THEN
+		BITS O_J1_CORD, 16 = INT (curjoint[1] * 100)
+	ELSE
+		; negative value
+		BITS O_J1_CORD, 16 = INT ((curjoint[1] * 100) + 65536)
+	END
+	;
+	;
+	IF curjoint[2] >= 0 THEN
+		BITS O_J2_CORD, 16 = INT (curjoint[2] * 100)
+	ELSE
+		; negative value
+		BITS O_J2_CORD, 16 = INT ((curjoint[2] * 100) + 65536)
+	END
+	;
+	;
+	IF curjoint[3] >= 0 THEN
+		BITS O_J3_CORD, 16 = INT (curjoint[3] * 100)
+	ELSE
+		; negative value
+		BITS O_J3_CORD, 16 = INT ((curjoint[3] * 100) + 65536)
+	END
+	;
+	;
+	IF curjoint[4] >= 0 THEN
+		BITS O_J4_CORD, 16 = INT (curjoint[4] * 100)
+	ELSE
+		; negative value
+		BITS O_J4_CORD, 16 = INT ((curjoint[4] * 100) + 65536)
+	END
+	;
+	;
+	IF curjoint[5] >= 0 THEN
+		BITS O_J5_CORD, 16 = INT (curjoint[5] * 100)
+	ELSE
+		; negative value
+		BITS O_J5_CORD, 16 = INT ((curjoint[5] * 100) + 65536)
+	END
+	;
+	;
+	IF curjoint[6] >= 0 THEN
+		BITS O_J6_CORD, 16 = INT (curjoint[6] * 100)
+	ELSE
+		; negative value
+		BITS O_J6_CORD, 16 = INT ((curjoint[6] * 100) + 65536)
+	END
+	;
+	;
+	;
+.END

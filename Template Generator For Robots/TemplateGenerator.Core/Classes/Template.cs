@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Linq;
+using System.Globalization;
 
 namespace TemplateGenerator.Core.Classes
 {
@@ -88,6 +89,24 @@ namespace TemplateGenerator.Core.Classes
         private static readonly string YamahaPoints = "";
         private static readonly string YamahaIO = "";
 
+        //Kawasaki//
+        private static readonly string KawasakiDOCUMENTATION = "";
+        private static readonly string KawasakiTESTING = "";
+        private static readonly string KawasakiMAIN_Main = "";
+        private static readonly string KawasakiMAIN_Init = "";
+        private static readonly string KawasakiMAIN_Homing = "";
+        private static readonly string KawasakiMAIN_MainTask = "";
+        private static readonly string KawasakiMOVEMENTS_MoveAway = "";
+        private static readonly string KawasakiMOVEMENTS_MoveOnStation = "";
+        private static readonly string KawasakiMOVEMENTS_GoHome = "";
+        private static readonly string KawasakiMOVEMENTS_GoStation = "";
+        private static readonly string KawasakiFUNCTIONS = "";
+        private static readonly string KawasakiCALIBRATION = "";
+        private static readonly string KawasakiPOINTS = "";
+        private static readonly string KawasakiIO = "";
+        private static readonly string KawasakiIOhandling = "";
+        private static readonly string KawasakiCOMMENT = "";
+
         static Template()
         {
             // Read all formats from files
@@ -169,6 +188,24 @@ namespace TemplateGenerator.Core.Classes
                 YamahaCommonPgm = File.ReadAllText("./Templates/Yamaha/CommonPgm.txt");
                 YamahaPoints = File.ReadAllText("./Templates/Yamaha/Points.txt");
                 YamahaIO = File.ReadAllText("./Templates/Yamaha/IO.txt");
+
+                // Kawasaki //
+                KawasakiDOCUMENTATION = File.ReadAllText("./Templates/Kawasaki/KawasakiDOCUMENTATION.txt");
+                KawasakiTESTING = File.ReadAllText("./Templates/Kawasaki/KawasakiTESTING.txt");
+                KawasakiMAIN_Main = File.ReadAllText("./Templates/Kawasaki/KawasakiMAIN-Main.txt");
+                KawasakiMAIN_Init = File.ReadAllText("./Templates/Kawasaki/KawasakiMAIN-Init.txt");
+                KawasakiMAIN_Homing = File.ReadAllText("./Templates/Kawasaki/KawasakiMAIN-Homing.txt");
+                KawasakiMAIN_MainTask = File.ReadAllText("./Templates/Kawasaki/KawasakiMAIN-MainTask.txt");
+                KawasakiMOVEMENTS_MoveAway = File.ReadAllText("./Templates/Kawasaki/KawasakiMOVEMENTS-MoveAway.txt");
+                KawasakiMOVEMENTS_MoveOnStation = File.ReadAllText("./Templates/Kawasaki/KawasakiMOVEMENTS-MoveOnStation.txt");
+                KawasakiMOVEMENTS_GoHome = File.ReadAllText("./Templates/Kawasaki/KawasakiMOVEMENTS-GoHome.txt");
+                KawasakiMOVEMENTS_GoStation = File.ReadAllText("./Templates/Kawasaki/KawasakiMOVEMENTS-GoStation.txt");
+                KawasakiFUNCTIONS = File.ReadAllText("./Templates/Kawasaki/KawasakiFUNCTIONS.txt");
+                KawasakiCALIBRATION = File.ReadAllText("./Templates/Kawasaki/KawasakiCALIBRATION.txt");
+                KawasakiPOINTS = File.ReadAllText("./Templates/Kawasaki/KawasakiPOINTS.txt");
+                KawasakiIO = File.ReadAllText("./Templates/Kawasaki/Kawasaki-IO.txt");
+                KawasakiIOhandling = File.ReadAllText("./Templates/Kawasaki/Kawasaki-IOhandling.txt");
+                KawasakiCOMMENT = File.ReadAllText("./Templates/Kawasaki/KawasakiCOMMENT______().txt");
             }
             catch (Exception ex)
             {
@@ -2380,6 +2417,446 @@ namespace TemplateGenerator.Core.Classes
             }
 
             return string.Format(YamahaIO, freeSignals.ToString().TrimEnd('\n')) + "\n";
+        }
+
+        #endregion
+
+        #region ////// KAWASAKI ////// (prenešeno iz V3; en robot na projekt; homing išče po imenu točke)
+
+        ////Generate DOCUMENTATION program
+        public static string GetKawasakiDocumentation(ObservableCollection<ProgramModel> robot)
+        {
+           string Format = KawasakiDOCUMENTATION;
+
+           return string.Format(Format).ToString() ;
+
+        }
+
+        ////Generate TESTING program
+        public static string GetKawasakiTesting(ProgramModel robot)
+        {
+            string Format = KawasakiTESTING;
+            StringBuilder FormatArgument = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument.AppendFormat("\t\tVALUE {0}:\n", robot.Stations[i].RobotStationName);
+                FormatArgument.AppendFormat("\t\t\tCALL go{0}\n", robot.Stations[i].RobotStationName);
+                FormatArgument.AppendFormat("\t\t\t;\n");
+                FormatArgument.AppendFormat("\t\t\t;\n");
+            }
+
+            return string.Format(Format, FormatArgument, robot.Stations.Count-1).ToString();
+
+        }
+
+        ////Generate MAIN_Main program
+        public static string GetKawasakiMain(ProgramModel robot)
+        {
+            string Format = KawasakiMAIN_Main;
+
+            return string.Format(Format).ToString() + "\n";
+
+        }
+
+        ////Generate MAIN_Init program
+        public static string GetKawasakiInit(ProgramModel robot)
+        {
+            string Format = KawasakiMAIN_Init;
+
+            return string.Format(Format).ToString();
+
+        }
+
+        ////Generate MAIN_Homing program
+        public static string GetKawasakiHoming(ProgramModel robot)
+        {
+            string Format = KawasakiMAIN_Homing;
+            StringBuilder FormatArgument = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument.AppendFormat("\t\t\t\tVALUE {0}:\n", robot.Stations[i].RobotStationName);
+                if (robot.Stations[i].Positions == 1)
+                {
+                    FormatArgument.AppendFormat("\t\t\t\t\tIF DZ (HERE) < (DZ (p{0}) + station_z) THEN\n", robot.Stations[i].RobotStationName);
+                }
+                else
+                {
+                    FormatArgument.AppendFormat("\t\t\t\t\tIF DZ (HERE) < (DZ (p{0}1) + station_z) THEN\n", robot.Stations[i].RobotStationName);
+                }
+                FormatArgument.AppendFormat("\t\t\t\t\t\tSIGNAL (in_station)\n");
+                FormatArgument.AppendFormat("\t\t\t\t\tELSE\n");
+                FormatArgument.AppendFormat("\t\t\t\t\t\tSIGNAL (-in_station)\n");
+                FormatArgument.AppendFormat("\t\t\t\t\tEND\n");
+                FormatArgument.AppendFormat("\t\t\t\t\t;\n");
+                FormatArgument.AppendFormat("\t\t\t\t\t;\n");
+            }
+            FormatArgument.Remove(FormatArgument.Length - 1, 1);
+
+            return string.Format(Format, FormatArgument).ToString();
+
+        }
+
+        ////Generate MAIN_MainTask program
+        public static string GetKawasakiMainTask(ProgramModel robot)
+        {
+            string Format = KawasakiMAIN_MainTask;
+            StringBuilder FormatArgument = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument.AppendFormat("\t\t\t\tVALUE {0}:\n", robot.Stations[i].RobotStationName);
+                if(robot.Stations[i].Positions != 1)
+                {
+                    FormatArgument.AppendFormat("\t\t\t\t\taddpos = BITS(I_ADD_POS, 16)\n");
+                }
+                FormatArgument.AppendFormat("\t\t\t\t\tCALL go{0}\n", robot.Stations[i].RobotStationName);
+                FormatArgument.AppendFormat("\t\t\t\t\t;\n");
+                FormatArgument.AppendFormat("\t\t\t\t\t;\n");
+            }
+            FormatArgument.Remove(FormatArgument.Length - 1, 1);
+
+            return string.Format(Format, FormatArgument).ToString();
+
+        }
+
+        ////Generate MOVEMENTS_MoveAway program
+        public static string GetKawasakiMoveAway(ProgramModel robot)
+        {
+            string Format = KawasakiMOVEMENTS_MoveAway;
+            StringBuilder FormatArgument = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument.AppendFormat("\t\t\tVALUE {0}:\n", robot.Stations[i].RobotStationName);
+                FormatArgument.AppendFormat("\t\t\t\tCALL slowerWorkingMd (very_slow_speed, depart_acc, depart_dec)\n");
+                FormatArgument.AppendFormat("\t\t\t\tLMOVE TRANS (0, 0, slow_z) + pOutsideStation\n");
+                FormatArgument.AppendFormat("\t\t\t\t;\n");
+
+                FormatArgument.AppendFormat("\t\t\t\tCALL slowerWorkingMd (slower_speed, depart_acc, depart_dec)\n");
+                FormatArgument.AppendFormat("\t\t\t\tLMOVE TRANS (0, 0, station_z) + pOutsideStation\n");
+                FormatArgument.AppendFormat("\t\t\t\t;\n");
+
+                FormatArgument.AppendFormat("\t\t\t\tPOINT/Z pOutsideStation = TRANS(0, 0, max_z)\n");
+                FormatArgument.AppendFormat("\t\t\t\tCALL fullWorkingSpd\n");
+                FormatArgument.AppendFormat("\t\t\t\tLMOVE pOutsideStation\n");
+                FormatArgument.AppendFormat("\t\t\t\t;\n");
+
+                FormatArgument.AppendFormat("\t\t\t\tSIGNAL (-in_station)\n");
+                if (robot.Stations[i].StationFreeEnabled)
+                {
+                    FormatArgument.AppendFormat("\t\t\t\tSIGNAL (O_{0}_FREE)\n", robot.Stations[i].RobotStationName);
+                }
+                FormatArgument.AppendFormat("\t\t\t\t;\n");
+            }
+            FormatArgument.Remove(FormatArgument.Length - 1, 1);
+
+            return string.Format(Format, FormatArgument).ToString();
+
+        }
+
+        ////Generate MOVEMENTS_MoveOnStation program
+        public static string GetKawasakiMoveOnStation(ProgramModel robot)
+        {
+            string Format = KawasakiMOVEMENTS_MoveOnStation;
+            StringBuilder FormatArgument = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument.AppendFormat("\t\t\tVALUE {0}:\n", robot.Stations[i].RobotStationName);
+                if (robot.Stations[i].StationFreeEnabled)
+                {
+                    FormatArgument.AppendFormat("\t\t\t\t;\"turn OFF station free signal\"\n");
+                    FormatArgument.AppendFormat("\t\t\t\tSIGNAL (-O_{0}_FREE)\n", robot.Stations[i].RobotStationName);
+                    FormatArgument.AppendFormat("\t\t\t\t;\n");
+                }
+
+                if (robot.Stations[i].Positions == 1)
+                {
+                    FormatArgument.AppendFormat("\t\t\t\tCALL fullWorkingSpd\n");
+                    FormatArgument.AppendFormat("\t\t\t\tLMOVE TRANS (0, 0, station_z) + p{0}\n", robot.Stations[i].RobotStationName);
+                    FormatArgument.AppendFormat("\t\t\t\t;\n");
+
+                    FormatArgument.AppendFormat("\t\t\t\tCALL slowerWorkingMd (slower_speed, approach_acc, approach_dec)\n");
+                    FormatArgument.AppendFormat("\t\t\t\tLMOVE TRANS (0, 0, slow_z) + p{0}\n", robot.Stations[i].RobotStationName);
+                    FormatArgument.AppendFormat("\t\t\t\t;\n");
+
+                    FormatArgument.AppendFormat("\t\t\t\tCALL slowerWorkingMd (very_slow_speed, approach_acc, approach_dec)\n");
+                    FormatArgument.AppendFormat("\t\t\t\tLMOVE p{0}\n", robot.Stations[i].RobotStationName);
+                    FormatArgument.AppendFormat("\t\t\t\t;\n");
+                }
+                else
+                {
+                    FormatArgument.AppendFormat("\t\t\t\tCALL fullWorkingSpd\n");
+                    FormatArgument.AppendFormat("\t\t\t\tLMOVE TRANS (0, 0, station_z) + p{0}Final\n", robot.Stations[i].RobotStationName);
+                    FormatArgument.AppendFormat("\t\t\t\t;\n");
+
+                    FormatArgument.AppendFormat("\t\t\t\tCALL slowerWorkingMd (slower_speed, approach_acc, approach_dec)\n");
+                    FormatArgument.AppendFormat("\t\t\t\tLMOVE TRANS (0, 0, slow_z) + p{0}Final\n", robot.Stations[i].RobotStationName);
+                    FormatArgument.AppendFormat("\t\t\t\t;\n");
+
+                    FormatArgument.AppendFormat("\t\t\t\tCALL slowerWorkingMd (very_slow_speed, approach_acc, approach_dec)\n");
+                    FormatArgument.AppendFormat("\t\t\t\tLMOVE p{0}Final\n", robot.Stations[i].RobotStationName);
+                    FormatArgument.AppendFormat("\t\t\t\t;\n");
+                }
+
+            }
+            FormatArgument.Remove(FormatArgument.Length - 1, 1);
+
+            return string.Format(Format, FormatArgument).ToString();
+
+        }
+
+        ////Generate MOVEMENTS_GoHome program
+        public static string GetKawasakiGoHome(ProgramModel robot)
+        {
+            string Format = KawasakiMOVEMENTS_GoHome;
+            StringBuilder FormatArgument = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument.AppendFormat("\t\tVALUE {0}:\n", robot.Stations[i].RobotStationName);
+                FormatArgument.AppendFormat("\t\t\tJMOVE #pHome\n");
+                FormatArgument.AppendFormat("\t\t\t;\n");
+            }
+            FormatArgument.Remove(FormatArgument.Length - 1, 1);
+
+            return string.Format(Format, FormatArgument).ToString();
+
+        }
+
+        ////Generate MOVEMENTS_GoStation program
+        public static string GetKawasakiGoStation(ProgramModel robot, int currstation)
+        {
+            string Format = KawasakiMOVEMENTS_GoStation;
+            StringBuilder FormatArgument = new StringBuilder();
+            StringBuilder FormatArgument2 = new StringBuilder();
+            StringBuilder FormatArgument3 = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument.AppendFormat("\t\tVALUE {0}:\n", robot.Stations[i].RobotStationName);
+                FormatArgument.AppendFormat("\t\t\tJMOVE pOutsideStation\n");
+                FormatArgument.AppendFormat("\t\t\t;\n");
+            }
+            FormatArgument.Remove(FormatArgument.Length - 1, 1);
+
+            ///
+
+            if (robot.Stations[currstation].StationFreeEnabled)
+            {
+                FormatArgument2.AppendFormat("\t;\"if going directly 'on station' then set the station immediately as BUSY (NOT FREE)\"\n");
+                FormatArgument2.AppendFormat("\tIF SIG (I_ON_STATION) THEN\n");
+                FormatArgument2.AppendFormat("\t\tSIGNAL (-O_{0}_FREE)\n", robot.Stations[currstation].RobotStationName);
+                FormatArgument2.AppendFormat("\tEND\n");
+                FormatArgument2.AppendFormat("\t;");
+            }
+            else
+            {
+                FormatArgument2.AppendFormat("\t;");
+            }
+
+            ///
+
+            if (robot.Stations[currstation].Positions != 1)
+            {
+                FormatArgument3.AppendFormat("\tCASE addPos OF\n");
+                for (int j = 1; j <= robot.Stations[currstation].Positions; j++)
+                {
+                    FormatArgument3.AppendFormat("\t\tVALUE {0}:\n", j);
+                    FormatArgument3.AppendFormat("\t\t\tPOINT p{0}Final = p{0}{1}\n", robot.Stations[currstation].RobotStationName, j);
+                    FormatArgument3.AppendFormat("\t\t\t;\n");
+                }
+                FormatArgument3.AppendFormat("\t\tANY :\n");
+                FormatArgument3.AppendFormat("\t\t\tPRINT 2: \"ERROR: add_pos data invalid\"\n");
+                FormatArgument3.AppendFormat("\t\t\tSIGNAL O_PROGRAM_ERROR, O_S_ERROR\n");
+                FormatArgument3.AppendFormat("\tEND\n");
+                FormatArgument3.AppendFormat("\t;\n");
+                //
+                FormatArgument3.AppendFormat("\tPOINT pOutsideStation = p{0}Final\n", robot.Stations[currstation].RobotStationName);
+                FormatArgument3.AppendFormat("\tPOINT/Z pOutsideStation = TRANS (0, 0, max_z)\n");
+            }
+            else
+            {
+                FormatArgument3.AppendFormat("\tPOINT pOutsideStation = p{0}\n", robot.Stations[currstation].RobotStationName);
+                FormatArgument3.AppendFormat("\tPOINT/Z pOutsideStation = TRANS (0, 0, max_z)\n");
+            }
+            FormatArgument3.Remove(FormatArgument3.Length - 1, 1);
+            ///
+
+            return string.Format(Format, robot.Stations[currstation].RobotStationName, FormatArgument, FormatArgument2, FormatArgument3).ToString();
+
+        }
+
+        ////Generate FUNCTIONS program
+        public static string GetKawasakiFunctions(ProgramModel robot)
+        {
+            string Format = KawasakiFUNCTIONS;
+            StringBuilder FormatArgument0 = new StringBuilder();
+            StringBuilder FormatArgument1 = new StringBuilder();
+            StringBuilder FormatArgument2 = new StringBuilder();
+            StringBuilder FormatArgument3 = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+                FormatArgument0.AppendFormat("\t{0} = {1}\n", robot.Stations[i].RobotStationName,i);
+                //
+                if (robot.Stations[i].StationFreeEnabled)
+                {
+                    FormatArgument1.AppendFormat("\tSIGNAL O_{0}_FREE\n", robot.Stations[i].RobotStationName);
+                    FormatArgument2.AppendFormat("\tSIGNAL -O_{0}_FREE\n", robot.Stations[i].RobotStationName);
+                }
+                //
+                if (robot.Stations[i].Positions == 1)
+                {
+                    FormatArgument3.AppendFormat("\ta = DISTANCE (HERE, p{0})\n", robot.Stations[i].RobotStationName);
+                }
+                else
+                {
+                    FormatArgument3.AppendFormat("\ta = DISTANCE (HERE, p{0}1)\n", robot.Stations[i].RobotStationName);
+                }
+                FormatArgument3.AppendFormat("\tIF a < dist THEN\n");
+                FormatArgument3.AppendFormat("\t\tdist = a\n");
+                FormatArgument3.AppendFormat("\t\tclosestpoint = {0}\n", robot.Stations[i].RobotStationName);
+                FormatArgument3.AppendFormat("\tEND\n");
+                FormatArgument3.AppendFormat("\t;\n");
+            }
+            FormatArgument0.Remove(FormatArgument0.Length - 1, 1);
+            FormatArgument1.Remove(FormatArgument1.Length - 1, 1);
+            FormatArgument2.Remove(FormatArgument2.Length - 1, 1);
+            FormatArgument3.Remove(FormatArgument3.Length - 1, 1);
+
+            return string.Format(Format, FormatArgument0, FormatArgument1, FormatArgument2, FormatArgument3).ToString();
+
+        }
+
+        ////Generate CALIBRATION program
+        public static string GetKawasakiCalibration(ProgramModel robot)
+        {
+            string Format = KawasakiCALIBRATION;
+
+            return string.Format(Format).ToString();
+
+        }
+
+        ////Generate POINTS program
+        public static string GetKawasakiPoints(ProgramModel robot)
+        {
+            NumberFormatInfo dot = new NumberFormatInfo();
+            dot.NumberDecimalSeparator = ".";
+            string Format = KawasakiPOINTS;
+            StringBuilder FormatArgument = new StringBuilder();
+            StringBuilder FormatArgument2 = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+                if (robot.Stations[i].Positions != 1)
+                {
+                    for (int j = 1; j < robot.Stations[i].Positions + 1; j++) //create additional points
+                    {
+                        FormatArgument.AppendFormat("p{0}{7} {1} {2} {3} {4} {5} {6}\n", robot.Stations[i].RobotStationName, robot.Stations[i].Xcord.ToString(dot), robot.Stations[i].Ycord.ToString(dot), robot.Stations[i].Zcord.ToString(dot), robot.Stations[i].R1cord.ToString(dot), robot.Stations[i].R2cord.ToString(dot), robot.Stations[i].R3cord.ToString(dot),j);
+                    }
+                    //create final point for additional points
+                    FormatArgument.AppendFormat("p{0}Final {1} {2} {3} {4} {5} {6}\n", robot.Stations[i].RobotStationName, robot.Stations[i].Xcord.ToString(dot), robot.Stations[i].Ycord.ToString(dot), robot.Stations[i].Zcord.ToString(dot), robot.Stations[i].R1cord.ToString(dot), robot.Stations[i].R2cord.ToString(dot), robot.Stations[i].R3cord.ToString(dot));
+                }
+                else //create normal station points
+                {
+                    FormatArgument.AppendFormat("p{0} {1} {2} {3} {4} {5} {6}\n", robot.Stations[i].RobotStationName, robot.Stations[i].Xcord.ToString(dot), robot.Stations[i].Ycord.ToString(dot), robot.Stations[i].Zcord.ToString(dot), robot.Stations[i].R1cord.ToString(dot), robot.Stations[i].R2cord.ToString(dot), robot.Stations[i].R3cord.ToString(dot));
+                }
+
+            }
+            FormatArgument.Remove(FormatArgument.Length - 1, 1);
+
+            FormatArgument2.AppendFormat("#p{0} 0 -20 -20 0 -90 0", robot.Stations[0].RobotStationName);
+
+            return string.Format(Format,FormatArgument,FormatArgument2).ToString();
+
+        }
+
+        ////Generate IO program
+        public static string GetKawasakiIO(ProgramModel robot)
+        {
+            string Format = KawasakiIO;
+            int out1 = 57;
+            StringBuilder FormatArgument = new StringBuilder();
+            StringBuilder FormatArgument2 = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+                if (robot.Stations[i].StationFreeEnabled)
+                {
+                    FormatArgument.AppendFormat("N_OX{0}    \"O_{1}_FREE  \"\n", out1, robot.Stations[i].RobotStationName);
+                    FormatArgument2.AppendFormat("O_{0}_FREE = {1}\n", robot.Stations[i].RobotStationName, out1);
+                    out1++;
+                }
+                FormatArgument2.AppendFormat("{0} = {1}\n", robot.Stations[i].RobotStationName, i);
+            }
+            FormatArgument.Length--;
+            FormatArgument2.Length--;
+
+            return string.Format(Format, FormatArgument, FormatArgument2).ToString();
+
+        }
+
+        ////Generate IO handling program
+        public static string GetKawasakiIOhandling(ProgramModel robot)
+        {
+            string Format = KawasakiIOhandling;
+
+            return string.Format(Format).ToString() + "\n";
+
+        }
+
+        ////Generate COMMENT program
+        public static string GetKawasakiComment(ProgramModel robot)
+        {
+            string Format = KawasakiCOMMENT;
+            StringBuilder FormatArgument0 = new StringBuilder();
+            StringBuilder FormatArgument1 = new StringBuilder();
+            StringBuilder FormatArgument2 = new StringBuilder();
+
+            for (int i = 1; i < robot.Stations.Count; i++)
+            {
+
+                FormatArgument0.AppendFormat("\t; 3:go{0}:F\n", robot.Stations[i].RobotStationName);
+
+
+                if (robot.Stations[i].Positions != 1)
+                {
+                    for (int j = 1; j < robot.Stations[i].Positions + 1; j++) //create additional points
+                    {
+                        FormatArgument1.AppendFormat("\t; p{0}{2} {1}: {2}\n", robot.Stations[i].RobotStationName, robot.Stations[i].RobotStationComment, j);
+                    }
+                    //create final point for additional points
+                    FormatArgument1.AppendFormat("\t; p{0}Final {1} - final pos\n", robot.Stations[i].RobotStationName, robot.Stations[i].RobotStationComment);
+                }
+                else //create normal station points
+                {
+                    FormatArgument1.AppendFormat("\t; p{0} {1}\n", robot.Stations[i].RobotStationName, robot.Stations[i].RobotStationComment);
+                }
+
+
+                if (robot.Stations[i].StationFreeEnabled)
+                {
+                    FormatArgument2.AppendFormat("\t; O_{0}_FREE\n", robot.Stations[i].RobotStationName);
+                }
+
+
+            }
+            FormatArgument0.Remove(FormatArgument0.Length - 1, 1);
+            FormatArgument1.Remove(FormatArgument1.Length - 1, 1);
+            FormatArgument2.Remove(FormatArgument2.Length - 1, 1);
+
+            return string.Format(Format, FormatArgument0, FormatArgument1, FormatArgument2).ToString();
+
         }
 
         #endregion

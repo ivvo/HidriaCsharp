@@ -1,0 +1,62 @@
+.PROGRAM robot_homing() #57; Move "safely" to the home position
+   ;
+   ;"loop until allowed to start HOMING process"
+   WHILE TRUE DO
+      IF SIG (I_HOMING) OR SIG (USER_HOMING_ON) THEN ;USER_HOMING_ON je samo za testiranje
+         ;
+         SIGNAL (-O_HOMING_REQ)
+         SIGNAL (homing_flag)
+         ;
+         ;"check TOOL state (OPEN or CLOSED)"
+         CALL checkToolState
+         ;
+         ;"call the function to find a known point that the robot is currently closest to"
+         CALL findClosePoint
+         robot_from = closestpoint
+         ;
+         SIGNAL (O_IN_MOTION)
+         ;
+         ;"set the power level to LOW"
+         CALL setPowerMode
+         ;
+         ;
+         ;"move robot to a SAFE position depending on the closest point found"
+         CASE robot_from OF
+            VALUE HomePos:
+               SIGNAL (-in_station)
+               ;
+               ;
+{0}
+            ANY :
+               PRINT 2: "ERROR: robot_from/homing data invalid"
+               SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+         END;
+         ;
+         ;BREAK
+         ;"move robot to HOME position"
+         CALL goHome
+         BREAK
+         ;
+         ;
+         ;"send the current location to the PLC"
+         BITS O_POSITION_AT, 16 = 0
+         SIGNAL -O_IN_MOTION
+         SIGNAL O_END
+         SIGNAL O_HOMING_OK
+         SIGNAL O_RESET_OK
+         SIGNAL -homing_flag
+         CALL stationsFree
+         PRINT "HOMING DONE"
+         GOTO endoftask
+      END
+      ;
+      ;"always use a small time period in loops!"
+      TWAIT 0.02
+   END
+   ;
+endoftask:
+   PRINT "djela"
+   ;
+   TWAIT 0.1
+   ;
+.END

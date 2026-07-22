@@ -1,0 +1,28 @@
+.PROGRAM moveOnStation() #851
+	;
+	;"call the function to set the current power state (LOW or HIGH)"
+	CALL setPowerMode
+	;
+	;"if movement IN station is allowed move the robot to final point IN station"
+	;"if not, SKIP"
+	IF SIG (I_ON_STATION) OR SIG (USER_ON_STATION) THEN
+		;
+		;"move the robot to final point IN destination station"
+		CASE robot_to OF
+			VALUE HomePos:
+				JMOVE #pHome
+				;
+{0}
+			ANY :
+				PRINT 2: "ERROR: robot_to data invalid"
+				SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+		END
+		;
+		;"wait for robot to complete current movement"
+		BREAK
+		;
+		;"robot is INSIDE station"
+		SIGNAL (in_station)
+		;
+	END
+.END

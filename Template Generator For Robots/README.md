@@ -48,7 +48,7 @@ treba ročno prestavljati.
 4. Za postajo s paleto ali več pozicijami (`Pallet`, `Positions`) ročno uredi ustrezno celico v
    tabeli spodaj po tem, ko je postaja že dodana — v vnosni vrstici teh dveh polj ni.
 5. V vrstici **Select template** izberi proizvajalca (Epson Hidria / KUKA Hella / ABB Hidria /
-   ABB Simulacija).
+   ABB Simulacija / Yamaha / Kawasaki).
 6. Klikni **Generate**, izberi ciljno mapo. Orodje zapiše vse datoteke tega proizvajalca in odpre
    mapo v Raziskovalcu. Sporočilo o uspehu/napaki se izpiše v vrstici na dnu okna.
 
@@ -59,7 +59,7 @@ naučene koordinate ali morebitni ročni popravki v generirani kodi.
 
 1. Klikni **Import Project**, izberi mapo z že generiranim projektom. Proizvajalec se zazna
    samodejno iz strukture mape (`*_Motion.mod` → ABB Hidria, `R1\Program\` → KUKA Hella, `*.prg` →
-   Epson Hidria, `*.all` → Yamaha). Tabela postaj se napolni z obstoječim stanjem.
+   Epson Hidria, `*.all` → Yamaha, `*.as` → Kawasaki). Tabela postaj se napolni z obstoječim stanjem.
 2. Dodaj novo postajo enako kot zgoraj (korak 3): ime, po potrebi **Station free**, **Add Station**.
    Nova postaja se lahko doda samo **na konec** obstoječega seznama.
 3. Klikni **Update Project** na isti mapi. Orodje najprej naredi varnostno kopijo cele mape
@@ -67,7 +67,7 @@ naučene koordinate ali morebitni ročni popravki v generirani kodi.
    kodo, ki se nanaša na novo postajo — preostala koda (vključno z ročnimi popravki in naučenimi
    koordinatami v `.pts`/`*_motion.dat`/`Global.mod`/`.all` `[PNT]`) ostane bit-za-bit nedotaknjena.
 
-Import/Update je podprt za **Epson Hidria, KUKA Hella, ABB Hidria in Yamaha** (za Yamaho je celoten
+Import/Update je podprt za **Epson Hidria, KUKA Hella, ABB Hidria, Yamaha in Kawasaki** (za Yamaho je celoten
 program — koda, naučene točke `[PNT]` in IO oznake — v eni `.all` datoteki na robota).
 
 ## Znane omejitve

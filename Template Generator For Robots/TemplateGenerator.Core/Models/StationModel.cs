@@ -20,6 +20,22 @@ namespace TemplateGenerator.Core.Models
 
         public int Positions { get; set; } = 1;
 
+        // Koordinate naučenih točk (uporablja jih Kawasaki generator; ostali vendorji jih pišejo kot
+        // 0 oz. jih ne uporabljajo). Rotacije R1/R2/R3 imajo pri različnih robotih različne oznake.
+        public string RobotStationComment { get; set; }
+
+        public double Xcord { get; set; } = 0.000;
+
+        public double Ycord { get; set; } = 0.000;
+
+        public double Zcord { get; set; } = 0.000;
+
+        public double R1cord { get; set; } = 0.000;
+
+        public double R2cord { get; set; } = 0.000;
+
+        public double R3cord { get; set; } = 0.000;
+
         public StationModel(string stationName)
         {
             RobotStationName = stationName;

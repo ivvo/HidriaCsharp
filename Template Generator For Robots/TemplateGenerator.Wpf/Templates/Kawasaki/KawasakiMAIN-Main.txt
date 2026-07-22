@@ -1,0 +1,20 @@
+.PROGRAM Main() #0; Main Program, always prime this program before starting
+	;
+	;"always PRIME the 'Main' program aften making changes"
+	;
+	PRINT "START robot_Init"
+	CALL robot_init
+	TWAIT 1
+	;
+	PRINT "ABORT and RESTART parallel process"
+	;PCABORT
+	;PCEXECUTE 1: IO_handling.pc
+	;
+	PRINT "START robot_homing"
+	CALL robot_homing
+	;
+	PRINT "START mainTask"
+	CALL testAll
+	;CALL mainTask
+	;
+.END

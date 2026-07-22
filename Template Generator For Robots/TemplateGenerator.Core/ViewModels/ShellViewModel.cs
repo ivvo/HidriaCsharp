@@ -52,7 +52,8 @@ namespace TemplateGenerator.Core.ViewModels
                 "KUKA Hella",
                 "ABB Hidria",
                 "ABB Simulacija",
-                "Yamaha"
+                "Yamaha",
+                "Kawasaki"
             };
         }
 
@@ -504,6 +505,41 @@ namespace TemplateGenerator.Core.ViewModels
                     OpenFolder(path);
                 }
             }
+            else if (SelectedTemplate == "Kawasaki")
+            {
+                if (path != String.Empty)
+                {
+                    // Kawasaki zapakira celoten program (koda + točke + IO) v ENO "ProgramFile.as".
+                    using (StreamWriter sw = File.CreateText(path + "//" + "ProgramFile.as"))
+                    {
+                        foreach (ProgramModel robot in Program)
+                        {
+                            sw.Write(Template.GetKawasakiTesting(robot));
+                            sw.Write(Template.GetKawasakiMain(robot));
+                            sw.Write(Template.GetKawasakiInit(robot));
+                            sw.Write(Template.GetKawasakiHoming(robot));
+                            sw.Write(Template.GetKawasakiMainTask(robot));
+                            sw.Write(Template.GetKawasakiMoveAway(robot));
+                            sw.Write(Template.GetKawasakiMoveOnStation(robot));
+                            sw.Write(Template.GetKawasakiGoHome(robot));
+                            for (int n = 1; n < robot.Stations.Count; n++)
+                            {
+                                sw.Write(Template.GetKawasakiGoStation(robot, n));
+                            }
+                            sw.Write(Template.GetKawasakiFunctions(robot));
+                            sw.Write(Template.GetKawasakiCalibration(robot));
+                            sw.Write(Template.GetKawasakiPoints(robot));
+                            sw.Write(Template.GetKawasakiIO(robot));
+                            sw.Write(Template.GetKawasakiIOhandling(robot));
+                            sw.Write(Template.GetKawasakiComment(robot));
+
+                            excell.GenerateIO("Kawasaki", robot, path);
+                        }
+                    }
+                    TextUpdate = "Kawasaki program generated: " + path;
+                    OpenFolder(path);
+                }
+            }
             else
             {
                 TextUpdate = "select a template";
@@ -542,9 +578,14 @@ namespace TemplateGenerator.Core.ViewModels
                     imported = YamahaProjectImporter.Import(path);
                     vendor = "Yamaha";
                 }
+                else if (Directory.GetFiles(path, "*.as").Length > 0)
+                {
+                    imported = KawasakiProjectImporter.Import(path);
+                    vendor = "Kawasaki";
+                }
                 else
                 {
-                    TextUpdate = "V izbrani mapi ni bilo mogoče zaznati Epson/KUKA Hella/ABB Hidria/Yamaha projekta.";
+                    TextUpdate = "V izbrani mapi ni bilo mogoče zaznati Epson/KUKA Hella/ABB Hidria/Yamaha/Kawasaki projekta.";
                     return;
                 }
 
@@ -604,6 +645,7 @@ namespace TemplateGenerator.Core.ViewModels
                     case "KUKA Hella": backupPath = KukaHellaProjectUpdater.BackupFolder(path); break;
                     case "ABB Hidria": backupPath = AbbHidriaProjectUpdater.BackupFolder(path); break;
                     case "Yamaha": backupPath = YamahaProjectUpdater.BackupFolder(path); break;
+                    case "Kawasaki": backupPath = KawasakiProjectUpdater.BackupFolder(path); break;
                     default: throw new InvalidOperationException($"Neznan proizvajalec '{_importedVendor}'.");
                 }
 
@@ -618,6 +660,7 @@ namespace TemplateGenerator.Core.ViewModels
                         case "KUKA Hella": KukaHellaProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "ABB Hidria": AbbHidriaProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "Yamaha": YamahaProjectUpdater.UpdateProgram(program, newStations, path); break;
+                        case "Kawasaki": KawasakiProjectUpdater.UpdateProgram(program, newStations, path); break;
                     }
 
                     _stationBaseline[program] = program.Stations.Count;

@@ -1,0 +1,38 @@
+.PROGRAM goPosition () ; main loop
+	PRINT "START testProgram"
+	;
+	SIGNAL USER_ON_STATION
+	;
+	CASE position OF
+		VALUE HomePos:
+			CALL goHome
+			;
+			;
+{0}		VALUE onlymoveaway:
+			robot_to = onlymoveaway
+			CALL moveAway
+			BREAK
+			;
+			;
+		ANY :
+			PRINT 2: "ERROR: I_POSITION_TO data invalid"
+			SIGNAL O_PROGRAM_ERROR, O_S_ERROR
+			;
+	END
+	;
+.END
+.PROGRAM testAll() #0;
+	;
+	FOR .n = 0 TO {1}
+		position = .n
+		;CALL testProgram
+		FOR .m = 0 TO {1}
+			position = .n
+			CALL goPosition
+			position = .m
+			CALL goPosition
+		END
+	END
+	;
+	;
+.END

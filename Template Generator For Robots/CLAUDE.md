@@ -71,11 +71,21 @@ to the view model, so in the running app it's stuck at its default (`true`).
 
 For each vendor there's a matching pair in `TemplateGenerator.Core\Classes\`:
 `EpsonProjectImporter`/`EpsonProjectUpdater`, `KukaHellaProjectImporter`/`KukaHellaProjectUpdater`,
-`AbbHidriaProjectImporter`/`AbbHidriaProjectUpdater`, `YamahaProjectImporter`/`YamahaProjectUpdater`.
-`ShellViewModel.ImportProject(path)` auto-detects the vendor from folder shape (`*_Motion.mod` → ABB
-Hidria, `R1/Program/` → KUKA Hella, `*.prg` → Epson, `*.all` → Yamaha) and dispatches to the matching
-`Importer`; `UpdateProject(path)` remembers which vendor was imported (`_importedVendor`) and
-dispatches to the matching `Updater`.
+`AbbHidriaProjectImporter`/`AbbHidriaProjectUpdater`, `YamahaProjectImporter`/`YamahaProjectUpdater`,
+`KawasakiProjectImporter`/`KawasakiProjectUpdater`. `ShellViewModel.ImportProject(path)` auto-detects
+the vendor from folder shape (`*_Motion.mod` → ABB Hidria, `R1/Program/` → KUKA Hella, `*.prg` →
+Epson, `*.all` → Yamaha, `*.as` → Kawasaki) and dispatches to the matching `Importer`;
+`UpdateProject(path)` remembers which vendor was imported (`_importedVendor`) and dispatches to the
+matching `Updater`.
+
+Kawasaki (ported from the V3 sibling project) generates a single `ProgramFile.as` (code + taught
+points + IO) and — like Yamaha — its `Updater` regenerates that file from the model and overlays the
+taught point coordinates back **by point name** (`p<Station>`, `p<Station>N`, `p<Station>Final`,
+`#pHome`). Kawasaki finds the closest homing point **by name** (`DISTANCE`), so it has no numeric-index
+gotcha. Its generator reads coordinate fields on `StationModel` (`Xcord/Ycord/Zcord/R1..R3cord`,
+`RobotStationComment`) — added for this port; multi-position stations keep only one coordinate per
+station in the model, so the name-overlay is what preserves distinct `p<Station>2`/`Final` taught
+values on update.
 
 Yamaha differs from the other three in two ways: the whole program (code + taught `[PNT]` points + IO
 labels) lives in a single self-contained `<ProgramName>.all` file per robot (so Yamaha has **no**

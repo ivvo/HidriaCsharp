@@ -42,6 +42,10 @@ namespace TemplateGenerator.Core.Classes
 
         public void GenerateIO(string template, ProgramModel program, string path)
         {
+            // Kawasaki ima svojo IO predlogo z drugačnim listom (Sheet1) in postavitvijo stolpcev kot
+            // Epson/ABB (List1), zato ga obravnavamo posebej.
+            if (template == "Kawasaki") { GenerateKawasakiIO(program, path); return; }
+
             uint firstFreeByte = 0;
             uint n = 0;
             uint k = 0;
@@ -99,13 +103,50 @@ namespace TemplateGenerator.Core.Classes
             UpdateCell(path + "//" + "templateIO.xlsx", "5.0", line + 5 + k, "C");
         }
 
+        // Kawasaki IO tabela: svoja predloga (IO_template_KAWASAKI.xlsx -> IOTable.xlsx), list "Sheet1",
+        // stolpci C/D (free signali) in P/Q/R (ime postaje / indeks / št. pozicij). Postavitev je enaka
+        // kot v V3, da je izhod skladen med projektoma.
+        private void GenerateKawasakiIO(ProgramModel program, string path)
+        {
+            string file = path + "//" + "IOTable.xlsx";
+            File.Copy("./Templates/Kawasaki/IO_template_KAWASAKI.xlsx", file, true);
+
+            uint line = 59;
+            uint robPos = 3;
+            uint k = 0;
+
+            for (int i = 0; i < program.Stations.Count; i++)
+            {
+                if (program.Stations[i].StationFreeEnabled)
+                {
+                    UpdateCellOnSheet(file, "Sheet1", $"ROBOT_O_{program.Stations[i].RobotStationNameToUpper}_FREE", line + k, "C");
+                    UpdateCellOnSheet(file, "Sheet1", "Bool", line + k, "D");
+                    k++;
+                }
+
+                if (i > 0)
+                {
+                    UpdateCellOnSheet(file, "Sheet1", program.Stations[i].RobotStationName, robPos + (uint)i, "P");
+                    UpdateCellOnSheet(file, "Sheet1", $"{i}", robPos + (uint)i, "Q");
+                }
+
+                if (program.Stations[i].Positions == 1)
+                    UpdateCellOnSheet(file, "Sheet1", "/", robPos + (uint)i, "R");
+                else
+                    UpdateCellOnSheet(file, "Sheet1", $"{program.Stations[i].Positions}", robPos + (uint)i, "R");
+            }
+        }
+
         public static void UpdateCell(string docName, string text, uint rowIndex, string columnName)
+            => UpdateCellOnSheet(docName, "List1", text, rowIndex, columnName);
+
+        public static void UpdateCellOnSheet(string docName, string sheetName, string text, uint rowIndex, string columnName)
         {
 
             // Open the document for editing.
             using (SpreadsheetDocument spreadSheet = SpreadsheetDocument.Open(docName, true))
             {
-                WorksheetPart worksheetPart = GetWorksheetPartByName(spreadSheet, "List1");
+                WorksheetPart worksheetPart = GetWorksheetPartByName(spreadSheet, sheetName);
 
                 if (worksheetPart != null)
                 {
