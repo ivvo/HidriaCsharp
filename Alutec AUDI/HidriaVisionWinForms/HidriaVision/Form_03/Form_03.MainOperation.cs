@@ -173,8 +173,6 @@ namespace HidriaVision
                                 "_"
                                   );
 
-
-
                                 // Ime shranjene slike = DMC koda iz PLC-ja (počiščena). Če DMC ni na voljo, uporabi CycleStartId.
                                 string ImageBaseName = string.IsNullOrWhiteSpace(DMC_CODE_NAME) ? $"{CycleStartId}" : DMC_CODE_NAME;
                                 string ConstructedImageSFX1Name = $"{ImageBaseName}_I01.bmp";
