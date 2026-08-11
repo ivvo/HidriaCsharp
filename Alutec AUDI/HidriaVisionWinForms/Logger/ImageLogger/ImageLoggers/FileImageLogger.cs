@@ -106,8 +106,13 @@ namespace Logger.ImageLogger
 
                     ImagesToDelete.ForEach(x => x.Delete());
 
-                    // Add new image to the directory and fire the event
-                    ConstructedFileName = $"{LogEntry.TimeOfOccurance.ToString("yyyyMMdd")}_{LogEntry.TimeOfOccurance.ToString("HHmmss")}_{LogEntry.TimeOfOccurance.ToString("fff")}_I{LogEntry.ImageID.ToString("00")}{FileExtention}";
+                    // Add new image to the directory and fire the event.
+                    // If a custom name (e.g. DMC code) is provided, use it; otherwise fall back to the timestamp name.
+                    if (!string.IsNullOrWhiteSpace(LogEntry.CustomName))
+                        ConstructedFileName = $"{LogEntry.CustomName}_I{LogEntry.ImageID.ToString("00")}{FileExtention}";
+                    else
+                        ConstructedFileName = $"{LogEntry.TimeOfOccurance.ToString("yyyyMMdd")}_{LogEntry.TimeOfOccurance.ToString("HHmmss")}_{LogEntry.TimeOfOccurance.ToString("fff")}_I{LogEntry.ImageID.ToString("00")}{FileExtention}";
+
                     LogEntry.Img?.Save(Path.Combine(FullPath, ChoosenDirectory, ConstructedFileName));
 
                     OnImageLogAddedEvent(LogEntry);

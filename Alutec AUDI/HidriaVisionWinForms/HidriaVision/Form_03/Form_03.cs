@@ -234,48 +234,7 @@ namespace HidriaVision
 
             // Load snap7 db sections
             LoadSnap7DbSections();
-
-            //// Perform progress bar update
-            //ProgressBarUpdate("Station03: Initializing led driver");
-            //Logger.AddEntry(LoggingLevel.Info, "Station03: Initializing led driver");
-
-            //// Initialize led controller
-            //try
-            //{
-            //    LedController = new RGBWController((string)StationSettings.GetElement("SerialConnection", "LedController01", "PortName"));
-
-            //    // Open the connection
-            //    await Task.Run(() => LedController.OpenPort(Rs232baudrate.Baudrate_115200));
-
-
-            //    //lock (LedController)
-            //    //{
-            //    //    try
-            //    //    {
-            //    //        byte LedIntensity = (byte)Parameters.Value.GetElement("LedControllerIntensites", "Camera1Intensities", "Intensity");
-            //    //        LedController.SetLedChannels(LedIntensity, LedIntensity, LedIntensity, LedIntensity);
-            //    //        // Set surface FX
-            //    //        LedController.SetLedTriggerMode(LedTriggerMode.External);
-            //    //        LedController.SetSurfaceFx(SurfaceFxState.Enabled);
-            //    //        LedController.SetSurfaceFxMode(SurfaceFxMode.Trigger);
-            //    //        LedController.SetSurfaceFxTriggerDelay(50);
-            //    //    }
-            //    //    catch (Exception e) when (e is InvalidOperationException || e is TimeoutException || e is ControllerOperationFailedException)
-            //    //    {
-            //    //        // Add entry to a log
-            //    //        Logger.AddEntry(LoggingLevel.Error, $"Station03: {e.Message}");
-            //    //        LedControllerError.Value = true;
-            //    //    }
-            //    //}
-            //    // Add log entry
-            //    Logger.AddEntry(LoggingLevel.Info, "Station03: Led driver initialized");
-            //}
-            //catch (InvalidOperationException e)
-            //{
-            //    // Just Add entry to a log and set error flag
-            //    Logger.AddEntry(LoggingLevel.Error, $"Station03: {e.Message}");
-            //    LedControllerError.Value = true;
-            //}
+            
 
             // Perform progress bar update
             ProgressBarUpdate("Station06: Initializing camera 01");

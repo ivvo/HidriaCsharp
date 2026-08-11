@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace HidriaVision
 {
@@ -162,11 +163,25 @@ namespace HidriaVision
                             {
                                 bool CycleCancelled = MainOperationCycleCancel.Value;
                                 bool EndStatusOK = !Camera01Error.Value;
+                                /*
+                                string DMC_CODE_NAME = DMC_codeRequest.Value.Replace('*', '_');
+                                DMC_CODE_NAME = DMC_codeRequest.Value.Replace('/', '_');
+                                */
+                                string DMC_CODE_NAME = Regex.Replace(
+                                DMC_codeRequest.Value,
+                                @"[^a-zA-Z0-9]",
+                                "_"
+                                  );
 
-                                //string DMC_CODE_NAME = DMC_codeRequest.Value.Replace('*', '_');
 
-                                string ConstructedImageSFX1Name = $"{CycleStartId}_I01.bmp";
-                               // string ConstructedImageSFX1Name = $"{DMC_CODE_NAME}_I01.bmp";
+
+                                // Ime shranjene slike = DMC koda iz PLC-ja (počiščena). Če DMC ni na voljo, uporabi CycleStartId.
+                                string ImageBaseName = string.IsNullOrWhiteSpace(DMC_CODE_NAME) ? $"{CycleStartId}" : DMC_CODE_NAME;
+                                string ConstructedImageSFX1Name = $"{ImageBaseName}_I01.bmp";
+
+                                // Ali gre slika v OK ali NOK podmapo (usklajeno s FileImageLogger; prekinjen cikel = NOK)
+                                bool ImageStatusOk = !CycleCancelled && EndStatusOK;
+                                string ImageSubfolder = ImageStatusOk ? "OK" : "NOK";
                                 
 
                                 //Camera01.SetCameraOutput(false);
@@ -180,7 +195,7 @@ namespace HidriaVision
                                 CommonLogResults.CycleTime = $"{CycleWatch.ElapsedMilliseconds.ToString()}ms";
 
                                 //CommonLogResults.Image1 = new ImageSource($"./Log/ImageLog/Station06/Type000/P000/OK/{ConstructedImageSFX1Name}");
-                                CommonLogResults.Image1 = new ImageSource($@"C:\Slike\Station06\Type000\P000\OK\{ConstructedImageSFX1Name}");
+                                CommonLogResults.Image1 = new ImageSource($@"C:\Slike\Station06\Type000\P000\{ImageSubfolder}\{ConstructedImageSFX1Name}");
                                 //CommonLogResults.Image2 = new ImageSource($"./Log/ImageLog/Station03/Type{TypeResponse.Value:000}/P000/OK/{ConstructedImageSFX2Name}");
 
 
@@ -227,7 +242,7 @@ namespace HidriaVision
                                     Logger.AddEntry(LoggingLevel.Error, $"Station03: Napaka pri prikazu slike: {e.Message}");
                                 }
 
-                                ImageLogger.Value.AddEntry(new ImageLogEntry(Camera01SFXImages.Value, CycleTimeStamp, 1, true));
+                                ImageLogger.Value.AddEntry(new ImageLogEntry(Camera01SFXImages.Value, CycleTimeStamp, 1, ImageStatusOk, ImageBaseName));
                                 //ImageLogger.Value.AddEntry(new ImageLogEntry(Camera01SFXImages.Value[1], CycleTimeStamp, 2, true));
 
                                 // Add entry to productivity control
