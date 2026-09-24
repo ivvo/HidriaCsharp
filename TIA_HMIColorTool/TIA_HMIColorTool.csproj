@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{7D3C1E52-8A4B-4F21-9C6E-2B1A7F0D5E91}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>TIA_HMIColorTool</RootNamespace>
+    <AssemblyName>TIA_HMIColorTool</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <LangVersion>7.3</LangVersion>
+    <!-- Pot do TIA Portal V20 Openness API -->
+    <OpennessDir>C:\Program Files\Siemens\Automation\Portal V20\PublicAPI\V20\</OpennessDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <!-- Openness DLL-ji se NE kopirajo v bin (Private=false) - naložijo se iz TIA mape prek AssemblyResolve v Program.cs -->
+    <Reference Include="Siemens.Engineering">
+      <HintPath>$(OpennessDir)Siemens.Engineering.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Siemens.Engineering.Hmi">
+      <HintPath>$(OpennessDir)Siemens.Engineering.Hmi.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Stari konzolni prototipi (ExportOneHmiScreen.cs, ImportOneHmiScreen.cs, HmiColorReplacer.cs)
+         ostanejo v mapi kot referenca in se NE prevajajo. -->
+    <Compile Include="src\Program.cs" />
+    <Compile Include="src\StaWorker.cs" />
+    <Compile Include="src\RgbColor.cs" />
+    <Compile Include="src\ColorMapping.cs" />
+    <Compile Include="src\ColorReplacer.cs" />
+    <Compile Include="src\TiaService.cs" />
+    <Compile Include="src\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
