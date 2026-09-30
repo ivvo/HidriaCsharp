@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+  <PLCConnection>
+    <!-- PLC Network Configuration -->
+    <IPAddress>192.168.0.10</IPAddress>
+    <Port>102</Port> <!-- Standard Snap7 port -->
+    <Rack>0</Rack>
+    <Slot>1</Slot>
+  </PLCConnection>
+
+  <!-- Application Configuration Settings -->
+  <ApplicationSettings>
+    <DefaultInputValue>5.0</DefaultInputValue>
+    <LoggingEnabled>True</LoggingEnabled>
+  </ApplicationSettings>
+
+  <DBSection>
+    <Read>
+      <DBNumber>1</DBNumber>
+      <!-- Example Read Data (Inputs from PLC) -->
+      <DBData><Name>Temperature</Name><DataType>System.Single</DataType><StartAddress>0</StartAddress><Length>1</Length></DBData>
+      <DBData><Name>StatusMessage</Name><DataType>System.String</DataType><StartAddress>4</StartAddress><Length>20</Length></DBData>
+    </Read>
+    <Write>
+      <DBNumber>2</DBNumber>
+      <!-- Example Write Data (Outputs to PLC) -->
+      <DBData><Name>TargetTemp</Name><DataType>System.Single</DataType><StartAddress>0</StartAddress><Length>1</Length></DBData>
+      <DBData><Name>CommandStr</Name><DataType>System.String</DataType><StartAddress>4</StartAddress><Length>20</Length></DBData>
+    </Write>
+  </DBSection>
+</Settings>
