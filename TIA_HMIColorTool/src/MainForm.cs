@@ -33,7 +33,7 @@ namespace TIA_HMIColorTool
         DataGridView _gridUsed;
 
         // Akcije
-        Button _btnExport, _btnDryRun, _btnReplace, _btnImport, _btnAnalyze;
+        Button _btnExport, _btnDryRun, _btnReplace, _btnImport, _btnAnalyze, _btnExportAll, _btnCancel;
 
         TextBox _tbLog;
 
@@ -119,7 +119,16 @@ namespace TIA_HMIColorTool
             _btnImport = MakeBigButton("3. Import izbranih", async (s, e) => await ImportSelected());
             _btnReplace.BackColor = Color.FromArgb(255, 235, 200);
             _btnImport.BackColor = Color.FromArgb(255, 220, 220);
-            actions.Controls.AddRange(new Control[] { _btnExport, _btnDryRun, _btnReplace, _btnImport });
+            _btnExportAll = MakeBigButton("Export ALL (analiza) ...", async (s, e) => await ExportAll());
+            _btnExportAll.BackColor = Color.FromArgb(215, 235, 255);
+            _btnCancel = MakeButton("Prekini", (s, e) =>
+            {
+                _tia.CancelRequested = true;
+                Log("Prekinjam po trenutnem objektu ...");
+            });
+            _btnCancel.Enabled = false;
+            _btnCancel.Margin = new Padding(3, 8, 3, 3);
+            actions.Controls.AddRange(new Control[] { _btnExport, _btnDryRun, _btnReplace, _btnImport, _btnExportAll, _btnCancel });
             var note = MakeLabel("Vse faze delajo samo na IZBRANIH elementih v drevesu. Projekt se NIKOLI ne shrani samodejno (Ctrl+S v TIA).");
             note.ForeColor = Color.DarkRed;
             note.Padding = new Padding(12, 10, 0, 0);
@@ -631,6 +640,56 @@ namespace TIA_HMIColorTool
             });
         }
 
+        /// <summary>
+        /// Izvoz vsega, kar Openness zna izvoziti, v &lt;mapa&gt;\&lt;projekt&gt;\ (+ export_log.txt, manifest.json).
+        /// Obstoječa mapa se izbriše samo, če je prejšnji Export all (vsebuje manifest.json) - zaradi čistega git diffa.
+        /// </summary>
+        async Task ExportAll()
+        {
+            if (!_tia.IsConnected) { Log("Najprej se poveži s TIA Portalom."); return; }
+            if (string.IsNullOrWhiteSpace(_tbOutDir.Text)) { Log("Določi mapo za export."); return; }
+            string outDir = _tbOutDir.Text.Trim();
+            string root = await _worker.Run(() => _tia.ExportAllRoot(outDir));
+
+            List<ExportCategory> categories;
+            using (var dlg = new ExportAllDialog(root))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                categories = dlg.SelectedCategories;
+            }
+            if (categories.Count == 0) { Log("Ni izbrane nobene kategorije."); return; }
+
+            if (Directory.Exists(root) && Directory.EnumerateFileSystemEntries(root).Any())
+            {
+                if (!File.Exists(Path.Combine(root, TiaService.ManifestName)))
+                {
+                    Log("Mapa " + root + " obstaja in NI prejšnji Export all (ni " + TiaService.ManifestName + ") - izberi drugo mapo za export.");
+                    return;
+                }
+                var r = MessageBox.Show(this,
+                    "Mapa prejšnjega izvoza bo v celoti izbrisana in ustvarjena na novo:\n\n" + root +
+                    "\n\n(Tako izbrisani objekti v TIA ne ostanejo kot stare datoteke.) Nadaljujem?",
+                    "Export all", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (r != DialogResult.Yes) return;
+                try { Directory.Delete(root, true); }
+                catch (Exception ex) { Log("NAPAKA pri brisanju " + root + ": " + ex.Message + " (je kakšna datoteka odprta?)"); return; }
+            }
+
+            await RunBusy(async () =>
+            {
+                _btnCancel.Enabled = true;
+                try
+                {
+                    await _worker.Run(() =>
+                    {
+                        int exported, skipped, failed;
+                        _tia.ExportAll(outDir, categories, LogFromWorker, out exported, out skipped, out failed);
+                    });
+                }
+                finally { _btnCancel.Enabled = false; }
+            });
+        }
+
         // ================================================================== Barve (brez TIA)
 
         /// <summary>
@@ -724,7 +783,7 @@ namespace TIA_HMIColorTool
 
         void SetBusy(bool busy)
         {
-            foreach (var b in new Control[] { _btnRefresh, _btnConnect, _btnExport, _btnDryRun, _btnReplace, _btnImport, _btnAnalyze, _cbProcess, _tree })
+            foreach (var b in new Control[] { _btnRefresh, _btnConnect, _btnExport, _btnDryRun, _btnReplace, _btnImport, _btnAnalyze, _btnExportAll, _cbProcess, _tree })
                 b.Enabled = !busy;
             UseWaitCursor = busy;
         }

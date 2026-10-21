@@ -42,7 +42,7 @@ namespace TIA_HMIColorTool
     /// Vsi Openness klici. Metode kliči SAMO s StaWorker threada.
     /// Projekta NIKOLI ne shrani - to naredi uporabnik ročno v TIA Portalu.
     /// </summary>
-    sealed class TiaService : IDisposable
+    sealed partial class TiaService : IDisposable
     {
         TiaPortal _portal;
         Project _project;

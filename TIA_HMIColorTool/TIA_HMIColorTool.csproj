@@ -60,6 +60,10 @@
     <Compile Include="src\ColorMapping.cs" />
     <Compile Include="src\ColorReplacer.cs" />
     <Compile Include="src\TiaService.cs" />
+    <Compile Include="src\TiaExportAll.cs" />
+    <Compile Include="src\ExportAllDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="src\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
