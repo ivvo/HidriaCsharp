@@ -42,7 +42,7 @@ namespace TIA_HMIColorTool
 
         public MainForm()
         {
-            Text = "TIA HMI Color Tool - Hidria";
+            Text = "TIA HMI Color Tool - Hidria  [TIA Portal " + Program.TiaVersion + "]";
             Size = new Size(1450, 900);
             MinimumSize = new Size(1050, 650);
             StartPosition = FormStartPosition.CenterScreen;
@@ -525,14 +525,49 @@ namespace TIA_HMIColorTool
 
         async Task RefreshProcesses()
         {
+            int found = -1;
             await RunBusy(async () =>
             {
                 var list = await _worker.Run(() => TiaService.ListProcesses());
                 _cbProcess.Items.Clear();
                 foreach (var p in list) _cbProcess.Items.Add(p);
                 if (list.Count > 0) _cbProcess.SelectedIndex = 0;
-                Log("Najdenih odprtih TIA Portal procesov: " + list.Count);
+                found = list.Count;
+                Log("Najdenih odprtih TIA Portal " + Program.TiaVersion + " procesov: " + list.Count);
             });
+            if (found == 0) OfferOtherVersion();
+        }
+
+        /// <summary>
+        /// Ta exe vidi samo TIA Portal svoje verzije. Če je odprt TIA druge verzije, to pove in ponudi zagon ustreznega exe-ja.
+        /// </summary>
+        void OfferOtherVersion()
+        {
+            var others = Program.RunningTiaVersions().Where(v => v != Program.TiaVersion).ToList();
+            if (others.Count == 0)
+            {
+                Log("Ni odprtega TIA Portala. Odpri projekt v TIA Portal " + Program.TiaVersion + " in klikni Osveži.");
+                return;
+            }
+
+            Log("Odprt je TIA Portal " + string.Join(", ", others) + " - ta exe je za " + Program.TiaVersion + " in ga ne vidi.");
+            foreach (var v in others)
+            {
+                string exe = Program.ExeForVersion(v);
+                if (!File.Exists(exe))
+                {
+                    Log("  Exe za " + v + " ni zgrajen (" + exe + "). Zgradi ga z: msbuild TIA_HMIColorTool.csproj /p:TiaVersion=" + v);
+                    continue;
+                }
+                var r = MessageBox.Show(this,
+                    "Odprt je TIA Portal " + v + ", to orodje pa je zgrajeno za " + Program.TiaVersion + ".\n\n" +
+                    "Zaženem različico orodja za " + v + "?\n" + exe,
+                    "Druga verzija TIA Portala", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (r != DialogResult.Yes) return;
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { WorkingDirectory = Path.GetDirectoryName(exe) });
+                Close();
+                return;
+            }
         }
 
         async Task Connect()

@@ -102,7 +102,9 @@ namespace TIA_HMIColorTool
             if (role == "BackColor")
             {
                 var fill = SiblingValue(parent, "BackFillStyle");
-                if (fill != null && fill.Trim().Equals("Transparent", StringComparison.OrdinalIgnoreCase))
+                // Transparent: ozadje se ne riše. Gradient*: rišejo se First/Middle/SecondGradientColor, BackColor ne.
+                if (fill != null && (fill.Trim().Equals("Transparent", StringComparison.OrdinalIgnoreCase) ||
+                                     fill.Trim().StartsWith("Gradient", StringComparison.OrdinalIgnoreCase)))
                     return false;
             }
             else if (role == "BorderColor")

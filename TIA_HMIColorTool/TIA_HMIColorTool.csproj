@@ -12,8 +12,10 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <LangVersion>7.3</LangVersion>
-    <!-- Pot do TIA Portal V20 Openness API -->
-    <OpennessDir>C:\Program Files\Siemens\Automation\Portal V20\PublicAPI\V20\</OpennessDir>
+    <!-- Verzija TIA Portala, proti kateri se gradi (Openness se priklopi samo na isto verzijo).
+         Privzeto V20; za V18:  msbuild TIA_HMIColorTool.csproj /p:TiaVersion=V18 -->
+    <TiaVersion Condition=" '$(TiaVersion)' == '' ">V20</TiaVersion>
+    <OpennessDir>C:\Program Files\Siemens\Automation\Portal $(TiaVersion)\PublicAPI\$(TiaVersion)\</OpennessDir>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -34,6 +36,20 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <!-- Simbol TIA_V18 / TIA_V20 za Program.cs. Druge verzije dobijo svoj exe in svoje izhodne mape,
+       da se gradnje ne prepisujejo; V20 ostane na dosedanjem mestu z dosedanjim imenom. -->
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);TIA_$(TiaVersion)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TiaVersion)' != 'V20' ">
+    <AssemblyName>TIA_HMIColorTool_$(TiaVersion)</AssemblyName>
+    <OutputPath>$(OutputPath)$(TiaVersion)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\$(TiaVersion)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <Target Name="CheckOpenness" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(OpennessDir)Siemens.Engineering.dll')"
+           Text="Openness API za TIA Portal $(TiaVersion) ni nameščen: $(OpennessDir)Siemens.Engineering.dll" />
+  </Target>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,6 +80,7 @@
     <Compile Include="src\ExportAllDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="src\ScreenRenderer.cs" />
     <Compile Include="src\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
