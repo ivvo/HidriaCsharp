@@ -17,7 +17,7 @@ namespace TIA_HMIColorTool
 
         // Povezava
         ComboBox _cbProcess;
-        Button _btnRefresh, _btnConnect;
+        Button _btnRefresh, _btnConnect, _btnOpenProtected;
         Label _lblStatus;
         TextBox _tbOutDir;
 
@@ -81,8 +81,10 @@ namespace TIA_HMIColorTool
             conn.Controls.Add(_cbProcess);
             _btnRefresh = MakeButton("Osveži", async (s, e) => await RefreshProcesses());
             _btnConnect = MakeButton("Poveži / osveži drevo", async (s, e) => await Connect());
+            _btnOpenProtected = MakeButton("Odpri zaščiten projekt ...", async (s, e) => await OpenProtectedProject());
             conn.Controls.Add(_btnRefresh);
             conn.Controls.Add(_btnConnect);
+            conn.Controls.Add(_btnOpenProtected);
             _lblStatus = MakeLabel("Ni povezave.");
             _lblStatus.ForeColor = Color.DarkRed;
             conn.Controls.Add(_lblStatus);
@@ -574,34 +576,79 @@ namespace TIA_HMIColorTool
         {
             var proc = _cbProcess.SelectedItem as TiaProcessInfo;
             if (proc == null) { Log("Izberi TIA Portal proces (Osveži, če seznam ni aktualen)."); return; }
+            await LoadProject(() => _tia.Connect(proc.Id, LogFromWorker));
+        }
 
+        /// <summary>
+        /// Zaščiten projekt (UMAC): ga orodje odpre samo, s prijavo, v izbranem TIA Portalu brez odprtega projekta.
+        /// Geslo gre neposredno TIA-ju (SecureString), ne shrani se in se ne izpiše v log.
+        /// </summary>
+        async Task OpenProtectedProject()
+        {
+            var proc = _cbProcess.SelectedItem as TiaProcessInfo;
+            if (proc == null) { Log("Izberi TIA Portal proces (Osveži, če seznam ni aktualen)."); return; }
+
+            string file;
+            using (var d = new OpenFileDialog
+            {
+                Title = "Izberi TIA Portal projekt (" + Program.TiaVersion + ")",
+                Filter = "TIA Portal projekt (*.ap*)|*.ap*|Vse datoteke (*.*)|*.*"
+            })
+            {
+                if (d.ShowDialog(this) != DialogResult.OK) return;
+                file = d.FileName;
+            }
+
+            string user; bool global; System.Security.SecureString pwd;
+            if (!LoginDialog.Ask(this, Path.GetFileName(file), out user, out pwd, out global)) return;
+
+            try
+            {
+                await LoadProject(() => _tia.OpenProtectedProject(proc.Id, file, user, pwd, global, LogFromWorker));
+            }
+            finally
+            {
+                pwd.Dispose();
+            }
+        }
+
+        async Task LoadProject(Action connect)
+        {
+            bool processGone = false;
             await RunBusy(async () =>
             {
-                _tree.Nodes.Clear();
-                UpdateSelectionLabel();
-                SetStatus("Povezujem ...", Color.DarkOrange);
-                try
-                {
-                    var data = await _worker.Run(() =>
-                    {
-                        _tia.Connect(proc.Id, LogFromWorker);
-                        return _tia.FindAllHmiTargets()
-                                   .Select(t => Tuple.Create(t, _tia.ListItems(t)))
-                                   .ToList();
-                    });
-                    BuildTree(data);
-                    Log("Najdenih HMI targetov: " + data.Count);
-                    foreach (var d in data)
-                        Log("  - " + d.Item1 + ": " + d.Item2.Count(i => i.Kind == HmiItemKind.Screen) + " zaslonov, " +
-                            d.Item2.Count(i => i.Kind == HmiItemKind.Template) + " predlog");
-                    SetStatus("Povezan: " + await _worker.Run(() => _tia.ProjectName), Color.DarkGreen);
-                }
-                catch
-                {
-                    SetStatus("Ni povezave.", Color.DarkRed);
-                    throw;
-                }
+                try { await LoadProjectCore(connect); }
+                catch (TiaProcessGoneException) { processGone = true; throw; }
             });
+            if (processGone) await RefreshProcesses();   // izbran TIA je bil zaprt - osveži seznam
+        }
+
+        async Task LoadProjectCore(Action connect)
+        {
+            _tree.Nodes.Clear();
+            UpdateSelectionLabel();
+            SetStatus("Povezujem ...", Color.DarkOrange);
+            try
+            {
+                var data = await _worker.Run(() =>
+                {
+                    connect();
+                    return _tia.FindAllHmiTargets()
+                               .Select(t => Tuple.Create(t, _tia.ListItems(t)))
+                               .ToList();
+                });
+                BuildTree(data);
+                Log("Najdenih HMI targetov: " + data.Count);
+                foreach (var d in data)
+                    Log("  - " + d.Item1 + ": " + d.Item2.Count(i => i.Kind == HmiItemKind.Screen) + " zaslonov, " +
+                        d.Item2.Count(i => i.Kind == HmiItemKind.Template) + " predlog");
+                SetStatus("Povezan: " + await _worker.Run(() => _tia.ProjectName), Color.DarkGreen);
+            }
+            catch
+            {
+                SetStatus("Ni povezave.", Color.DarkRed);
+                throw;
+            }
         }
 
         bool RequireSelection(out List<HmiItem> items)
@@ -818,7 +865,7 @@ namespace TIA_HMIColorTool
 
         void SetBusy(bool busy)
         {
-            foreach (var b in new Control[] { _btnRefresh, _btnConnect, _btnExport, _btnDryRun, _btnReplace, _btnImport, _btnAnalyze, _btnExportAll, _cbProcess, _tree })
+            foreach (var b in new Control[] { _btnRefresh, _btnConnect, _btnOpenProtected,_btnExport, _btnDryRun, _btnReplace, _btnImport, _btnAnalyze, _btnExportAll, _cbProcess, _tree })
                 b.Enabled = !busy;
             UseWaitCursor = busy;
         }
@@ -843,7 +890,9 @@ namespace TIA_HMIColorTool
 
         void Log(string msg)
         {
-            string line = DateTime.Now.ToString("HH:mm:ss") + "  " + msg;
+            // večvrstična sporočila (npr. napake z naštetimi vzroki) zamaknjena pod časom
+            string line = DateTime.Now.ToString("HH:mm:ss") + "  " +
+                          (msg ?? "").Replace("\r\n", "\n").Replace("\n", Environment.NewLine + "          ");
             _tbLog.AppendText(line + Environment.NewLine);
             try { File.AppendAllText(_logFile, line + Environment.NewLine); } catch { }
         }

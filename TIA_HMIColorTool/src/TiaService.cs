@@ -46,9 +46,17 @@ namespace TIA_HMIColorTool
     {
         TiaPortal _portal;
         Project _project;
+        int _processId;
 
         public bool IsConnected { get { return _project != null; } }
-        public string ProjectName { get { return _project == null ? null : _project.Name; } }
+        public string ProjectName
+        {
+            get
+            {
+                try { return _project == null ? null : _project.Name; }
+                catch (EngineeringObjectDisposedException) { return null; }
+            }
+        }
 
         // ------------------------------------------------------------------ Priklop
 
@@ -57,7 +65,7 @@ namespace TIA_HMIColorTool
             var list = new List<TiaProcessInfo>();
             foreach (var p in TiaPortal.GetProcesses())
             {
-                string proj = p.ProjectPath != null ? p.ProjectPath.Name : "(ni odprtega projekta)";
+                string proj = p.ProjectPath != null ? p.ProjectPath.Name : "(brez projekta - odpri projekt in klikni Osveži)";
                 list.Add(new TiaProcessInfo { Id = p.Id, Display = "PID " + p.Id + " - " + proj + " (" + p.Mode + ")" });
             }
             return list;
@@ -65,24 +73,128 @@ namespace TIA_HMIColorTool
 
         public void Connect(int processId, Action<string> log)
         {
-            Disconnect();
             var proc = TiaPortal.GetProcesses().FirstOrDefault(p => p.Id == processId);
-            if (proc == null) throw new InvalidOperationException("TIA Portal proces " + processId + " ne obstaja več.");
+
+            // Zaščiten projekt vidi samo seja, ki ga je odprla s prijavo - zato obstoječo sejo na istem procesu obdržimo,
+            // a SAMO če je ta projekt še odprt (uporabnik ga je medtem lahko zaprl ali v istem TIA odprl drugega).
+            if (_portal != null && _project != null && _processId == processId && proc != null && IsCurrentProject(proc))
+            {
+                log("Uporabljam obstoječo povezavo na projekt " + _project.Name + " (PID " + processId + ").");
+                return;
+            }
+
+            Disconnect();
+            if (proc == null) throw new TiaProcessGoneException(processId);
 
             log("Priklapljam se na TIA Portal (PID " + processId + ") - v TIA Portalu potrdi Openness dostop, če vpraša ...");
             _portal = proc.Attach();
-            if (_portal.Projects.Count == 0)
+            _processId = processId;
+            if (_portal.Projects.Count > 0)
+            {
+                _project = _portal.Projects[0];
+                log("Povezan na projekt: " + _project.Name);
+            }
+            else if (_portal.LocalSessions.Count > 0)
+            {
+                // Multiuser: projekt je odprt kot lokalna seja (MultiuserProject, ne Project) - orodje tega ne podpira.
+                Disconnect();
+                throw new InvalidOperationException(
+                    "V TIA Portalu je odprta Multiuser lokalna seja, ne navaden projekt. Orodje dela samo z navadnimi projekti - " +
+                    "odpri projekt (ali njegovo lokalno kopijo) kot navaden projekt in poskusi znova.");
+            }
+            else if (proc.ProjectPath != null)
             {
                 Disconnect();
-                throw new InvalidOperationException("V izbranem TIA Portalu ni odprtega projekta.");
+                throw new InvalidOperationException(
+                    "TIA Portal (PID " + processId + ") ima odprt projekt " + proc.ProjectPath.Name + ", a ga Openness ne vidi. Možna vzroka:\n" +
+                    "  - projekt uporablja dodatni paket (add-on, npr. SINAMICS Startdrive), ki na tem računalniku NI nameščen - TIA ga odpre z opozorilom, " +
+                    "Openness pa projekta z manjkajočimi paketi ne dovoli. Namesti manjkajoči paket (seznam: v TIA Help > Installed software / ob odpiranju projekta);\n" +
+                    "  - projekt je zaščiten z upravljanjem uporabnikov (UMAC) - zapri ga v TIA (TIA naj ostane odprt) in uporabi gumb \"Odpri zaščiten projekt ...\"; " +
+                    "ta ob manjkajočem paketu izpiše tudi njegovo točno ime.");
             }
-            _project = _portal.Projects[0];
-            log("Povezan na projekt: " + _project.Name);
+            else
+            {
+                Disconnect();
+                throw new InvalidOperationException(
+                    "TIA Portal (PID " + processId + ") je odprt, a v njem trenutno ni naloženega projekta. Možni vzroki:\n" +
+                    "  - projekt se še odpira ali je v TIA odprto okno (npr. opozorilo o manjkajočih paketih / nadgradnji projekta) - zapri ga in počakaj, da je projekt naložen;\n" +
+                    "  - projekt je bil zaprt (TIA je na začetnem zaslonu brez projekta);\n" +
+                    "  - izbran je drug TIA proces kot tisti s projektom - v seznamu izberi pravega in klikni Osveži.");
+            }
+        }
+
+        /// <summary>
+        /// Odpre (zaščiten) projekt v že odprtem TIA Portalu brez projekta, s prijavo UMAC.
+        /// Geslo se preda TIA-ju kot SecureString in se nikjer ne shrani ali izpiše.
+        /// Projekt se odpre v TIA oknu uporabnika; ta seja ga potem vidi (druge priklopljene seje ne).
+        /// </summary>
+        public void OpenProtectedProject(int processId, string projectFile, string user, System.Security.SecureString password,
+            bool globalUser, Action<string> log)
+        {
+            Disconnect();
+            var proc = TiaPortal.GetProcesses().FirstOrDefault(p => p.Id == processId);
+            if (proc == null) throw new TiaProcessGoneException(processId);
+            if (proc.ProjectPath != null)
+                throw new InvalidOperationException(
+                    "V izbranem TIA Portalu (PID " + processId + ") je že odprt projekt " + proc.ProjectPath.Name +
+                    ". Zapri ga v TIA Portalu (TIA naj ostane odprt), klikni Osveži in poskusi znova.");
+
+            log("Priklapljam se na TIA Portal (PID " + processId + ") ...");
+            _portal = proc.Attach();
+            _processId = processId;
+
+            bool asked = false;
+            UmacDelegate umac = credentials =>
+            {
+                asked = true;
+                credentials.Type = globalUser ? UmacUserType.Global : UmacUserType.Project;
+                credentials.Name = user;
+                credentials.SetPassword(password);
+            };
+
+            log("Odpiram projekt " + projectFile + " (uporabnik: " + user + ", " + (globalUser ? "globalni" : "projektni") + ") ...");
+            try
+            {
+                _project = _portal.Projects.Open(new FileInfo(projectFile), umac);
+            }
+            catch (MissingProductsException ex)
+            {
+                Disconnect();
+                throw new InvalidOperationException(
+                    "Projekta ni mogoče odpreti prek Openness, ker na tem računalniku manjka dodatni paket, ki ga projekt uporablja.\n" +
+                    "TIA Portal tak projekt v svojem oknu odpre z opozorilom, Openness pa ne (in ga pri priklopu tudi ne vidi).\n" +
+                    "Rešitev: namesti manjkajoči paket za TIA Portal " + Program.TiaVersion + ", nato poskusi znova.\n" +
+                    "Sporočilo TIA: " + ex.Message, ex);
+            }
+            catch
+            {
+                Disconnect();
+                throw;
+            }
+            log("Projekt odprt: " + _project.Name + (asked ? " (prijava uspešna)" : " (projekt ni zahteval prijave)") +
+                ". Ostane odprt v TIA Portalu - ko končaš, ga tam shrani/zapri ročno.");
+        }
+
+        /// <summary>
+        /// Ali je shranjen _project še živ in je to isti projekt, ki je trenutno odprt v TIA procesu.
+        /// Zaprt projekt vrže EngineeringObjectDisposedException že ob branju lastnosti.
+        /// </summary>
+        bool IsCurrentProject(TiaPortalProcess proc)
+        {
+            try
+            {
+                string path = _project.Path.FullName;   // vrže, če je projekt zaprt
+                return proc.ProjectPath != null &&
+                       string.Equals(proc.ProjectPath.FullName, path, StringComparison.OrdinalIgnoreCase);
+            }
+            catch (EngineeringObjectDisposedException) { return false; }
+            catch (EngineeringException) { return false; }
         }
 
         public void Disconnect()
         {
             _project = null;
+            _processId = 0;
             if (_portal != null)
             {
                 // Dispose na priklopljeni instanci samo odklopi - TIA Portal ostane odprt.
@@ -340,6 +452,23 @@ namespace TIA_HMIColorTool
         void EnsureConnected()
         {
             if (_project == null) throw new InvalidOperationException("Ni povezave s TIA Portalom.");
+            try { var name = _project.Name; }
+            catch (EngineeringObjectDisposedException)
+            {
+                Disconnect();
+                throw new InvalidOperationException(
+                    "Projekt, na katerega je bilo orodje povezano, je bil v TIA Portalu medtem zaprt. Klikni Osveži in Poveži / osveži drevo.");
+            }
         }
+    }
+}
+
+namespace TIA_HMIColorTool
+{
+    /// <summary>Izbran TIA Portal proces se je medtem zaprl - seznam procesov v GUI je zastarel.</summary>
+    sealed class TiaProcessGoneException : InvalidOperationException
+    {
+        public TiaProcessGoneException(int processId)
+            : base("TIA Portal proces " + processId + " ne obstaja več (TIA je bil zaprt). Seznam procesov je osvežen - izberi TIA Portal in poskusi znova.") { }
     }
 }

@@ -81,6 +81,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="src\ScreenRenderer.cs" />
+    <Compile Include="src\LoginDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="src\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
