@@ -52,6 +52,75 @@ namespace TIA_ToolKit.Analyzer
         }
     }
 
+    /// <summary>NW-COMMENTED: STL network brez ukazov, a z veliko komentarja = zakomentirana logika (npr. Unit_40 NW65 "Check Good / Bad Thread", 499 vrstic).</summary>
+    public sealed class CommentedNetworkRule : IRule
+    {
+        public string Id => "NW-COMMENTED";
+        public string Title => "Zakomentiran network (logika izklopljena s komentarjem)";
+        const int MinComments = 20;
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            foreach (var b in plc.Blocks.Where(x => !x.IsDb))
+            {
+                var nws = b.Networks.Where(n => n.Lad == null && string.IsNullOrWhiteSpace(n.Scl)
+                                                && n.Stl.All(s => s.Op == "COMMENT" || s.Op == "EMPTY_LINE")
+                                                && n.Stl.Count(s => s.Op == "COMMENT") >= MinComments).ToList();
+                if (nws.Count == 0) continue;
+                var f = new Finding
+                {
+                    RuleId = Id, Category = Categories.Functional, Confidence = "Preveriti",
+                    // velik zakomentiran network (npr. 499 vrstic) je skoraj gotovo izklopljena funkcija, ne opomba
+                    Severity = nws.Any(n => n.Stl.Count(s => s.Op == "COMMENT") >= 100) ? Severity.High : Severity.Medium,
+                    Title = Title,
+                    Description = string.Join("; ", nws.Select(n => "NW" + n.Index + (n.Title.Length > 0 ? " »" + n.Title + "«" : "") + ": " +
+                                                                     n.Stl.Count(s => s.Op == "COMMENT") + " vrstic komentarja, 0 ukazov")) +
+                                  ". Celotna logika networka je zakomentirana in se ne izvaja. Preveri, ali je bila izklopljena namerno (npr. med zagonom) in ali jo je treba vrniti.",
+                };
+                f.Locations.Add(FindingLocation.Of(b, nws.ToArray()));
+                yield return f;
+            }
+        }
+    }
+
+    /// <summary>
+    /// HANDSHAKE-STUB: "A P_START / S P_END / R P_START" brez vmesnega dejanja (klic, prenos podatkov) - zahteva se takoj potrdi,
+    /// prenos se nikoli ne izvede (npr. Ignition_Comm NW19 WRITE_DATA_BAD_PARTS_U80).
+    /// </summary>
+    public sealed class HandshakeStubRule : IRule
+    {
+        public string Id => "HANDSHAKE-STUB";
+        public string Title => "Handshake brez dejanja (START → END takoj)";
+        static readonly Regex StartRx = new Regex("^\"(.+)_START\"$", RegexOptions.IgnoreCase);
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            foreach (var b in plc.Blocks.Where(x => !x.IsDb))
+                foreach (var nw in b.Networks)
+                {
+                    var s = nw.Stl.Where(x => x.Op != "COMMENT" && x.Op != "EMPTY_LINE").ToList();
+                    for (int i = 0; i < s.Count; i++)
+                    {
+                        var m = s[i].Op == "A" && s[i].Operand != null ? StartRx.Match(s[i].Operand) : Match.Empty;
+                        if (!m.Success) continue;
+                        string prefix = "\"" + m.Groups[1].Value + "_";
+                        var sr = s.Skip(i + 1).TakeWhile(x => x.Op == "S" || x.Op == "R").ToList();
+                        if (sr.Count == 0 || !sr.All(x => x.Operand != null && x.Operand.StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase))) continue;
+                        if (!sr.Any(x => x.Op == "R" && x.Operand == s[i].Operand) || !sr.Any(x => x.Op == "S" && x.Operand.EndsWith("_END\""))) continue;
+                        var f = new Finding
+                        {
+                            RuleId = Id, Category = Categories.Helpers, Severity = Severity.Low, Confidence = "Preveriti",
+                            Title = Title,
+                            Description = s[i] + " / " + string.Join(" / ", sr) + ": zahteva se v istem ciklu potrdi z END, brez klica ali prenosa podatkov in brez timeouta. " +
+                                          "Dejanje (zapis v bazo, komunikacija) se zato nikoli ne izvede - verjetno nedokončan del (stub).",
+                        };
+                        f.Locations.Add(FindingLocation.Of(b, nw));
+                        yield return f;
+                    }
+                }
+        }
+    }
+
     /// <summary>OB-ERROR: napakovni OB-ji (OB82/OB121/OB122) prazni ali manjkajo, OB86 piše v DB_ERRORS brez meje.</summary>
     public sealed class ErrorObRule : IRule
     {

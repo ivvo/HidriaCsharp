@@ -11,6 +11,11 @@ namespace TIA_ToolKit.Analyzer
 
         public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
         {
+            // uporabljeni globalni simboli (prvi del operanda brez narekovajev)
+            var used = new HashSet<string>(plc.Blocks.SelectMany(b => b.Networks).SelectMany(n => n.AllOperands())
+                .Where(o => o.StartsWith("\"")).Select(o => o.Substring(1).Split('"')[0]));
+            var placeholders = new List<(PlcTag tag, List<PlcTag> over)>();
+
             foreach (var area in plc.Tags.Where(t => t.BitLo >= 0).GroupBy(t => t.Area))
             {
                 var list = area.OrderBy(t => t.BitLo).ToList();
@@ -22,6 +27,7 @@ namespace TIA_ToolKit.Analyzer
                     for (int j = i + 1; j < list.Count && list[j].BitLo <= a.BitHi; j++)
                         if (list[j].Address != a.Address && !IsContainerByte(list[j])) overlaps.Add(list[j]);
                     if (overlaps.Count == 0) continue;
+                    if (IsPlaceholder(a) && !used.Contains(a.Name)) { placeholders.Add((a, overlaps)); continue; }
                     yield return new Finding
                     {
                         RuleId = Id, Category = Categories.Tags, Severity = Severity.Medium, Confidence = "Preveriti",
@@ -33,9 +39,27 @@ namespace TIA_ToolKit.Analyzer
                     };
                 }
             }
+
+            // neuporabljeni tagi s privzetim imenom (Tag_1 ...) čez bite: ena skupna, nizka ugotovitev namesto ene na tag
+            if (placeholders.Count > 0)
+            {
+                var f = new Finding
+                {
+                    RuleId = Id, Category = Categories.Tags, Severity = Severity.Low, Confidence = "Preveriti",
+                    Title = "Neuporabljeni tagi s privzetim imenom čez bite",
+                    Description = string.Join(", ", placeholders.Select(p => p.tag.Address + " " + p.tag.Name)) +
+                                  ": tagi s privzetim imenom se prekrivajo z biti (" +
+                                  string.Join(", ", placeholders.SelectMany(p => p.over).Take(4).Select(o => o.Address + " " + o.Name)) + ", …), program pa jih ne uporablja. " +
+                                  "Verjetno ostanek – odstrani jih, da kdo prek njih ne zapiše cele vrste vhodov/izhodov.",
+                };
+                foreach (var t in placeholders.Select(p => p.tag.Table).Distinct())
+                    f.Locations.Add(new FindingLocation { Path = "Tags/" + t.Replace('\\', '/') });
+                yield return f;
+            }
         }
 
         static bool IsContainerByte(PlcTag t) => t.Name == "Clock_Byte" || t.Name == "System_Byte";
+        static bool IsPlaceholder(PlcTag t) => System.Text.RegularExpressions.Regex.IsMatch(t.Name ?? "", @"^Tag_\d+$");
     }
 
     /// <summary>TAG-SYSBYTE: System_Byte na %MB1 + biti M1.x, ki jih program postavlja/briše (StartUp = M1.2 je AlwaysTRUE, če je sistemski bajt vklopljen).</summary>
