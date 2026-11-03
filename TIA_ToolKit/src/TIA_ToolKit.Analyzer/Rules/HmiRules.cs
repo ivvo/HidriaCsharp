@@ -83,6 +83,103 @@ namespace TIA_ToolKit.Analyzer
     }
 
     /// <summary>
+    /// HMI-AUTH: nevaren ukaz (premostitev Disable/OFF/Bypass, ročni način, kalibracija, brisanje, zagon etalona, StopRuntime ...) brez avtorizacije
+    /// na zaslonu, ki je dosegljiv brez prijave (pot od začetnih zaslonov prek navigacije brez avtorizacije, vklj. gumbe predlog).
+    /// </summary>
+    public sealed class HmiAuthorizationRule : IRule
+    {
+        public string Id => "HMI-AUTH";
+        public string Title => "Nevaren ukaz na HMI brez avtorizacije";
+        static readonly Regex DangerRx = new Regex(
+            @"(Disable|(^|(?<!RESET)_)OFF(\[|$|_)|Bypass|Manual|Delete|Clear|Calib\w*_(START|ON)|Etalon\w*_?Start|Robot_Stop|SafetyOff|Safety_Off|Reset_Default|Jog|Force|Password)",
+            RegexOptions.IgnoreCase);
+        static readonly HashSet<string> WriteFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "SetBit", "ResetBit", "InvertBit", "SetTag", "SetBitWhileKeyPressed", "SetBitInTag", "ResetBitInTag", "InvertBitInTag", "IncreaseTag", "DecreaseTag" };
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            if (plc != project.Plcs.FirstOrDefault()) yield break;
+            foreach (var h in project.Hmis)
+            {
+                var reachable = ReachableWithoutLogin(h);
+                var all = new List<(HmiScreen s, HmiItem item, string what)>();
+                foreach (var s in h.Screens.Where(x => !x.IsTemplate && reachable.Contains(x.Name)))
+                {
+                    var hits = new List<(HmiItem item, string what)>();
+                    foreach (var i in s.Items.Where(x => string.IsNullOrEmpty(x.Authorization)))
+                    {
+                        if (i.IsInput)
+                            foreach (var b in i.Bindings.Where(b => b.Property == "ProcessValue" && DangerRx.IsMatch(b.Tag))) hits.Add((i, b.Tag));
+                        foreach (var a in i.Actions)
+                        {
+                            if (string.Equals(a.Function, "StopRuntime", StringComparison.OrdinalIgnoreCase)) hits.Add((i, "StopRuntime"));
+                            else if (WriteFunctions.Contains(a.Function ?? ""))
+                                foreach (var t in a.Tags.Where(t => DangerRx.IsMatch(t))) hits.Add((i, a.Function + " " + t));
+                        }
+                    }
+                    all.AddRange(hits.Select(x => (s, x.item, x.what)));
+                }
+
+                const string Advice = ". Premostitve kontrol, ročno krmiljenje, kalibracija ali brisanje podatkov naj zahtevajo prijavo (Authorization na objektu ali na navigaciji do zaslona).";
+                // isti objekt + ukaz na ≥ 3 zaslonih (kopiran gumb, npr. Exit → StopRuntime) = ena ugotovitev
+                var common = all.GroupBy(x => x.item.Name + "|" + x.what).Where(g => g.Select(x => x.s).Distinct().Count() >= 3).ToList();
+                var commonKeys = new HashSet<string>(common.Select(g => g.Key));
+                foreach (var g in common)
+                {
+                    var f = new Finding
+                    {
+                        RuleId = Id, Category = Categories.Hmi, Severity = Severity.Medium, Confidence = "Preveriti", Title = Title,
+                        Description = g.First().item.Name + " → " + g.First().what + " brez avtorizacije na " + g.Select(x => x.s).Distinct().Count() +
+                                      " zaslonih, dosegljivih brez prijave (" + string.Join(", ", g.Select(x => x.s.Name).Distinct()) + ")" + Advice,
+                    };
+                    foreach (var x in g) f.Locations.Add(new FindingLocation { Path = "HMI/" + h.Name + "/" + x.s.File, NetworkTitle = x.item.Name });
+                    yield return f;
+                }
+                foreach (var g in all.Where(x => !commonKeys.Contains(x.item.Name + "|" + x.what)).GroupBy(x => x.s))
+                {
+                    var f = new Finding
+                    {
+                        RuleId = Id, Category = Categories.Hmi, Severity = Severity.Medium, Confidence = "Preveriti", Title = Title,
+                        Description = "Zaslon " + g.Key.Name + " je dosegljiv brez prijave, objekti brez avtorizacije pa izvedejo: " +
+                                      string.Join("; ", g.Select(x => x.item.Name + " → " + x.what).Distinct().Take(10)) + (g.Count() > 10 ? "; …" : "") + Advice,
+                    };
+                    f.Locations.Add(new FindingLocation { Path = "HMI/" + h.Name + "/" + g.Key.File, NetworkTitle = string.Join(", ", g.Select(x => x.item.Name).Distinct().Take(8)) });
+                    yield return f;
+                }
+            }
+        }
+
+        /// <summary>Zasloni, dosegljivi brez prijave: od zaslonov brez vhodne navigacije (začetni) prek ActivateScreen na objektih brez avtorizacije.</summary>
+        static HashSet<string> ReachableWithoutLogin(HmiTarget h)
+        {
+            var templates = h.Screens.Where(s => s.IsTemplate).ToDictionary(s => s.Name, StringComparer.OrdinalIgnoreCase);
+            var edges = new Dictionary<string, List<(string to, bool open)>>(StringComparer.OrdinalIgnoreCase);
+            var inbound = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var s in h.Screens.Where(x => !x.IsTemplate))
+            {
+                var items = s.Items.AsEnumerable();
+                if (s.Template != null && templates.TryGetValue(s.Template, out var t)) items = items.Concat(t.Items);
+                var list = new List<(string, bool)>();
+                foreach (var i in items)
+                    foreach (var a in i.Actions.Where(a => (a.Function ?? "").StartsWith("ActivateScreen", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        string to = a.Tags.FirstOrDefault() ?? a.Values.FirstOrDefault();
+                        if (to == null || to == s.Name) continue;
+                        list.Add((to, string.IsNullOrEmpty(i.Authorization)));
+                        inbound.Add(to);
+                    }
+                edges[s.Name] = list;
+            }
+            var seen = new HashSet<string>(h.Screens.Where(x => !x.IsTemplate && !inbound.Contains(x.Name)).Select(x => x.Name), StringComparer.OrdinalIgnoreCase);
+            var queue = new Queue<string>(seen);
+            while (queue.Count > 0)
+                if (edges.TryGetValue(queue.Dequeue(), out var outs))
+                    foreach (var e in outs.Where(e => e.open && seen.Add(e.to))) queue.Enqueue(e.to);
+            return seen;
+        }
+    }
+
+    /// <summary>
     /// HMI-UNIT: (1) na zaslonu enote (ime vsebuje številko enote, npr. Postaja_50) je vnosno polje vezano na tag druge enote (U60_*);
     /// (2) isti tag (z indeksom) je na enem zaslonu vezan na več vnosnih polj - vnos v eno vrstico spremeni drugo (U60_Timers[1] 3×).
     /// </summary>
