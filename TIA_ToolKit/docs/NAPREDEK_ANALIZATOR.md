@@ -20,7 +20,7 @@ Stanje po fazi 1 (122A): 20 ugotovitev; od 30 LLM »Program« najde 10 (S2, S4, 
 
 ## Faza 2 – indeksi in navzkrižne reference
 - [x] 2.1 IDX-UNIT: indeks v bloku enote odstopa od večine (TRACKING.PIECE[n], DB_Service_Settings.OFF/TEST/STEP[n]) + indeks, uporabljen samo 1× v programu. Pričakovano: C1 (Unit_20 NW5 OFF[3]), C3 (Unit_20 NW38 PIECE[13]), C4 (Unit_40 PIECE[4]) – ✔ natanko vse tri, brez šuma (Rules\IndexRules.cs: redek = ≤2× in glavni ≥4× pogostejši; izvzeti networki z ≥4 indeksi (naštevanje) in redki indeksi, ki se enako pojavijo v ≥2 blokih (predaja s prijemala PIECE[1]/[2])).
-- [ ] 2.2 XREF-WRITEONLY: globalni bit se piše, nikjer bere (filter imen BAD/ERROR/ALARM/REQ). Pričakovano: F3 (Etalon_All_BAD), M10 (LN_Get_Material_Cancell_REQ – po fazi 3 tudi HMI stran)
+- [x] 2.2 XREF-WRITEONLY: globalni bit se piše, nikjer bere (filter imen BAD/ERROR/ALARM/REQ). Pričakovano: F3 (Etalon_All_BAD), M10 (LN_Get_Material_Cancell_REQ – po fazi 3 tudi HMI stran) – ✔ F3 (Rules\XrefRules.cs; ExportReader zdaj polni Network.Refs = vse globalne reference vklj. parametre klicev in SCL). Izvzeto: spremenljiv indeks (brisanje v zanki), statusna polja ≥3 indeksov (ERROR[n] za HMI), DB-ji SQL/SCADA/HMI/Messages, izhodi %Q. Novi kandidati: Unit_80 Bad_parts_Full, Unit_60_DB.BAD_PART (piše T20), T10/T20_Calibration_NOK, L/R_Machine_NOK, L/R_Box_String_NOK. M10 ostane za fazo 3 (piše ga samo HMI → potrebuje HMI bralnik).
 
 ## Faza 3 – HMI (bralnik + pravila)
 - [ ] 3.1 HmiReader: tagi (ime, PLC tag / absolutni naslov, tip), zasloni (objekti, vezave, Authorization, položaj/velikost, dogodki SetBit/skripte), skripte (tekst).

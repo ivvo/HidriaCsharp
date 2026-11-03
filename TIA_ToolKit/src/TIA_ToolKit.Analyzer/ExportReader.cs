@@ -135,6 +135,10 @@ namespace TIA_ToolKit.Analyzer
                     else if (fn != null) nw.Lad = ReadFlg(fn);
                     else if (st != null) nw.Scl = ReadScl(st);
                 }
+                // globalni dostopi kjerkoli v networku; indeksni dostopi znotraj simbola (Symbol/Component/Access) niso samostojne reference
+                nw.Refs = cu.Descendants().Where(x => L(x) == "Access" && (string)x.Attribute("Scope") == "GlobalVariable"
+                                                      && !x.Ancestors().TakeWhile(p => p != cu).Any(p => L(p) == "Symbol"))
+                            .Select(AccessText).Where(t => t != null).ToList();
                 b.Networks.Add(nw);
             }
             return b;

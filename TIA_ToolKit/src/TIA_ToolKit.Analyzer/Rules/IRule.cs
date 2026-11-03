@@ -29,6 +29,7 @@ namespace TIA_ToolKit.Analyzer
             new CommentedNetworkRule(),
             new HandshakeStubRule(),
             new UnitIndexRule(),
+            new WriteOnlyRule(),
             new ErrorObRule(),
             new OeeQualityRule(),
             new TagOverlapRule(),

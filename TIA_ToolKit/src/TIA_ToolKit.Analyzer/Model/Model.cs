@@ -52,6 +52,8 @@ namespace TIA_ToolKit.Analyzer
         public List<StlStatement> Stl = new List<StlStatement>();
         public LadNetwork Lad;     // LAD/FBD/F_LAD
         public string Scl;         // SCL network kot tekst
+        /// <summary>Vse globalne reference v networku (tudi parametri klicev in SCL), za navzkrižne reference (XREF).</summary>
+        public List<string> Refs = new List<string>();
 
         public IEnumerable<string> AllOperands()
         {
