@@ -27,7 +27,7 @@ ExcelReport    →  Povzetek (formule) | Napake (tblNapake) | Legenda | Seznami 
   ločilu seznama (`;`) prebere kot ena sama postavka, kar je bila napaka v prvih ročnih tabelah.
 - **ClosedXML** zapiše Excel brez nameščenega Excela in brez COM.
 
-## Pravila – izvedeno (v0.1)
+## Pravila – izvedeno (v0.2)
 
 | ID | Kat. | Prio | Kaj najde | Primer iz ročnih analiz |
 |---|---|---|---|---|
@@ -35,7 +35,20 @@ ExcelReport    →  Povzetek (formule) | Napake (tblNapake) | Legenda | Seznami 
 | SAF-ACK-CLOCK | Safety | 1 | STL: `A "Clock_x"` / `= …ACK…` (potrditev F-komunikacije s taktom) | A, B, C, D, E, G, H – Safety NW16/19/20/22 |
 | SAF-PWR-COIL | Safety | 2* | F_LAD: Coil, napajana neposredno iz PWR (pogoj trdo TRUE) | `PREVIOUS/NEXT_MACHINE_OK` na A, B, C, D, G, H |
 | SAF-FORCED | Safety | 2* | STL: `SET` → `S`/`=` signala VDC/EMG/AIR/vrata/_iSig/Bypass/ENABLED (ostanek zagona) | G `SET S #VDC_OK … = #EMG_OK`, G `removee SET S "S_Door_Close_iSig"`, B `= "BT1_ROBOT_OUT_SYS_EMG_OK"` |
-| PLC-DOUBLE | Kop./Funk. | 3* | Globalni bit zapisan z `=` (ali Coil) v več networkih | `warning_Robot_Calibratin_ON` 6× (Purem2), `SERVICE_ON` 3× |
+| PLC-DOUBLE | Kop./Funk. | 3* | Globalni bit zapisan z `=` (ali Coil) večkrat – v več networkih ali v istem | `warning_Robot_Calibratin_ON` 6× (Purem2), `SERVICE_ON` 3×, 122A FieldBus NW3 6× `Error_FieldBus_SMC_2` |
+| DUP-OPERAND | Kop. | 3* | Isti operand 2× v istem AND-členu ali enak OR-člen 2× (STL člen po členu, LAD zaporedni kontakti) | 122A OPERATION NW14 `RIGHT_PALLET_PRESENT` 2×, Unit_T20 NW124 `O BAD_PART / O BAD_PART` |
+| CONTRA | Safety/Funk. | 2 | `X` in `NOT X` v istem AND-členu – vedno FALSE | 122A Main_Safety_RTG1 NW20 pokrov laserja |
+| NW-COMMENTED | Funk. | 2–3* | Network samo s komentarji (≥ 20 vrstic, 0 ukazov) – zakomentirana logika | 122A Unit_40 NW65 (499 vrstic) |
+| HANDSHAKE-STUB | Pomožni | 4* | `A …_START / S …_END / R …_START` brez dejanja | 122A Ignition_Comm NW19 |
+| IDX-UNIT | Kop. | 3* | Redek indeks polja v bloku (≤ 2×, glavni ≥ 4× pogostejši); izvzeti naštevanje in vzorec, skupen ≥ 2 blokoma | 122A Unit_20 `OFF[3]`, `PIECE[13]`; Unit_40 `PIECE[4]` |
+| XREF-WRITEONLY | Funk. | 3–4* | Rezultat (BAD/NOK/ERROR/ALARM/CANCEL) se zapisuje, v PLC se ne bere (vklj. parametre klicev, SCL, nadrejene strukture) | 122A `Etalon_All_BAD` |
+| HMI-ADDR | HMI | 2–4 | Absolutni HMI tag → PLC član (DbLayout): DB ne obstaja, izven DB, napačen tip, rezervni člen, neujemanje imen | 122A `T20_Robot_Stop_REQ`→`TEST[49]`, `U60_Dosing_EMPTY` v Int, `ERROR_ON`→`Empty_17` |
+| HMI-UNIT | Kop. | 2–3* | Vnos na zaslonu enote vezan na tag druge enote; isti tag na več vnosnih poljih | 122A Postaja_50→`U60_Timers`, Postaja_60 `[1..3]` 3×, Etaloniranje M19 |
+| HMI-AUTH | HMI | 3* | Nevaren ukaz brez avtorizacije na zaslonu, dosegljivem brez prijave (BFS po navigaciji, vklj. predloge) | 122A Disable_DataBase/LN, Enable_Manual_Control, kalibracija, StopRuntime |
+| HMI-SCRIPT | HMI | 2–4 | Gesla v VB skriptah in SCL konstantah, absolutne poti, neobstoječi SmartTags, neklicane skripte (upošteva dogodke tagov) | 122A LogINLevel, Start_PDB, Boxes, Etalons `'Default.'` |
+| HMI-OVERWRITE | Funk. | 3* | Vnos na HMI piše člen, ki ga PLC prepiše (`L X / T člen`, `:=`); izvzeto nalaganje recepta (> 15 kopij) in %I | 122A meje U20/U30 |
+| HMI-HIDDEN | HMI | 4* | Vnosno polje, prekrito z drugim upravljalnim objektom (dosegljivo s Tab) | 122A `U10_Timers[0]` na 9 zaslonih |
+| HMI-SETBIT | HMI | 4 | Gumb SetBit/InvertBit na bit, ki ga PLC ne bere | 122A `LN_Get_Material_Cancell_REQ`, `Recipe_Save_Change` |
 | OB-ERROR | Pomožni | 3 | OB82/86/121/122 prazni ali manjkajo | vsi projekti |
 | SCL-OEE | Pomožni | 4 | `1 - Bad/Good` v SCL | vsi projekti |
 | TAG-OVERLAP | Tagi | 3* | Prekrivanje naslovov različnih širin (brez Clock/System bajta) | B08 `%IW1822` v `%ID1820` (Purem2), D `%IW100` čez vrata |
@@ -43,29 +56,32 @@ ExcelReport    →  Povzetek (formule) | Napake (tblNapake) | Legenda | Seznami 
 
 \* Zaupanje »Preveriti«: pravilo najde kandidata, ali gre res za napako, presodi človek ali LLM.
 
-Preizkus na exportih: Stroj B 19 ugotovitev (11 s), Stroj G 16, 122A 10. Pravila ujamejo vse ustrezne točke iz ročnih tabel,
+Preizkus v0.1: Stroj B 19 ugotovitev (11 s), Stroj G 16, 122A 10. Pravila ujamejo vse ustrezne točke iz ročnih tabel,
 na B pa so našla tudi nov primer: prisiljen `BT1/BT2_ROBOT_OUT_SYS_EMG_OK`.
+
+**Preizkus v0.2 (122A, primerjava z LLM tabelo, stolpec »Zaznavnost«):** od 30 napak »Program« jih ToolKit najde **26** (v0.1: 4);
+zgreši H4 (CTD naložen samo ob Stop – preveč specifično), M10 je pokrit s HMI-SETBIT, M4/M5 pa sta po umerjenem izračunu postavitve
+dvomljivi (glej DbLayout). Najde tudi C10 in M2 (»Program + LLM«) ter nove kandidate (Unit_T10 NW97, Unit_80 `Bad_parts_Full`,
+skrite receptne meje na Etaloniranje E1–E3, `%IB1306`/`%IW1306`). 73 ugotovitev, ~14 s. Napredek po korakih: `docs\NAPREDEK_ANALIZATOR.md`.
+
+**DbLayout (odmiki standardnih DB-jev):** Bool po bitih, 1-bajtni tipi na bajt, ostalo na sodi bajt; Struct/UDT/FB-instanca in polja
+na sodem bajtu; vsak razdelek FB (Input/Output/InOut/Static) na sodem bajtu; IEC_TIMER/TON_TIME = 16 B. Umerjeno na 122A (vse točke globalnih
+DB-jev in Unit_80_DB). Neumerjeno: InOut String (6-B kazalec?) in R_TRIG/F_TRIG → `UncertainFrom`; naslovi za to mejo se ne ocenjujejo.
+CLI: `TIA_ToolKit.Cli layout <export> <DB> [filter]`, `dump <export> <blok> [nw]`, `hmi <export> <zaslon>`.
 
 ## Pravila – naslednja faza (po donosu)
 Ocena iz tabele Stroj B (stolpec »Zaznavnost«) je 70 % napak »Program«, 20 % »Program + LLM« in 9 % »Samo LLM«.
-Največ doda naslednjih šest pravil:
+Izvedeno v v0.2: IDX-UNIT, HMI-ADDR, HMI-SETBIT, HMI-SCRIPT (glej tabelo zgoraj). Ostaja:
 
-1. **IDX-UNIT** – indeks `DB_Service_Settings.OFF/TEST/STEP/RESET/MOVING[n]`, `DB_SCADA_OUT.*[n]`, `DB_Counter_*[n]` in `TAKT_STATION[n]`,
-   ki ga uporablja enota, se razlikuje od njenega lastnega indeksa. Lastni indeks se ugotovi po večini (najpogostejši indeks v bloku)
-   ali iz preslikave v `unitmap.json`.
-   *Primeri:* D01 `OFF[11]`, Stator Good `STEP[16]`, BT1 `ERROR[8]`, H02 vse na [23].
-2. **XREF-UNIT** – blok enote uporablja simbol druge enote ali linije. Žetoni se izpeljejo iz imena bloka in mape
+1. **XREF-UNIT** – blok enote uporablja simbol druge enote ali linije. Žetoni se izpeljejo iz imena bloka in mape
    (`S_`/`R_`, `Stator`/`Rotor`, `B05`↔`B10`, `A01_1`↔`A01`).
    *Primeri:* Rotor piše `Unit_S_G50_Bad_DB_Settings.FULL_1`, stator kliče `Manual_Remove_Part_R_Save_SQL`, B05 `Unit_B10_Settings_DB`.
-3. **SIB-DIFF** – primerjava sorodnih blokov (normalizacija imen in indeksov, nato diff network za networkom).
+2. **SIB-DIFF** – primerjava sorodnih blokov (normalizacija imen in indeksov, nato diff network za networkom).
    Poročajo se le razlike v operandih, ne v strukturi.
    *Primeri:* krimp 4 `Pressure_Archive[2]`, `Gripper_1_C` namesto `_2_C`, `Vision_Pos_1` namesto `_2`.
-4. **HMI-ADDR** – absolutni HMI tag (brez ControllerTag) se razreši v odmik non-optimized DB-ja (standardna postavitev).
-   Če ime člena ne ustreza imenu taga, gre za napako; prav tako, če DB ali odmik ne obstajata.
-   *Primeri:* `ALARM_ON`=`%DB1.DBX0.0`, `DB_Settings_END`@116, `Unit_B02_4_Timers` na B02_1–3, `U_030_Mot_Rot`@DB103.
-5. **HMI-IDX** – HMI polje `[k]` = PLC `[k+1]`. Indeks stikala na zaslonu se primerja z indeksom, ki ga enota iz napisa vrstice
+3. **HMI-IDX** – HMI polje `[k]` = PLC `[k+1]`. Indeks stikala na zaslonu se primerja z indeksom, ki ga enota iz napisa vrstice
    dejansko bere. *Primeri:* ServiceOnOff na B in 121A.
-6. **HMI-SETBIT** – SetBit na bit, ki ga PLC nikoli ne bere ali ne resetira, ter neposreden zapis HMI v `%Q`.
+4. Umeritev DbLayout za InOut String in R_TRIG/F_TRIG (potreben export z znanimi odmiki ali preverba v TIA).
 
 Dodatno:
 - **SAF-NONF**: ne-F operand (standardni DB, `%M`) v pogoju `DOOR_OK`/`START_MACHINE_ON` (programerski ključ kot HMI bit).
@@ -74,7 +90,7 @@ Dodatno:
 - **STL-TEMP-LATCH**: S/R na `#temp`.
 - **STL-SNOR**: S brez R.
 - **TAKT-TOGGLE**: `X #TOGGLE` brez fronte.
-- **HMI-SCRIPT**: skripta ni klicana, uporablja neobstoječ tag ali deli brez zaščite; gesla v `LogINLevel`.
+- **HMI-SCRIPT** (dopolnitev): deljenje brez zaščite v skriptah; brisanje števcev prek `SetServiceTagArrayOn` (indeks v `ServiceInteger`) za HMI-AUTH.
 
 ## LLM korak (izbirno, pozneje)
 Za kandidate z zaupanjem »Preveriti« in za kategorije, ki jih pravila ne pokrijejo (pomen napisov, tok handshaka), se Claudu

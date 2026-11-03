@@ -34,4 +34,4 @@ Stanje po fazi 1 (122A): 20 ugotovitev; od 30 LLM »Program« najde 10 (S2, S4, 
 - [x] 3.9 (dodatno) HMI-SETBIT: gumb SetBit/InvertBit na bit, ki ga PLC ne bere. – ✔ M10 (LN_Get_Material_Cancell_REQ), + T1 (Recepti gumbi → %M4.2 Trigger_test), M1.
 
 ## Zaključek
-- [ ] Posodobi docs\ANALYZER_SPEC.md (tabela pravil) in README.md; končna primerjava: koliko od 30 »Program« najde ToolKit.
+- [x] Posodobi docs\ANALYZER_SPEC.md (tabela pravil) in README.md; končna primerjava: koliko od 30 »Program« najde ToolKit. – ✔ v0.2: **26 od 30** (prej 4), 73 ugotovitev. Zgreši H4; M4/M5 dvomljivi (DbLayout); vse ostalo najde. Naslednje: XREF-UNIT, SIB-DIFF, HMI-IDX, umeritev InOut String/R_TRIG, regresijski test TIA_ToolKit.Tests.
