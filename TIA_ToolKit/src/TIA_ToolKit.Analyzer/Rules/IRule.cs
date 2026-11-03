@@ -31,6 +31,7 @@ namespace TIA_ToolKit.Analyzer
             new UnitIndexRule(),
             new WriteOnlyRule(),
             new HmiAddressRule(),
+            new HmiUnitRule(),
             new ErrorObRule(),
             new OeeQualityRule(),
             new TagOverlapRule(),

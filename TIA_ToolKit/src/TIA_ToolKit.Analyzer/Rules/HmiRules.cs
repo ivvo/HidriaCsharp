@@ -83,6 +83,76 @@ namespace TIA_ToolKit.Analyzer
     }
 
     /// <summary>
+    /// HMI-UNIT: (1) na zaslonu enote (ime vsebuje številko enote, npr. Postaja_50) je vnosno polje vezano na tag druge enote (U60_*);
+    /// (2) isti tag (z indeksom) je na enem zaslonu vezan na več vnosnih polj - vnos v eno vrstico spremeni drugo (U60_Timers[1] 3×).
+    /// </summary>
+    public sealed class HmiUnitRule : IRule
+    {
+        public string Id => "HMI-UNIT";
+        public string Title => "Vnosno polje vezano na tag druge enote ali podvojeno";
+        static readonly Regex UnitRx = new Regex(@"^(?:U|T|UT)_?(\d{2,3})_", RegexOptions.IgnoreCase);
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            if (plc != project.Plcs.FirstOrDefault()) yield break;
+            foreach (var h in project.Hmis)
+            {
+                var foreignAll = new List<(HmiScreen s, string own, HmiItem item, string tag)>();
+                foreach (var s in h.Screens.Where(x => !x.IsTemplate))
+                {
+                    var inputs = s.Items.Where(i => i.IsInput).SelectMany(i => i.Bindings.Where(b => b.Property == "ProcessValue").Select(b => (item: i, tag: b.Tag))).ToList();
+                    if (inputs.Count == 0) continue;
+
+                    // (1) tuja enota - zbere za vse zaslone, poroča spodaj
+                    var units = s.Items.SelectMany(i => i.Bindings).Select(b => UnitRx.Match(b.Tag)).Where(m => m.Success).Select(m => m.Groups[1].Value).ToList();
+                    string own = units.GroupBy(u => u).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+                    if (own != null && Regex.IsMatch(s.Name, @"(^|\D)" + own + @"(\D|$)"))
+                        foreach (var x in inputs) { var m = UnitRx.Match(x.tag); if (m.Success && m.Groups[1].Value != own) foreignAll.Add((s, own, x.item, x.tag)); }
+
+                    // (2) isti tag na več vnosnih poljih; zaslon-knjižnica (en tag na ≥ 8 objektih, npr. Nabor_Stikal) ni napaka
+                    var dup = inputs.GroupBy(x => x.tag, StringComparer.OrdinalIgnoreCase)
+                                    .Where(g => g.Select(x => x.item).Distinct().Count() > 1 && g.Select(x => x.item).Distinct().Count() < 8).ToList();
+                    if (dup.Count > 0)
+                        yield return Make(h, s, dup.SelectMany(g => g).ToList(), Severity.Medium,
+                            "Zaslon " + s.Name + ": " + string.Join("; ", dup.Take(8).Select(g => g.Key + " na " + string.Join(", ", g.Select(x => x.item.Name).Distinct()))) +
+                            ". Isti tag je vezan na več vnosnih polj (verjetno kopirane vrstice brez popravljenega indeksa) - vnos v eno polje spremeni tudi druga, prave vrednosti pa niso dosegljive.");
+                }
+
+                // isti tuji objekt (ime + tag) na ≥ 3 zaslonih = kopiran (pogosto prekrit) objekt → ena ugotovitev
+                var common = foreignAll.GroupBy(x => x.item.Name + "→" + x.tag).Where(g => g.Select(x => x.s).Distinct().Count() >= 3).ToList();
+                var commonKeys = new HashSet<string>(common.Select(g => g.Key));
+                foreach (var g in common)
+                {
+                    var first = g.First();
+                    var f = new Finding
+                    {
+                        RuleId = Id, Category = Categories.CopyIndex, Severity = Severity.Medium, Confidence = "Preveriti", Title = Title,
+                        Description = "Objekt " + first.item.Name + " (vnos, tag " + first.tag + ") je na " + g.Select(x => x.s).Distinct().Count() + " zaslonih drugih enot (" +
+                                      string.Join(", ", g.Select(x => x.s.Name).Distinct()) + "). Kopiran objekt (pogosto skrit pod drugim poljem) - prek njega se na tujem zaslonu spremeni vrednost enote " +
+                                      UnitRx.Match(first.tag).Groups[1].Value + " (npr. s tipko Tab).",
+                    };
+                    foreach (var x in g) f.Locations.Add(new FindingLocation { Path = "HMI/" + h.Name + "/" + x.s.File, NetworkTitle = x.item.Name });
+                    if (h.TagByName.TryGetValue(HmiUse.Base(first.tag), out var tag)) f.Locations.Add(HmiUse.TagLocation(h, tag));
+                    yield return f;
+                }
+                foreach (var g in foreignAll.Where(x => !commonKeys.Contains(x.item.Name + "→" + x.tag)).GroupBy(x => x.s))
+                    yield return Make(h, g.Key, g.Select(x => (x.item, x.tag)).ToList(), Severity.High,
+                        "Zaslon " + g.Key.Name + " (enota " + g.First().own + "): vnosna polja " + string.Join(", ", g.Select(x => x.item.Name + " → " + x.tag).Distinct().Take(8)) +
+                        " so vezana na tage druge enote. Vrednosti te enote se zato s tega zaslona ne dajo nastaviti, vnos pa spremeni nastavitve tuje enote.");
+            }
+        }
+
+        Finding Make(HmiTarget h, HmiScreen s, List<(HmiItem item, string tag)> hits, Severity sev, string desc)
+        {
+            var f = new Finding { RuleId = Id, Category = Categories.CopyIndex, Severity = sev, Confidence = "Preveriti", Title = Title, Description = desc };
+            f.Locations.Add(new FindingLocation { Path = "HMI/" + h.Name + "/" + s.File, NetworkTitle = string.Join(", ", hits.Select(x => x.item.Name).Distinct().Take(8)) });
+            foreach (var t in hits.Select(x => HmiUse.Base(x.tag)).Distinct().Take(4))
+                if (h.TagByName.TryGetValue(t, out var tag)) f.Locations.Add(HmiUse.TagLocation(h, tag));
+            return f;
+        }
+    }
+
+    /// <summary>
     /// HMI-ADDR: absolutni HMI tag se razreši v člana PLC (DB s standardno postavitvijo - DbLayout, ali %M/%I/%Q tag).
     /// Napaka, če DB ne obstaja, je naslov izven DB, se tip ne ujema (bit v Int, beseda čez String), tag kaže na rezervni člen
     /// (Empty_*, TEST[n]) ali se ime HMI taga z imenom PLC člana ne ujema v nobenem pomenskem delu.
