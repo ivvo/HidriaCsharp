@@ -60,6 +60,7 @@ namespace TIA_ToolKit.Analyzer
                     var plc = new PlcProgram { Name = Path.GetFileName(d), Root = d };
                     ReadBlocks(plc, log);
                     ReadTags(plc);
+                    ReadTypes(plc, log);
                     p.Plcs.Add(plc);
                     log("PLC " + plc.Name + ": " + plc.Blocks.Count + " blokov, " + plc.Tags.Count + " tagov.");
                 }
@@ -94,6 +95,24 @@ namespace TIA_ToolKit.Analyzer
             }
         }
 
+        static void ReadTypes(PlcProgram plc, Action<string> log)
+        {
+            string dir = Path.Combine(plc.Root, "Types");
+            if (!Directory.Exists(dir)) return;
+            foreach (var f in Directory.EnumerateFiles(dir, "*.xml", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var t = XDocument.Load(f).Root?.Elements().FirstOrDefault(x => L(x) == "SW.Types.PlcStruct");
+                    var attrs = Kid(t, "AttributeList");
+                    string name = (string)Kid(attrs, "Name");
+                    var sections = Kid(attrs, "Interface")?.Elements().FirstOrDefault();
+                    if (name != null && sections != null) plc.Types[name] = sections;
+                }
+                catch (Exception ex) { log("  Napaka pri branju tipa " + f + ": " + ex.Message); }
+            }
+        }
+
         static string L(XElement e) => e.Name.LocalName;
         static IEnumerable<XElement> Kids(XElement e, string name) => e.Elements().Where(x => L(x) == name);
         static XElement Kid(XElement e, string name) => e?.Elements().FirstOrDefault(x => L(x) == name);
@@ -111,6 +130,12 @@ namespace TIA_ToolKit.Analyzer
                 Language = (string)Kid(attrs, "ProgrammingLanguage"),
             };
             int.TryParse((string)Kid(attrs, "Number"), out b.Number);
+            b.MemoryLayout = (string)Kid(attrs, "MemoryLayout");
+            if (L(blk) == "SW.Blocks.GlobalDB" || L(blk) == "SW.Blocks.InstanceDB")
+            {
+                b.Interface = Kid(attrs, "Interface")?.Elements().FirstOrDefault();
+                b.InstanceOfName = (string)Kid(attrs, "InstanceOfName");
+            }
             switch (L(blk).Substring("SW.Blocks.".Length))
             {
                 case "OB": b.Kind = BlockKind.OB; break;

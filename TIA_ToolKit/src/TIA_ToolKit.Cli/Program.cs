@@ -15,6 +15,7 @@ namespace TIA_ToolKit.Cli
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             if (args.Length >= 3 && args[0] == "dump") return Dump(args);
+            if (args.Length >= 3 && args[0] == "layout") return Layout(args);
             if (args.Length < 2 || args[0] != "analyze")
             {
                 Console.WriteLine("Uporaba: TIA_ToolKit.Cli analyze <exportDir> [-o <porocilo.xlsx>]");
@@ -39,6 +40,24 @@ namespace TIA_ToolKit.Cli
                     string.Join(", ", res.Findings.GroupBy(f => f.Category).Select(g => g.Key + " " + g.Count())) + ")");
                 Console.WriteLine("Poročilo: " + target + (kept > 0 ? "  (ohranjenih vnosov: " + kept + ")" : ""));
             }
+            return 0;
+        }
+
+        /// <summary>layout &lt;exportDir&gt; &lt;številka DB&gt; [filter]: izračunani odmiki ne-optimiziranega DB-ja (za preverjanje DbLayout).</summary>
+        static int Layout(string[] args)
+        {
+            var p = ExportReader.Read(ExportReader.FindProjects(Path.GetFullPath(args[1])).First(), s => { });
+            int nr = int.Parse(args[2]);
+            foreach (var plc in p.Plcs)
+                foreach (var db in plc.Blocks.Where(b => b.IsDb && b.Number == nr))
+                {
+                    var l = DbLayout.For(plc, db);
+                    if (l == null) { Console.WriteLine(db.Name + ": postavitev " + db.MemoryLayout + " - ni absolutnih naslovov."); continue; }
+                    Console.WriteLine(db.Name + " [DB" + nr + "] velikost " + l.Size + " B" + (l.Complete ? "" : " (nepopolno: " + l.Problem + ")") +
+                                      (l.UncertainFrom >= 0 ? " (od bajta " + l.UncertainFrom + " naprej ni zanesljivo)" : ""));
+                    foreach (var leaf in l.Leaves.Where(x => args.Length < 4 || x.Path.IndexOf(args[3], StringComparison.OrdinalIgnoreCase) >= 0))
+                        Console.WriteLine("  " + leaf);
+                }
             return 0;
         }
 

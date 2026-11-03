@@ -21,6 +21,8 @@ namespace TIA_ToolKit.Analyzer
         public string Root;
         public List<Block> Blocks = new List<Block>();
         public List<PlcTag> Tags = new List<PlcTag>();
+        /// <summary>PLC podatkovni tipi (UDT): ime → element Sections. Rezerva, če DB člana tipa ne razširi.</summary>
+        public Dictionary<string, System.Xml.Linq.XElement> Types = new Dictionary<string, System.Xml.Linq.XElement>();
     }
 
     public enum BlockKind { OB, FB, FC, GlobalDB, InstanceDB, Other }
@@ -35,6 +37,10 @@ namespace TIA_ToolKit.Analyzer
         public string Folder;
         public List<Network> Networks = new List<Network>();
         public string SclSource;   // celoten SCL vir (iz Sources\), če obstaja
+        /// <summary>Samo DB: vmesnik (element Sections) in postavitev "Standard"/"Optimized" - za izračun odmikov (DbLayout).</summary>
+        public System.Xml.Linq.XElement Interface;
+        public string MemoryLayout;
+        public string InstanceOfName;   // instance DB: ime FB-ja (postavitev se podeduje od FB)
 
         public bool IsFailsafe => Language != null && Language.StartsWith("F_");
         public bool IsDb => Kind == BlockKind.GlobalDB || Kind == BlockKind.InstanceDB;

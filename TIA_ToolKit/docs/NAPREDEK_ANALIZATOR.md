@@ -24,7 +24,7 @@ Stanje po fazi 1 (122A): 20 ugotovitev; od 30 LLM »Program« najde 10 (S2, S4, 
 
 ## Faza 3 – HMI (bralnik + pravila)
 - [ ] 3.1 HmiReader: tagi (ime, PLC tag / absolutni naslov, tip), zasloni (objekti, vezave, Authorization, položaj/velikost, dogodki SetBit/skripte), skripte (tekst).
-- [ ] 3.2 DB layout: odmiki članov non-optimized DB (standardna postavitev S7: Bool biti, poravnava na sodi bajt, Struct/Array/UDT/FB instance).
+- [x] 3.2 DB layout: odmiki članov non-optimized DB (standardna postavitev S7: Bool biti, poravnava na sodi bajt, Struct/Array/UDT/FB instance). – ✔ DbLayout.cs + CLI `layout <export> <DB> [filter]`. Umerjeno: globalni DB-ji se ujemajo z vsemi točkami LLM (DB1010 TEST[49]=DBX24.0, Empty_17=DBX1.6, STEP_ON=DBX2.3, CUMULATIVE_ERROR=DBX370.7; DB106 Dosing_EMPTY=DBX24.1, Part_n_BAD_Count=DBW20; DB110 Robot_Stop_REQ=DBX24.0). IEC_TIMER/TON_TIME = 16 B: z njim Unit_80_DB BAD/CONTROLOR_PART_POSITION = DBW194/196 = točno HMI tagi → **LLM M5 je verjetno napačna** (LLM je štel 10-B timer). Neumerjeno: InOut String (kazalec) in R_TRIG/F_TRIG → DbLayout.UncertainFrom; Unit_70_DB od bajta 200 ni zanesljiv → **M4 (L/R_PIECES) ni mogoče potrditi** (izračun 340, HMI 312, LLM 1812).
 - [ ] 3.3 HMI-ADDR: absolutni naslov → član DB; ime se ne ujema / izven DB / rezervni bit (Empty_*). Pričakovano: M1, M4, M5, M6, M7, T1
 - [ ] 3.4 HMI-UNIT: zaslon Postaja_NN veže tage druge enote (U60_* na Postaja_50). Pričakovano: C9, C10
 - [ ] 3.5 HMI-AUTH: stikalo/gumb na Disable/OFF/Manual/Delete/Start/Calib brez Authorization. Pričakovano: M8, M9, M11
