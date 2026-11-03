@@ -30,6 +30,7 @@ namespace TIA_ToolKit.Analyzer
             new HandshakeStubRule(),
             new UnitIndexRule(),
             new WriteOnlyRule(),
+            new HmiAddressRule(),
             new ErrorObRule(),
             new OeeQualityRule(),
             new TagOverlapRule(),
