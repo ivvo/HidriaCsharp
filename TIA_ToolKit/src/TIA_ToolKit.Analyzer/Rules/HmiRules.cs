@@ -35,6 +35,25 @@ namespace TIA_ToolKit.Analyzer
                 NetworkTitle = string.Join(", ", g.Select(u => u.item.Name).Distinct().Take(6)),
             });
 
+        static readonly Regex DbAddrRx = new Regex(@"^%DB(\d+)\.DB([XBWD])(\d+)(?:\.(\d))?$", RegexOptions.IgnoreCase);
+
+        /// <summary>Ime PLC člana ("DB_ime.Pot"), na katerega kaže absoluten skalarni HMI tag, ali null (ni razrešljivo / negotovo).</summary>
+        public static string Resolve(PlcProgram plc, HmiTag t)
+        {
+            if (t.Address == null || (t.DataType ?? "").StartsWith("Array", StringComparison.OrdinalIgnoreCase)) return null;
+            var m = DbAddrRx.Match(t.Address);
+            if (!m.Success) return plc.Tags.FirstOrDefault(x => string.Equals(x.Address, t.Address, StringComparison.OrdinalIgnoreCase))?.Name;
+            var db = plc.Blocks.FirstOrDefault(b => b.IsDb && b.Number == int.Parse(m.Groups[1].Value));
+            var lay = DbLayout.For(plc, db);
+            int byteOff = int.Parse(m.Groups[3].Value);
+            if (lay == null || !lay.IsCertain(byteOff)) return null;
+            int width = Width(t.DataType, t.Length);
+            DbLeaf leaf = width == 0
+                ? lay.Leaves.FirstOrDefault(x => x.IsBool && x.Byte == byteOff && m.Groups[4].Success && x.Bit == int.Parse(m.Groups[4].Value))
+                : lay.Leaves.FirstOrDefault(x => !x.IsBool && x.Byte == byteOff && x.Size == width);
+            return leaf == null ? null : db.Name + "." + leaf.Path;
+        }
+
         public static int Width(string dataType, int length)
         {
             switch ((dataType ?? "").ToLowerInvariant())
@@ -79,6 +98,189 @@ namespace TIA_ToolKit.Analyzer
                 for (int j = 1; j <= t.Length; j++)
                     d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + (s[i - 1] == t[j - 1] ? 0 : 1));
             return d[s.Length, t.Length];
+        }
+    }
+
+    /// <summary>
+    /// HMI-OVERWRITE: vnosno polje piše v PLC člana, ki ga program prepisuje s kopijo druge spremenljivke (STL "L X / T člen", SCL "člen := X;")
+    /// - operaterjev vnos se ob naslednjem prepisu izgubi (npr. meje U20/U30 se iz recepta nalagajo ob vsakem kosu).
+    /// </summary>
+    public sealed class HmiOverwriteRule : IRule
+    {
+        public string Id => "HMI-OVERWRITE";
+        public string Title => "Vnos na HMI nima učinka – PLC vrednost prepiše";
+        static readonly Regex SclCopyRx = new Regex(@"(""[^""]+"")\s*:=\s*(""[^""]+"")\s*;");
+        const int BulkCopy = 15;
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            if (plc != project.Plcs.FirstOrDefault()) yield break;
+            // člen → (vir, blok, network)
+            var copies = new Dictionary<string, List<(string src, Block b, Network n)>>();
+            foreach (var b in plc.Blocks.Where(x => !x.IsDb))
+                foreach (var nw in b.Networks)
+                {
+                    var s = nw.Stl.Where(x => x.Op != "COMMENT" && x.Op != "EMPTY_LINE").ToList();
+                    for (int i = 1; i < s.Count; i++)
+                        if (s[i].Op == "T" && s[i].Operand != null && s[i].Operand.StartsWith("\"") && s[i - 1].Op == "L" && s[i - 1].Operand != null && s[i - 1].Operand.StartsWith("\""))
+                            Add(copies, s[i].Operand.Trim('"'), s[i - 1].Operand, b, nw);
+                    if (nw.Scl != null)
+                        foreach (Match m in SclCopyRx.Matches(nw.Scl)) Add(copies, m.Groups[1].Value.Trim('"'), m.Groups[2].Value, b, nw);
+                }
+            // network z množico kopij = nalaganje recepta (namerno, ob menjavi); vir iz %I = merjena vrednost (prikaz, ne nastavitev)
+            var bulk = new HashSet<Network>(copies.Values.SelectMany(l => l).GroupBy(x => x.n).Where(g => g.Count() > BulkCopy).Select(g => g.Key));
+            var inputs = new HashSet<string>(plc.Tags.Where(t => t.Area == 'I').Select(t => "\"" + t.Name + "\""));
+            foreach (var k in copies.Keys.ToList())
+            {
+                copies[k] = copies[k].Where(x => !bulk.Contains(x.n) && !inputs.Contains(x.src)).ToList();
+                if (copies[k].Count == 0) copies.Remove(k);
+            }
+
+            foreach (var h in project.Hmis)
+            {
+                var hits = new List<(HmiScreen s, HmiItem i, HmiTag t, string member, List<(string src, Block b, Network n)> w)>();
+                foreach (var s in h.Screens)
+                    foreach (var i in s.Items.Where(x => x.IsInput))
+                        foreach (var b in i.Bindings.Where(x => x.Property == "ProcessValue"))
+                        {
+                            if (!h.TagByName.TryGetValue(b.Tag, out var t)) continue;
+                            string member = HmiUse.Resolve(plc, t);
+                            if (member != null && copies.TryGetValue(member, out var w)) hits.Add((s, i, t, member, w));
+                        }
+                // ena ugotovitev na network, ki prepisuje
+                foreach (var g in hits.GroupBy(x => x.w.First().n))
+                {
+                    var w0 = g.First().w.First();
+                    var f = new Finding
+                    {
+                        RuleId = Id, Category = Categories.Functional, Severity = Severity.Medium, Confidence = "Preveriti", Title = Title,
+                        Description = "HMI vnosi " + string.Join(", ", g.Select(x => x.t.Name + " → " + x.member).Distinct().Take(6)) +
+                                      " pišejo v člene, ki jih " + w0.b.Name + " NW" + w0.n.Index + " prepiše (" +
+                                      string.Join("; ", g.SelectMany(x => x.w.Where(y => y.n == w0.n).Select(y => y.src)).Distinct().Take(4)) +
+                                      "). Vnesena vrednost se ob naslednjem prepisu izgubi, operater pa misli, da je nastavitev spremenil. " +
+                                      "Vnos naj piše v vir ali pa naj PLC prepisuje le ob menjavi recepta.",
+                    };
+                    f.Locations.Add(FindingLocation.Of(w0.b, w0.n));
+                    f.Locations.AddRange(HmiUse.ScreenLocations(h, g.Select(x => (x.s, x.i))));
+                    foreach (var t in g.Select(x => x.t).Distinct().Take(3)) f.Locations.Add(HmiUse.TagLocation(h, t));
+                    yield return f;
+                }
+            }
+        }
+
+        static void Add(Dictionary<string, List<(string, Block, Network)>> d, string member, string src, Block b, Network n)
+        {
+            if (!d.TryGetValue(member, out var l)) d[member] = l = new List<(string, Block, Network)>();
+            l.Add((src, b, n));
+        }
+    }
+
+    /// <summary>
+    /// HMI-SETBIT: gumb na HMI nastavi bit (SetBit/InvertBit/SetBitWhileKeyPressed), ki ga PLC nikjer ne bere - ukaz nima učinka, bit pa ostane postavljen
+    /// (npr. LN_Get_Material_Cancell_REQ: "Prekliči" je v PLC samo deklariran).
+    /// </summary>
+    public sealed class HmiSetBitRule : IRule
+    {
+        public string Id => "HMI-SETBIT";
+        public string Title => "HMI ukaz nima učinka – PLC bita ne bere";
+        static readonly HashSet<string> BitFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "SetBit", "InvertBit", "SetBitWhileKeyPressed", "SetBitInTag", "InvertBitInTag" };
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            if (plc != project.Plcs.FirstOrDefault()) yield break;
+            var refs = new HashSet<string>(plc.Blocks.Where(b => !b.IsDb).SelectMany(b => b.Networks).SelectMany(n => n.Refs.Concat(n.AllOperands()))
+                                           .Select(r => r.Trim('"')));
+            foreach (var h in project.Hmis)
+            {
+                var hits = new List<(HmiScreen s, HmiItem i, HmiTag t, string member)>();
+                foreach (var s in h.Screens)
+                    foreach (var i in s.Items)
+                        foreach (var a in i.Actions.Where(a => BitFunctions.Contains(a.Function ?? "")))
+                            foreach (var tn in a.Tags)
+                            {
+                                if (!h.TagByName.TryGetValue(tn, out var t)) continue;
+                                string member = HmiUse.Resolve(plc, t);
+                                if (member == null || IsReferenced(member, refs)) continue;
+                                hits.Add((s, i, t, member));
+                            }
+                foreach (var g in hits.GroupBy(x => x.member))
+                {
+                    var first = g.First();
+                    var f = new Finding
+                    {
+                        RuleId = Id, Category = Categories.Hmi, Severity = Severity.Low, Title = Title,
+                        Description = "Gumb " + string.Join(", ", g.Select(x => x.s.Name + "/" + x.i.Name).Distinct().Take(4)) + " nastavi " + first.t.Name + " (" + first.t.Address + " = " + first.member +
+                                      "), ki ga PLC nikjer ne bere niti ne resetira. Ukaz nima učinka, bit pa ostane postavljen.",
+                    };
+                    f.Locations.AddRange(HmiUse.ScreenLocations(h, g.Select(x => (x.s, x.i))));
+                    f.Locations.Add(HmiUse.TagLocation(h, first.t));
+                    yield return f;
+                }
+            }
+        }
+
+        static bool IsReferenced(string member, HashSet<string> refs)
+        {
+            if (refs.Contains(member)) return true;
+            for (int i = 0; i < member.Length; i++)   // prek nadrejene strukture (parameter klica)
+                if ((member[i] == '.' || member[i] == '[') && refs.Contains(member.Substring(0, i))) return true;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// HMI-HIDDEN: vnosno polje, ki ga (skoraj) v celoti prekriva drug objekt, narisan kasneje - operater ga ne vidi, s tipko Tab pa ga doseže
+    /// (npr. kopija polja U10_Timers[0] pod I/O field_27 na zaslonih postaj).
+    /// </summary>
+    public sealed class HmiHiddenRule : IRule
+    {
+        public string Id => "HMI-HIDDEN";
+        public string Title => "Skrito (prekrito) vnosno polje";
+        // samo upravljalni objekti; pravokotnik/slika čez polje je običajno namerna maska (pogosto z animacijo vidnosti)
+        static readonly HashSet<string> Covers = new HashSet<string> { "IOField", "SymbolicIOField", "Switch", "Button", "GraphicIOField" };
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            if (plc != project.Plcs.FirstOrDefault()) yield break;
+            foreach (var h in project.Hmis)
+            {
+                var all = new List<(HmiScreen s, HmiItem hidden, HmiItem cover, string tag)>();
+                foreach (var s in h.Screens.Where(x => !x.IsTemplate))
+                    for (int i = 0; i < s.Items.Count; i++)
+                    {
+                        var a = s.Items[i];
+                        if (!a.IsInput || a.Width <= 0 || a.Height <= 0) continue;
+                        var cover = s.Items.Skip(i + 1).FirstOrDefault(b => Covers.Contains(b.Kind) && b != a && Overlap(a, b) >= 0.8);
+                        if (cover == null) continue;
+                        all.Add((s, a, cover, a.Bindings.Select(x => x.Tag).FirstOrDefault()));
+                    }
+                // po skupini zaslonov, na katerih je isto skrito polje (kopiran zaslon) - ena ugotovitev na skupino
+                var perField = all.GroupBy(x => x.hidden.Name + "|" + x.tag)
+                                  .Select(g => (screens: string.Join(", ", g.Select(x => x.s.Name).Distinct().OrderBy(n => n)), items: g.ToList())).ToList();
+                foreach (var grp in perField.GroupBy(x => x.screens))
+                {
+                    var fields = grp.Select(x => x.items.First()).ToList();
+                    var f = new Finding
+                    {
+                        RuleId = Id, Category = Categories.Hmi, Severity = Severity.Low, Confidence = "Preveriti", Title = Title,
+                        Description = fields.Count + " vnosnih polj je prekritih z drugim upravljalnim objektom na zaslonih " + grp.Key + ": " +
+                                      string.Join("; ", fields.Take(6).Select(x => x.hidden.Name + " (" + x.tag + ") pod " + x.cover.Name)) + (fields.Count > 6 ? "; …" : "") +
+                                      ". Operater jih ne vidi, s tipko Tab pa jih lahko doseže in spremeni vrednost (kopiran objekt). Odstrani jih ali onemogoči.",
+                    };
+                    foreach (var x in grp.SelectMany(p => p.items).GroupBy(x => x.s))
+                        f.Locations.Add(new FindingLocation { Path = "HMI/" + h.Name + "/" + x.Key.File, NetworkTitle = string.Join(", ", x.Select(y => y.hidden.Name).Take(6)) + (x.Count() > 6 ? ", …" : "") });
+                    yield return f;
+                }
+            }
+        }
+
+        /// <summary>Delež površine a, ki ga pokrije b.</summary>
+        static double Overlap(HmiItem a, HmiItem b)
+        {
+            int w = Math.Min(a.Left + a.Width, b.Left + b.Width) - Math.Max(a.Left, b.Left);
+            int hh = Math.Min(a.Top + a.Height, b.Top + b.Height) - Math.Max(a.Top, b.Top);
+            return w <= 0 || hh <= 0 ? 0 : (double)w * hh / ((double)a.Width * a.Height);
         }
     }
 
