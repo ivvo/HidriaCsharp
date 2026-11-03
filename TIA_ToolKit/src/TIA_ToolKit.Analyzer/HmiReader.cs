@@ -49,6 +49,11 @@ namespace TIA_ToolKit.Analyzer
             var doc = XDocument.Load(f);
             foreach (var tag in doc.Descendants().Where(x => L(x) == "Hmi.Tag.Tag"))
             {
+                foreach (var fe in tag.Descendants().Where(x => L(x) == "Hmi.Event.FunctionListEntry"))
+                {
+                    string fn = Attr(fe, "Name") ?? LinkName(fe, "Script");
+                    if (fn != null) t.TagEventFunctions.Add(fn);
+                }
                 bool absolute = Attr(tag, "AddressAccessMode") == "Absolute";
                 t.Tags.Add(new HmiTag
                 {

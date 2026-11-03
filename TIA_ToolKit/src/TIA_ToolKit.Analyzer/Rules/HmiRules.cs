@@ -83,6 +83,69 @@ namespace TIA_ToolKit.Analyzer
     }
 
     /// <summary>
+    /// HMI-SCRIPT: VB skripte z gesli v besedilu, absolutnimi potmi (osebna mapa razvijalca), neobstoječimi SmartTags in skripte, ki jih nihče ne kliče;
+    /// v PLC (SCL) primerjava gesla s konstanto ('Default.').
+    /// </summary>
+    public sealed class HmiScriptRule : IRule
+    {
+        public string Id => "HMI-SCRIPT";
+        public string Title => "HMI skripta / geslo: trdo zapisane vrednosti ali mrtva koda";
+        static readonly Regex PwdTagRx = new Regex(@"SmartTags\(""([^""]*(Pass|Pwd|Geslo|Passwort)[^""]*)""\)\s*=\s*""([^""]+)""", RegexOptions.IgnoreCase);
+        static readonly Regex LogonRx = new Regex(@"\bLogon\s+""([^""]+)""", RegexOptions.IgnoreCase);
+        static readonly Regex PathRx = new Regex(@"""([A-Za-z]:\\[^""]+)""");
+        static readonly Regex SmartRx = new Regex(@"SmartTags\(""([^""]+)""\)", RegexOptions.IgnoreCase);
+        static readonly Regex SclPwdRx = new Regex(@"(""[^""]*(Pass|Pwd|Geslo|Passwort)[^""]*"")\s*=\s*'([^']+)'", RegexOptions.IgnoreCase);
+
+        public IEnumerable<Finding> Check(ExportProject project, PlcProgram plc)
+        {
+            // PLC: geslo primerjano s konstanto
+            foreach (var b in plc.Blocks.Where(x => !x.IsDb))
+                foreach (var nw in b.Networks.Where(n => n.Scl != null))
+                    foreach (Match m in SclPwdRx.Matches(nw.Scl))
+                    {
+                        var f = new Finding
+                        {
+                            RuleId = Id, Category = Categories.Hmi, Severity = Severity.Low, Title = "Geslo trdo zapisano v PLC",
+                            Description = m.Groups[1].Value + " se primerja s konstanto '" + m.Groups[3].Value + "'. Geslo je vidno vsakomur, ki odpre projekt, " +
+                                          "vnos pa ostane v DB-ju; za zaščito uporabi upravljanje uporabnikov na HMI (Authorization).",
+                        };
+                        f.Locations.Add(FindingLocation.Of(b, nw));
+                        yield return f;
+                    }
+
+            if (plc != project.Plcs.FirstOrDefault()) yield break;
+            foreach (var h in project.Hmis)
+            {
+                var called = new HashSet<string>(h.Screens.SelectMany(s => s.Items).SelectMany(i => i.Actions).Select(a => a.Function).Where(x => x != null)
+                                                  .Concat(h.TagEventFunctions), StringComparer.OrdinalIgnoreCase);
+                foreach (var sc in h.Scripts)
+                {
+                    var issues = new List<string>(); var sev = Severity.Low;
+                    var code = string.Join("\n", sc.Code.Split('\n').Where(l => !l.TrimStart().StartsWith("'")));   // brez komentarjev
+                    var pwds = PwdTagRx.Matches(code).Cast<Match>().Select(m => "\"" + m.Groups[3].Value + "\"")
+                               .Concat(LogonRx.Matches(code).Cast<Match>().Select(m => "\"" + m.Groups[1].Value + "\"")).Distinct().ToList();
+                    if (pwds.Count > 0) { issues.Add("gesla v čistem besedilu: " + string.Join(", ", pwds)); sev = Severity.High; }
+                    var paths = PathRx.Matches(code).Cast<Match>().Select(m => m.Groups[1].Value).Distinct().ToList();
+                    if (paths.Count > 0) issues.Add("absolutna pot " + string.Join(", ", paths) + (paths.Any(p => p.IndexOf(@"\Users\", StringComparison.OrdinalIgnoreCase) >= 0) ? " (osebna mapa uporabnika)" : ""));
+                    var missing = SmartRx.Matches(code).Cast<Match>().Select(m => m.Groups[1].Value)
+                                  .Where(t => !t.StartsWith("@") && !h.TagByName.ContainsKey(t)).Distinct().ToList();
+                    if (missing.Count > 0) issues.Add("neobstoječi tagi " + string.Join(", ", missing.Take(6)) + (missing.Count > 6 ? ", …" : ""));
+                    bool unused = !called.Contains(sc.Name) && !h.Scripts.Any(o => o != sc && Regex.IsMatch(o.Code, @"\b" + Regex.Escape(sc.Name) + @"\b"));
+                    if (issues.Count == 0) continue;   // neklicana skripta brez drugih težav ni vredna vrstice
+                    if (unused) issues.Add("skripte ne kliče noben objekt ali skripta (morda časovni razpored - preveri)");
+                    var f = new Finding
+                    {
+                        RuleId = Id, Category = Categories.Hmi, Severity = sev, Confidence = sev == Severity.High ? "Preverjeno" : "Preveriti", Title = Title,
+                        Description = "Skripta " + sc.Name + ": " + string.Join("; ", issues) + ".",
+                    };
+                    f.Locations.Add(new FindingLocation { Path = "HMI/" + h.Name + "/" + sc.File });
+                    yield return f;
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// HMI-AUTH: nevaren ukaz (premostitev Disable/OFF/Bypass, ročni način, kalibracija, brisanje, zagon etalona, StopRuntime ...) brez avtorizacije
     /// na zaslonu, ki je dosegljiv brez prijave (pot od začetnih zaslonov prek navigacije brez avtorizacije, vklj. gumbe predlog).
     /// </summary>

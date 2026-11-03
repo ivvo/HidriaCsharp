@@ -10,6 +10,8 @@ namespace TIA_ToolKit.Analyzer
         public List<HmiTag> Tags = new List<HmiTag>();
         public List<HmiScreen> Screens = new List<HmiScreen>();   // zasloni in predloge (IsTemplate)
         public List<HmiScript> Scripts = new List<HmiScript>();
+        /// <summary>Funkcije/skripte, ki jih prožijo dogodki tagov (ValueChange ...).</summary>
+        public HashSet<string> TagEventFunctions = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, HmiTag> TagByName = new Dictionary<string, HmiTag>(System.StringComparer.OrdinalIgnoreCase);
     }
 

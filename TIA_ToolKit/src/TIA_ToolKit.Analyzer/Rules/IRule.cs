@@ -33,6 +33,7 @@ namespace TIA_ToolKit.Analyzer
             new HmiAddressRule(),
             new HmiUnitRule(),
             new HmiAuthorizationRule(),
+            new HmiScriptRule(),
             new ErrorObRule(),
             new OeeQualityRule(),
             new TagOverlapRule(),
