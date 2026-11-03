@@ -66,6 +66,7 @@ namespace TIA_ToolKit.Analyzer
                 }
             string hmiDir = Path.Combine(projectDir, "HMI");
             if (Directory.Exists(hmiDir)) p.HmiRoots.AddRange(Directory.GetDirectories(hmiDir));
+            foreach (var h in p.HmiRoots) p.Hmis.Add(HmiReader.Read(h, log));
             return p;
         }
 

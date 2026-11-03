@@ -11,6 +11,7 @@ namespace TIA_ToolKit.Analyzer
         public string ExportedAt;
         public List<PlcProgram> Plcs = new List<PlcProgram>();
         public List<string> HmiRoots = new List<string>();
+        public List<HmiTarget> Hmis = new List<HmiTarget>();
         /// <summary>Kar export ni mogel izvoziti (know-how zaščita, nekonsistentne watch tabele ...) - za razdelek "Česa ni bilo mogoče preveriti".</summary>
         public List<string> NotExported = new List<string>();
     }

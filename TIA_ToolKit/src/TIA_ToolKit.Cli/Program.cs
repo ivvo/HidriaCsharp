@@ -16,6 +16,7 @@ namespace TIA_ToolKit.Cli
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             if (args.Length >= 3 && args[0] == "dump") return Dump(args);
             if (args.Length >= 3 && args[0] == "layout") return Layout(args);
+            if (args.Length >= 3 && args[0] == "hmi") return Hmi(args);
             if (args.Length < 2 || args[0] != "analyze")
             {
                 Console.WriteLine("Uporaba: TIA_ToolKit.Cli analyze <exportDir> [-o <porocilo.xlsx>]");
@@ -40,6 +41,23 @@ namespace TIA_ToolKit.Cli
                     string.Join(", ", res.Findings.GroupBy(f => f.Category).Select(g => g.Key + " " + g.Count())) + ")");
                 Console.WriteLine("Poročilo: " + target + (kept > 0 ? "  (ohranjenih vnosov: " + kept + ")" : ""));
             }
+            return 0;
+        }
+
+        /// <summary>hmi &lt;exportDir&gt; &lt;zaslon&gt;: izpiše, kako je analizator prebral objekte HMI zaslona/predloge (za razvoj pravil).</summary>
+        static int Hmi(string[] args)
+        {
+            var p = ExportReader.Read(ExportReader.FindProjects(Path.GetFullPath(args[1])).First(), s => { });
+            foreach (var h in p.Hmis)
+                foreach (var s in h.Screens.Where(x => string.Equals(x.Name, args[2], StringComparison.OrdinalIgnoreCase)))
+                {
+                    Console.WriteLine("--- " + h.Name + " " + s.File + (s.IsTemplate ? " (predloga)" : " predloga=" + s.Template));
+                    foreach (var i in s.Items)
+                        Console.WriteLine("  " + i.Name + " [" + i.Kind + (i.Mode != null ? " " + i.Mode : "") + "] @" + i.Left + "," + i.Top + " " + i.Width + "x" + i.Height +
+                                          (i.Authorization != null ? " auth=" + i.Authorization : "") +
+                                          string.Concat(i.Bindings.Select(b => " " + b.Property + "=" + b.Tag)) +
+                                          string.Concat(i.Actions.Select(a => " " + a.Event + ":" + a.Function + "(" + string.Join(",", a.Tags.Concat(a.Values)) + ")")));
+                }
             return 0;
         }
 
