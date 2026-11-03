@@ -19,7 +19,7 @@ Navodilo za nadaljevanje (katerakoli seja): vzemi prvi neodkljukan korak, ga izv
 Stanje po fazi 1 (122A): 20 ugotovitev; od 30 LLM »Program« najde 10 (S2, S4, F1, F10, C5, C6, C7, H5, H6, H7), + nove kandidate (Unit_T10 NW97, Unit_30 NW85, %IB1306/%IW1306).
 
 ## Faza 2 – indeksi in navzkrižne reference
-- [ ] 2.1 IDX-UNIT: indeks v bloku enote odstopa od večine (TRACKING.PIECE[n], DB_Service_Settings.OFF/TEST/STEP[n]) + indeks, uporabljen samo 1× v programu. Pričakovano: C1 (Unit_20 NW5 OFF[3]), C3 (Unit_20 NW38 PIECE[13]), C4 (Unit_40 PIECE[4])
+- [x] 2.1 IDX-UNIT: indeks v bloku enote odstopa od večine (TRACKING.PIECE[n], DB_Service_Settings.OFF/TEST/STEP[n]) + indeks, uporabljen samo 1× v programu. Pričakovano: C1 (Unit_20 NW5 OFF[3]), C3 (Unit_20 NW38 PIECE[13]), C4 (Unit_40 PIECE[4]) – ✔ natanko vse tri, brez šuma (Rules\IndexRules.cs: redek = ≤2× in glavni ≥4× pogostejši; izvzeti networki z ≥4 indeksi (naštevanje) in redki indeksi, ki se enako pojavijo v ≥2 blokih (predaja s prijemala PIECE[1]/[2])).
 - [ ] 2.2 XREF-WRITEONLY: globalni bit se piše, nikjer bere (filter imen BAD/ERROR/ALARM/REQ). Pričakovano: F3 (Etalon_All_BAD), M10 (LN_Get_Material_Cancell_REQ – po fazi 3 tudi HMI stran)
 
 ## Faza 3 – HMI (bralnik + pravila)
