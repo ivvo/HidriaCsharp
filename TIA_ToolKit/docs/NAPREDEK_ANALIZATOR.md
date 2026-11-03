@@ -10,8 +10,8 @@ Navodilo za nadaljevanje (katerakoli seja): vzemi prvi neodkljukan korak, ga izv
 
 ## Faza 1 – PLC hitre zmage
 - [x] 1.1 PLC-DOUBLE: štej zapise, ne networkov (večkratni Assign v istem networku). Pričakovano: C5 (FieldBus NW3 Error_FieldBus_SMC_2), C7 (Safety NW9 warning_Door_9_Opened) – ✔ najde oba + F10 (Semaphore_S1/S2_oSIG, OPERATION NW23). CLI dobil ukaz `dump <export> <blok> [nw]` za razvoj pravil.
-- [ ] 1.2 DUP-OPERAND: isti operand 2× v isti A/O verigi (STL; LAD vzporedni kontakti). Pričakovano: F10 (Unit_T20 NW124 O BAD_PART O BAD_PART), C6 (OPERATION NW14 RIGHT_PALLET_PRESENT 2×)
-- [ ] 1.3 CONTRA: `A X` in `AN X` v isti AND verigi (vedno FALSE). Pričakovano: S2 (Main_Safety_RTG1 NW20 Safety_Lase_Cover_CH1_SW)
+- [x] 1.2 DUP-OPERAND: isti operand 2× v isti A/O verigi (STL; LAD vzporedni kontakti). Pričakovano: F10 (Unit_T20 NW124 O BAD_PART O BAD_PART), C6 (OPERATION NW14 RIGHT_PALLET_PRESENT 2×) – ✔ oba (Rules\LogicRules.cs). Novi kandidati: Unit_T10 NW97 A UT10_Gripper_B_F 2×, Unit_30 NW85 U30_Sealing_F_CMD 2×, Unit_T20 RE_MEASURE 2× (NW57–67).
+- [x] 1.3 CONTRA: `A X` in `AN X` v isti AND verigi (vedno FALSE). Pričakovano: S2 (Main_Safety_RTG1 NW20 Safety_Lase_Cover_CH1_SW) – ✔ (LAD zaporedni kontakti)
 - [ ] 1.4 NW-COMMENTED: network brez ukazov, z veliko komentarja (zakomentirana logika). Pričakovano: F1 (Unit_40 NW65)
 - [ ] 1.5 HANDSHAKE-STUB: `A …_START / S …_END / R …_START` brez dejanja vmes. Pričakovano: H7 (Ignition_Comm NW19)
 - [ ] 1.6 TAG-OVERLAP: bajtni tagi s privzetim imenom `Tag_n`, ki jih program ne uporablja → ena skupna ugotovitev, prioriteta 4. T6 ostane.

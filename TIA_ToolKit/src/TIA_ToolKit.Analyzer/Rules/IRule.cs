@@ -24,6 +24,8 @@ namespace TIA_ToolKit.Analyzer
             new FPowerrailCoilRule(),
             new ForcedSignalRule(),
             new DoubleAssignRule(),
+            new DuplicateOperandRule(),
+            new ContradictionRule(),
             new ErrorObRule(),
             new OeeQualityRule(),
             new TagOverlapRule(),
