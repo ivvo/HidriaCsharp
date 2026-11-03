@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Ukazna vrstica za paketno analizo:  TIA_ToolKit.Cli.exe analyze <exportDir> [-o <xlsx>] -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>TIA_ToolKit.Cli</AssemblyName>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_ToolKit.Analyzer\TIA_ToolKit.Analyzer.csproj" />
+  </ItemGroup>
+</Project>

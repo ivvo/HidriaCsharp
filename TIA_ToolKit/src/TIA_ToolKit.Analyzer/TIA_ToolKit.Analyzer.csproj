@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Statična analiza TIA exporta (izhod "Export all"): bere XML/SCL/tag tabele, poganja pravila, izdela Excel poročilo.
+       Brez odvisnosti od TIA Portala - deluje na katerem koli PC-ju nad mapo exporta. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>TIA_ToolKit.Analyzer</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_ToolKit.Common\TIA_ToolKit.Common.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,25 @@
+<Project>
+  <!-- Skupne nastavitve za vse projekte v TIA_ToolKit.
+       TiaVersion izbere Openness API (privzeto V20); za drugo verzijo:  msbuild TIA_ToolKit.sln /p:TiaVersion=V18
+       V20 gradi v bin\x64\<Configuration>\, ostale verzije v podmapo <TiaVersion>, da se ne prepisujejo. -->
+  <PropertyGroup>
+    <TiaVersion Condition=" '$(TiaVersion)' == '' ">V20</TiaVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <RootNamespace>TIA_ToolKit</RootNamespace>
+    <Company>Hidria</Company>
+    <Product>TIA_ToolKit</Product>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)bin\x64\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\$(TiaVersion)\</IntermediateOutputPath>
+    <OpennessDir>C:\Program Files\Siemens\Automation\Portal $(TiaVersion)\PublicAPI\$(TiaVersion)\</OpennessDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TiaVersion)' != 'V20' ">
+    <OutputPath>$(OutputPath)$(TiaVersion)\</OutputPath>
+  </PropertyGroup>
+</Project>

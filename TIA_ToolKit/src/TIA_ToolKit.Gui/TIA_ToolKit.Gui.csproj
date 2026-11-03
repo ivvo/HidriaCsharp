@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Glavna aplikacija (WinForms). Exe: TIA_ToolKit.exe (V20) oziroma TIA_ToolKit_<verzija>.exe v podmapi. -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>TIA_ToolKit</AssemblyName>
+    <AssemblyName Condition=" '$(TiaVersion)' != 'V20' ">TIA_ToolKit_$(TiaVersion)</AssemblyName>
+    <DefineConstants>$(DefineConstants);TIA_$(TiaVersion)</DefineConstants>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="Siemens.Engineering"><HintPath>$(OpennessDir)Siemens.Engineering.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Siemens.Engineering.Hmi"><HintPath>$(OpennessDir)Siemens.Engineering.Hmi.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_ToolKit.Common\TIA_ToolKit.Common.csproj" />
+    <ProjectReference Include="..\TIA_ToolKit.Openness\TIA_ToolKit.Openness.csproj" />
+    <ProjectReference Include="..\TIA_ToolKit.HmiColors\TIA_ToolKit.HmiColors.csproj" />
+    <ProjectReference Include="..\TIA_ToolKit.Analyzer\TIA_ToolKit.Analyzer.csproj" />
+  </ItemGroup>
+</Project>

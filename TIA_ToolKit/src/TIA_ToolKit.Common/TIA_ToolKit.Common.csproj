@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pomožne funkcije brez odvisnosti (brez TIA, brez WinForms) - uporabljajo jih vsi ostali projekti. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>TIA_ToolKit.Common</AssemblyName>
+  </PropertyGroup>
+</Project>

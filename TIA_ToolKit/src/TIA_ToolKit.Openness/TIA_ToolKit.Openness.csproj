@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Priklop na TIA Portal prek Openness: seznam procesov, export/import HMI zaslonov, Export all. -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>TIA_ToolKit.Openness</AssemblyName>
+    <DefineConstants>$(DefineConstants);TIA_$(TiaVersion)</DefineConstants>
+  </PropertyGroup>
+  <Target Name="CheckOpenness" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(OpennessDir)Siemens.Engineering.dll')"
+           Text="Openness API za TIA Portal $(TiaVersion) ni nameščen: $(OpennessDir)Siemens.Engineering.dll" />
+  </Target>
+  <ItemGroup>
+    <!-- Openness DLL-ji se NE kopirajo v bin - naloži jih AssemblyResolve v TIA_ToolKit.Gui\Program.cs -->
+    <Reference Include="Siemens.Engineering"><HintPath>$(OpennessDir)Siemens.Engineering.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Siemens.Engineering.Hmi"><HintPath>$(OpennessDir)Siemens.Engineering.Hmi.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_ToolKit.Common\TIA_ToolKit.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TIA_ToolKit" />
+    <InternalsVisibleTo Include="TIA_ToolKit_V18" />
+    <InternalsVisibleTo Include="TIA_ToolKit_V19" />
+  </ItemGroup>
+</Project>

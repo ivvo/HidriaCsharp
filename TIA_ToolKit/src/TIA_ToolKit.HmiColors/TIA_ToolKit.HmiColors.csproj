@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Standardizacija barv HMI zaslonov (tekstovna zamenjava v exportiranih XML) in izris zaslonov v PNG. Brez TIA odvisnosti. -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>TIA_ToolKit.HmiColors</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_ToolKit.Common\TIA_ToolKit.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TIA_ToolKit" />
+    <InternalsVisibleTo Include="TIA_ToolKit_V18" />
+    <InternalsVisibleTo Include="TIA_ToolKit_V19" />
+    <InternalsVisibleTo Include="TIA_ToolKit.Openness" />
+  </ItemGroup>
+</Project>

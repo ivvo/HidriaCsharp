@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4F62A6D7-D2A4-4198-99EF-833CCC55DE9B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_ToolKit.Common", "src\TIA_ToolKit.Common\TIA_ToolKit.Common.csproj", "{8D54FB67-E5E2-4111-BAC0-5627F0EDD1B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_ToolKit.Openness", "src\TIA_ToolKit.Openness\TIA_ToolKit.Openness.csproj", "{F4AFEA0E-D093-45CB-9ADE-6BDB686F3E2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_ToolKit.HmiColors", "src\TIA_ToolKit.HmiColors\TIA_ToolKit.HmiColors.csproj", "{6AAF4711-838A-4799-81A1-E97E03386787}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_ToolKit.Analyzer", "src\TIA_ToolKit.Analyzer\TIA_ToolKit.Analyzer.csproj", "{F8A2D892-2303-47F3-AD83-211430A6334E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_ToolKit.Gui", "src\TIA_ToolKit.Gui\TIA_ToolKit.Gui.csproj", "{64E7736F-AA39-434F-B640-505320B0CE84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_ToolKit.Cli", "src\TIA_ToolKit.Cli\TIA_ToolKit.Cli.csproj", "{26F0AAF5-4E72-4085-B862-085D188A18F4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D54FB67-E5E2-4111-BAC0-5627F0EDD1B3}.Debug|x64.ActiveCfg = Debug|x64
+		{8D54FB67-E5E2-4111-BAC0-5627F0EDD1B3}.Debug|x64.Build.0 = Debug|x64
+		{8D54FB67-E5E2-4111-BAC0-5627F0EDD1B3}.Release|x64.ActiveCfg = Release|x64
+		{8D54FB67-E5E2-4111-BAC0-5627F0EDD1B3}.Release|x64.Build.0 = Release|x64
+		{F4AFEA0E-D093-45CB-9ADE-6BDB686F3E2A}.Debug|x64.ActiveCfg = Debug|x64
+		{F4AFEA0E-D093-45CB-9ADE-6BDB686F3E2A}.Debug|x64.Build.0 = Debug|x64
+		{F4AFEA0E-D093-45CB-9ADE-6BDB686F3E2A}.Release|x64.ActiveCfg = Release|x64
+		{F4AFEA0E-D093-45CB-9ADE-6BDB686F3E2A}.Release|x64.Build.0 = Release|x64
+		{6AAF4711-838A-4799-81A1-E97E03386787}.Debug|x64.ActiveCfg = Debug|x64
+		{6AAF4711-838A-4799-81A1-E97E03386787}.Debug|x64.Build.0 = Debug|x64
+		{6AAF4711-838A-4799-81A1-E97E03386787}.Release|x64.ActiveCfg = Release|x64
+		{6AAF4711-838A-4799-81A1-E97E03386787}.Release|x64.Build.0 = Release|x64
+		{F8A2D892-2303-47F3-AD83-211430A6334E}.Debug|x64.ActiveCfg = Debug|x64
+		{F8A2D892-2303-47F3-AD83-211430A6334E}.Debug|x64.Build.0 = Debug|x64
+		{F8A2D892-2303-47F3-AD83-211430A6334E}.Release|x64.ActiveCfg = Release|x64
+		{F8A2D892-2303-47F3-AD83-211430A6334E}.Release|x64.Build.0 = Release|x64
+		{64E7736F-AA39-434F-B640-505320B0CE84}.Debug|x64.ActiveCfg = Debug|x64
+		{64E7736F-AA39-434F-B640-505320B0CE84}.Debug|x64.Build.0 = Debug|x64
+		{64E7736F-AA39-434F-B640-505320B0CE84}.Release|x64.ActiveCfg = Release|x64
+		{64E7736F-AA39-434F-B640-505320B0CE84}.Release|x64.Build.0 = Release|x64
+		{26F0AAF5-4E72-4085-B862-085D188A18F4}.Debug|x64.ActiveCfg = Debug|x64
+		{26F0AAF5-4E72-4085-B862-085D188A18F4}.Debug|x64.Build.0 = Debug|x64
+		{26F0AAF5-4E72-4085-B862-085D188A18F4}.Release|x64.ActiveCfg = Release|x64
+		{26F0AAF5-4E72-4085-B862-085D188A18F4}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8D54FB67-E5E2-4111-BAC0-5627F0EDD1B3} = {4F62A6D7-D2A4-4198-99EF-833CCC55DE9B}
+		{F4AFEA0E-D093-45CB-9ADE-6BDB686F3E2A} = {4F62A6D7-D2A4-4198-99EF-833CCC55DE9B}
+		{6AAF4711-838A-4799-81A1-E97E03386787} = {4F62A6D7-D2A4-4198-99EF-833CCC55DE9B}
+		{F8A2D892-2303-47F3-AD83-211430A6334E} = {4F62A6D7-D2A4-4198-99EF-833CCC55DE9B}
+		{64E7736F-AA39-434F-B640-505320B0CE84} = {4F62A6D7-D2A4-4198-99EF-833CCC55DE9B}
+		{26F0AAF5-4E72-4085-B862-085D188A18F4} = {4F62A6D7-D2A4-4198-99EF-833CCC55DE9B}
+	EndGlobalSection
+EndGlobal
