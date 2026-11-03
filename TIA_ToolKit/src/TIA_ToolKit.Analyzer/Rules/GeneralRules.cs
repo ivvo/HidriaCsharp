@@ -5,8 +5,8 @@ using System.Text.RegularExpressions;
 namespace TIA_ToolKit.Analyzer
 {
     /// <summary>
-    /// PLC-DOUBLE: globalni bit je zapisan z "=" (Assign) v več networkih - zadnji zapis prepiše prejšnje.
-    /// Primeri: warning_Robot_Calibratin_ON v 6 FB-jih, DB_Service_Settings.SERVICE_ON 3× v Safety.
+    /// PLC-DOUBLE: globalni bit je zapisan z "=" (Assign) večkrat (v več networkih ali v istem) - zadnji zapis prepiše prejšnje.
+    /// Primeri: warning_Robot_Calibratin_ON v 6 FB-jih, DB_Service_Settings.SERVICE_ON 3× v Safety, Error_FieldBus_SMC_2 6× v FieldBus NW3.
     /// </summary>
     public sealed class DoubleAssignRule : IRule
     {
@@ -28,24 +28,27 @@ namespace TIA_ToolKit.Analyzer
             foreach (var kv in writers.Where(k => k.Value.Count > 1).OrderBy(k => k.Key))
             {
                 var blocks = kv.Value.Select(x => x.b).Distinct().ToList();
+                var sameNw = kv.Value.GroupBy(x => x.n).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
                 var f = new Finding
                 {
                     RuleId = Id, Severity = Severity.Medium, Confidence = "Preveriti",
-                    Category = blocks.Count > 1 ? Categories.CopyIndex : Categories.Functional,
+                    Category = blocks.Count > 1 || sameNw.Count > 0 ? Categories.CopyIndex : Categories.Functional,
                     Title = "Dvojni zapis: " + kv.Key,
-                    Description = kv.Key + " je zapisan z \"=\" " + kv.Value.Count + "× (" + string.Join(", ", blocks.Select(x => x.Name)) +
-                                  "). Velja zadnji zapis v ciklu, prejšnji se prepišejo. Preveri, ali gre za namerno prioritetno shemo (JCN) ali za napako kopiranja (pravilno: OR vseh pogojev ali en bit na enoto).",
+                    Description = kv.Key + " je zapisan z \"=\" " + kv.Value.Count + "× (" + string.Join(", ", blocks.Select(x => x.Name)) + ")" +
+                                  (sameNw.Count > 0 ? ", od tega večkrat v istem networku (NW" + string.Join(", NW", sameNw.Select(n => n.Index)) + ")" : "") +
+                                  ". Velja zadnji zapis v ciklu, prejšnji se prepišejo. Preveri, ali gre za namerno prioritetno shemo (JCN) ali za napako kopiranja (pravilno: OR vseh pogojev ali en bit na enoto).",
                 };
                 foreach (var g in kv.Value.GroupBy(x => x.b))
-                    f.Locations.Add(FindingLocation.Of(g.Key, g.Select(x => x.n).ToArray()));
+                    f.Locations.Add(FindingLocation.Of(g.Key, g.Select(x => x.n).Distinct().ToArray()));
                 yield return f;
             }
         }
 
         static void Add(Dictionary<string, List<(Block, Network)>> d, string op, Block b, Network n)
         {
+            // vsak zapis posebej - tudi večkratni zapis v istem networku je dvojni zapis (FieldBus: 6× = Error_FieldBus_SMC_2)
             if (!d.TryGetValue(op, out var l)) d[op] = l = new List<(Block, Network)>();
-            if (!l.Any(x => x.Item2 == n)) l.Add((b, n));
+            l.Add((b, n));
         }
     }
 
