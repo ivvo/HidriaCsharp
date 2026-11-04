@@ -78,7 +78,7 @@ namespace TIA_Generator.Cli
             if (units > 0) Console.WriteLine("Po spremembi v TIA: Export all → ponovno 'model' (opozorilo TIMERS-NOT-ARRAY mora izginiti).");
             if (csv != null)
             {
-                File.WriteAllLines(csv, rows, new UTF8Encoding(true));
+                File.WriteAllLines(csv, TIA_Generator.Generate.PlcChanges.CsvLines(m), new UTF8Encoding(true));
                 Console.WriteLine("CSV: " + Path.GetFullPath(csv));
             }
             return 0;

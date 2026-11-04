@@ -30,6 +30,14 @@ Uporabnik je izbral **»PLC v polje«**: 10 članov S5Time v vsakem `Unit_<oznak
 - Novo opozorilo **TIMER-FOREIGN**: časovnik enote uporablja FB druge enote. Purem: `Unit_A01_1` NW 2 bere `Unit_A01_DB_Settings.Delay_Position_Error`; BMW G: `Unit_R_GT2_Robot` NW 190 bere `Unit_S_GT1_Robot_DB_Settings.Delay_Vision_XY_Tout` (verjetno napaka kopiranja Stator → Rotor).
 - Po spremembi PLC: Export all → `model` znova; `TIMERS-NOT-ARRAY` mora izginiti (veja `array` je že podprta).
 
+### Grafični vmesnik (2026-11-04)
+`TIA_Generator.Gui` (WinForms, net48, brez designerja, kot TIA_ToolKit.Gui): izdelava modela iz exporta v ozadju, odpiranje/shranjevanje modela,
+mreža enot s filtrom, zavihki enote (Enota, Časovniki, Parametri, Recept, Cilindri, Alarmi) z urejanjem besedil SL/EN/DE, prikaza, PLC indeksa,
+polja input/display in razreda alarma; opozorila (dvoklik → enota), povzetek, alarmi brez enote, dnevnik; izvoz sprememb PLC v CSV.
+Preverjeno z `--snapshot` na Purem (odprt model) in BMW G (izdelava iz exporta). Popravljeni napaki iz preizkusa: prikaz napačne enote
+(SelectionChanged pred CurrentRow) in prazna tabela opozoril (ModelWarning ima polja – vezava prek WarningRow).
+Ni še preverjeno ročno: urejanje celic in shranjevanje prek GUI (koda gre prek iste ModelJson.Save kot CLI).
+
 **Odprto / naslednji koraki:**
 1. Faza 2 potrebuje knjižnico predlog (čista predloga projekta ali Purem `Postaja_B02_1` + `Nastavitve_Sektor_B`).
 2. Slovar: veliko »sestavljenih« besedil je dobesednih (»Krimpanje položaj max«) – dopolnjuj `phrases` ali lokalni `-s` slovar; opcija: pobiranje besedil iz starih zaslonov (TextField levo od IOField-a).

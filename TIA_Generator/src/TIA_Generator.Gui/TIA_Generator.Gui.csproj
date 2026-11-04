@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Grafični vmesnik generatorja HMI (WinForms, brez designerja): izbira exporta, izdelava/urejanje modela, opozorila, spremembe PLC.
+       Exe: TIA_GeneratorGui.exe (CLI ostane TIA_Generator.exe). -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>TIA_GeneratorGui</AssemblyName>
+    <RootNamespace>TIA_Generator.Gui</RootNamespace>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_Generator.Core\TIA_Generator.Core.csproj" />
+  </ItemGroup>
+</Project>

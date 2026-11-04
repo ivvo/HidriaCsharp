@@ -630,21 +630,24 @@ namespace TIA_Generator.Extract
 
         // ------------------------------------------------------------------ statistika
 
-        void Finish()
+        void Finish() => RecalcStatistics(_m);
+
+        /// <summary>Statistika modela – kliči tudi po ročnem urejanju (GUI), preden model shraniš.</summary>
+        public static void RecalcStatistics(MachineModelFile m)
         {
-            var s = _m.Statistics;
-            s.Units = _m.Units.Count;
-            s.Timers = _m.Units.Sum(u => u.Timers.Count);
-            s.TimersShown = _m.Units.Sum(u => u.Timers.Count(t => t.Show));
-            s.Parameters = _m.Units.Sum(u => u.Parameters.Count);
-            s.RecipeParameters = _m.Units.SelectMany(u => u.RecipeParameters).Distinct().Count() + _m.Global.RecipeOther.Count;
-            s.Cylinders = _m.Units.Sum(u => u.Cylinders.Count);
-            s.Alarms = _m.Global.Alarms.Count;
-            var sources = _m.Units.SelectMany(u => u.Timers.Where(t => t.Show).Select(t => t.TextSource)
+            var s = m.Statistics ?? (m.Statistics = new ModelStatistics());
+            s.Units = m.Units.Count;
+            s.Timers = m.Units.Sum(u => u.Timers.Count);
+            s.TimersShown = m.Units.Sum(u => u.Timers.Count(t => t.Show));
+            s.Parameters = m.Units.Sum(u => u.Parameters.Count);
+            s.RecipeParameters = m.Units.SelectMany(u => u.RecipeParameters.Select(p => p.Member)).Distinct().Count() + m.Global.RecipeOther.Count;
+            s.Cylinders = m.Units.Sum(u => u.Cylinders.Count);
+            s.Alarms = m.Global.Alarms.Count;
+            var sources = m.Units.SelectMany(u => u.Timers.Where(t => t.Show).Select(t => t.TextSource)
                                   .Concat(u.Parameters.Select(p => p.TextSource))
                                   .Concat(u.Cylinders.Select(c => c.TextSource)))
-                          .Concat(_m.Global.Alarms.Select(a => a.TextSource)).ToList();
-            s.TextsFromDictionary = sources.Count(x => x == TextSource.Dictionary);
+                          .Concat(m.Global.Alarms.Select(a => a.TextSource)).ToList();
+            s.TextsFromDictionary = sources.Count(x => x == TextSource.Dictionary || x == TextSource.Manual);
             s.TextsComposed = sources.Count(x => x == TextSource.Composed);
             s.TextsMissing = sources.Count(x => x != null && x.Contains(TextSource.Missing));
         }

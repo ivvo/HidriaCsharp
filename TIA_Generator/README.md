@@ -16,6 +16,7 @@ Specifikacija: `D:\Claude\Dokumentacije\Generator\HMI_GENERATOR_SPEC.md` (+ `pri
 ```
 TIA_Generator.sln
   src\TIA_Generator.Core   (netstandard2.0)  Model\ (MachineModel, ModelJson), Extract\ (ModelExtractor, TextDictionary), Data\slovar.json
+  src\TIA_Generator.Gui    (net48 WinForms, TIA_GeneratorGui.exe) – grafični vmesnik, zagonski projekt
   src\TIA_Generator.Cli    (net48, TIA_Generator.exe)
   ..\TIA_ToolKit\src\TIA_ToolKit.Analyzer + .Common   (ProjectReference – ExportReader, DbLayout)
 ```
@@ -29,7 +30,22 @@ TIA_Generator.sln
 ```
 Izhod: `bin\x64\Debug\TIA_Generator.exe`. Ne potrebuje TIA Portala.
 
-## Uporaba
+## Grafični vmesnik – `TIA_GeneratorGui.exe`
+
+Zagon: `bin\x64\Debug\TIA_GeneratorGui.exe` ali F5 v Visual Studiu (zagonski projekt `TIA_Generator.Gui`, profili *GUI*, *GUI – model Purem*, *GUI – export BMW G*).
+
+- **Izdelaj model iz exporta …** (Ctrl+E) – izbira mape Export all; branje teče v ozadju, napredek v zavihku *Dnevnik*. Če je v mapi več exportov, ponudi izbiro.
+- **Odpri model …** (Ctrl+O), **Shrani** (Ctrl+S), **Shrani kot …** – `*.hmimodel.json`; neshranjene spremembe so označene z `*` v naslovu.
+- Levo: enote (filter po oznaki/opisu; stolpec *Opoz.* = število opozoril enote).
+- Desno, zavihki izbrane enote: **Enota** (opis SL/EN/DE, PLC indeks → HMI indeks, prikaz na PC/panelu, podatki iz PLC in opozorila),
+  **Časovniki** (prikaz da/ne, besedila, kje v PLC so uporabljeni), **Parametri** (input/display, enota mere, besedila), **Recept**, **Cilindri** (indeksi v `Cylinder_Control`), **Alarmi** (razred, besedila).
+- Rumeno ozadje = urejljivo besedilo; ročno spremenjeno besedilo dobi izvor `rocno`.
+- Spodaj: **Opozorila** (dvoklik → skoči na enoto), **Povzetek**, **Alarmi brez enote**, **Dnevnik**.
+- **Spremembe PLC (CSV) …** – isto kot `plcchanges`.
+- Lokalni slovar: `slovar_lokalni.json` poleg exe se samodejno doda vgrajenemu.
+- Ukazna vrstica: `TIA_GeneratorGui.exe [<model.hmimodel.json>] [--export <dir>] [--unit <oznaka>] [--tab <n>] [--snapshot <png>]` (`--snapshot` = razvoj: izris okna v PNG).
+
+## Uporaba (CLI)
 
 ```
 TIA_Generator model <exportDir> [-o <x.hmimodel.json>] [-s <slovar.json>]...

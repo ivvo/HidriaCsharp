@@ -1,0 +1,28 @@
+{
+  "profiles": {
+    "model Purem": {
+      "commandName": "Project",
+      "commandLineArgs": "model \"D:\\Claude\\TiaFullExport\\Purem support pin\\Project1_V20\""
+    },
+    "show Purem": {
+      "commandName": "Project",
+      "commandLineArgs": "show \"D:\\Claude\\TiaFullExport\\Purem support pin\\Project1_V20.hmimodel.json\""
+    },
+    "show Purem B02_1": {
+      "commandName": "Project",
+      "commandLineArgs": "show \"D:\\Claude\\TiaFullExport\\Purem support pin\\Project1_V20.hmimodel.json\" B02_1"
+    },
+    "plcchanges Purem": {
+      "commandName": "Project",
+      "commandLineArgs": "plcchanges \"D:\\Claude\\TiaFullExport\\Purem support pin\\Project1_V20.hmimodel.json\" -o \"D:\\Claude\\TiaFullExport\\Purem support pin\\Project1_V20_PLC_spremembe.csv\""
+    },
+    "model PHEV Rotor": {
+      "commandName": "Project",
+      "commandLineArgs": "model \"D:\\Claude\\TiaFullExport\\PhevRotor\\20240908_v2_PHEV_Rotor_2\""
+    },
+    "model BMW G": {
+      "commandName": "Project",
+      "commandLineArgs": "model \"D:\\Claude\\TiaFullExport\\8601-089A BMW HEAT 6 L1\\Stroj G\\8691-089A BMW Stroj G_V20\""
+    }
+  }
+}

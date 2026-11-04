@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "GUI": {
+      "commandName": "Project"
+    },
+    "GUI – model Purem": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\Claude\\TiaFullExport\\Purem support pin\\Project1_V20.hmimodel.json\""
+    },
+    "GUI – export BMW G": {
+      "commandName": "Project",
+      "commandLineArgs": "--export \"D:\\Claude\\TiaFullExport\\8601-089A BMW HEAT 6 L1\\Stroj G\\8691-089A BMW Stroj G_V20\""
+    }
+  }
+}
