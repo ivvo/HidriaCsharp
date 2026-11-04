@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Ukazna vrstica:  TIA_Generator.exe model <exportDir> [-o <x.hmimodel.json>] [-s <slovar.json>] -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>TIA_Generator</AssemblyName>
+    <RootNamespace>TIA_Generator.Cli</RootNamespace>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_Generator.Core\TIA_Generator.Core.csproj" />
+  </ItemGroup>
+</Project>

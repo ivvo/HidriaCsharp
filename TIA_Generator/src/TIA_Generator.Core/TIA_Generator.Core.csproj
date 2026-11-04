@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Jedro generatorja HMI (HMI Standard 2.0): model stroja iz TIA exporta (faza 1), kasneje generiranje XML za uvoz.
+       Branje exporta: TIA_ToolKit.Analyzer (ExportReader, DbLayout) iz sosednje rešitve D:\C#\TIA_ToolKit. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>TIA_Generator.Core</AssemblyName>
+    <RootNamespace>TIA_Generator</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TIA_ToolKit\src\TIA_ToolKit.Analyzer\TIA_ToolKit.Analyzer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Data\slovar.json" LogicalName="TIA_Generator.slovar.json" />
+  </ItemGroup>
+</Project>
