@@ -8,9 +8,19 @@ namespace TIA_Generator.Gui
 {
     static class Program
     {
+        const string OpennessDir = @"C:\Program Files\Siemens\Automation\Portal V20\PublicAPI\V20";
+
         [STAThread]
         static void Main(string[] args)
         {
+            // Openness DLL-ji niso v bin – naložimo jih iz namestitve TIA, preden se dotaknemo katerega koli Siemens tipa.
+            AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
+            {
+                string name = new System.Reflection.AssemblyName(e.Name).Name;
+                if (!name.StartsWith("Siemens.Engineering", StringComparison.OrdinalIgnoreCase)) return null;
+                string path = Path.Combine(OpennessDir, name + ".dll");
+                return File.Exists(path) ? System.Reflection.Assembly.LoadFrom(path) : null;
+            };
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             // TIA_GeneratorGui.exe [<model.hmimodel.json>] [--unit <oznaka>] [--tab <n>] [--snapshot <png>]
@@ -24,6 +34,26 @@ namespace TIA_Generator.Gui
                 else if (args[i] == "--tab" && i + 1 < args.Length) int.TryParse(args[++i], out tab);
                 else if (args[i] == "--snapshot" && i + 1 < args.Length) snap = args[++i];
                 else if (File.Exists(args[i])) model = args[i];
+            }
+            int si = Array.IndexOf(args, "--snapimport");
+            if (si >= 0 && si + 1 < args.Length)
+            {
+                // razvoj: dialog Uvozi v TIA (naloži Openness, prebere procese) izrisan v PNG
+                using (var dlg = new ImportDialog(@"C:\temp", "DB_Error_Messages"))
+                {
+                    dlg.Shown += async (s, e) =>
+                    {
+                        await System.Threading.Tasks.Task.Delay(4000);
+                        using (var bmp = new System.Drawing.Bitmap(dlg.Width, dlg.Height))
+                        {
+                            dlg.DrawToBitmap(bmp, new System.Drawing.Rectangle(0, 0, dlg.Width, dlg.Height));
+                            bmp.Save(args[si + 1], System.Drawing.Imaging.ImageFormat.Png);
+                        }
+                        dlg.Close();
+                    };
+                    Application.Run(dlg);
+                }
+                return;
             }
             if (snapDialog != null)
             {

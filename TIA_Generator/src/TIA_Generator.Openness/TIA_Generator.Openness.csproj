@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Uvoz v odprt TIA Portal V20 prek Openness (PLC ogrodje novih postaj, biti alarmov). Projekta nikoli ne shrani.
+       Siemens.Engineering se ne kopira v bin - naloži ga AssemblyResolve v TIA_Generator.Gui\Program.cs. -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>TIA_Generator.Openness</AssemblyName>
+    <RootNamespace>TIA_Generator.Openness</RootNamespace>
+  </PropertyGroup>
+  <Target Name="CheckOpenness" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(OpennessDir)Siemens.Engineering.dll')" Text="Openness API za TIA Portal V20 ni nameščen: $(OpennessDir)Siemens.Engineering.dll" />
+  </Target>
+  <ItemGroup>
+    <Reference Include="Siemens.Engineering"><HintPath>$(OpennessDir)Siemens.Engineering.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TIA_Generator.Core\TIA_Generator.Core.csproj" />
+  </ItemGroup>
+</Project>

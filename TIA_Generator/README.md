@@ -17,6 +17,7 @@ Specifikacija: `D:\Claude\Dokumentacije\Generator\HMI_GENERATOR_SPEC.md` (+ `pri
 TIA_Generator.sln
   src\TIA_Generator.Core   (netstandard2.0)  Model\ (MachineModel, ModelJson), Extract\ (ModelExtractor, TextDictionary), Data\slovar.json
   src\TIA_Generator.Gui    (net48 WinForms, TIA_GeneratorGui.exe) – grafični vmesnik, zagonski projekt
+  src\TIA_Generator.Openness (net48) – uvoz v TIA Portal V20 (Siemens.Engineering iz namestitve TIA, AssemblyResolve v GUI)
   src\TIA_Generator.Cli    (net48, TIA_Generator.exe)
   ..\TIA_ToolKit\src\TIA_ToolKit.Analyzer + .Common   (ProjectReference – ExportReader, DbLayout)
 ```
@@ -46,7 +47,12 @@ Stroj = sektorji in postaje po standardu 5.3:
   `Unit_<oznaka>` (FB = PLC indeks), `Unit_<oznaka>_DB` (instanca = PLC indeks), `Unit_<oznaka>_DB_Settings` (100 + indeks; `Delay : Array[0..9] of S5Time` + `Part_n_BAD_Count`).
   V FB se zamenjajo oznaka (`Warning_OFF_A05` → `Warning_OFF_C03_1`), indeks v poljih `DB_*` (`OFF[15]` → `OFF[46]`) in časovniki (`Delay_Position_Error` → `Delay[0]`).
   Poročilo `PLC_ogrodje_porocilo.txt`: potrebni simboli (biti v DB_Error_Messages, PLC tagi `U_<oznaka>_RESET_ENABLED`), trki številk z obstoječimi bloki.
-  Uvoz v TIA: Openness ali Version Control Interface (uvoz iz programa še ni narejen).
+- **Uvozi v TIA …**: priklop na odprt TIA Portal V20 (Openness, projekt = kopija osnovnega projekta), izbira PLC-ja in mape PLC ogrodja →
+  *Preveri* (načrt: nov / obstaja – preskočeno / KONFLIKT številke; manjkajoči biti alarmov – nič se ne spremeni) → *Uvozi*:
+  bloki v mape `Machine/…` (ustvari jih), `IgnoreMissingReferencedObjects`; manjkajoče bite `Warning_OFF_<oznaka>` … doda **na konec**
+  `DB_Error_Messages` (odmiki obstoječih bitov/HMI alarmov ostanejo; varnostna kopija XML v %TEMP%). Projekta ne shrani.
+  Ne naredi (ročno): klici postaj v Main, PLC tagi `U_<oznaka>_RESET_ENABLED`, HMI alarmi. Pogoj: uporabnik v skupini *Siemens TIA Openness*.
+  Osnovni projekt: `D:\Claude\Dokumentacije\Generator\OSNOVNI_PROJEKT_KONTROLNI_SEZNAM.md`.
 - CLI: `newmachine "<ime>" --sectors 3 --stations 5 --sub A01=2,C03=1 -o x.hmimodel.json`, `plcskeleton x.hmimodel.json [--template <export>] [--unit A05] -o <mapa>`.
 
 ## Grafični vmesnik – `TIA_GeneratorGui.exe`

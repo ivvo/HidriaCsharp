@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{40B7772B-BEE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_Generator.Gui", "src\TIA_Generator.Gui\TIA_Generator.Gui.csproj", "{7C2E4A61-3B8D-4F0E-9A1C-5D6E7F8091A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_Generator.Openness", "src\TIA_Generator.Openness\TIA_Generator.Openness.csproj", "{9B1D3C5E-7F20-4A6B-8C4D-2E5F6A7B8C9D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_Generator.Cli", "src\TIA_Generator.Cli\TIA_Generator.Cli.csproj", "{3A50BCFC-5AF5-4FDF-A64C-10E14CFC52E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIA_Generator.Core", "src\TIA_Generator.Core\TIA_Generator.Core.csproj", "{0609F9DF-FF23-4FE6-B48C-517611FDEB31}"
@@ -23,6 +25,10 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B1D3C5E-7F20-4A6B-8C4D-2E5F6A7B8C9D}.Debug|x64.ActiveCfg = Debug|x64
+		{9B1D3C5E-7F20-4A6B-8C4D-2E5F6A7B8C9D}.Debug|x64.Build.0 = Debug|x64
+		{9B1D3C5E-7F20-4A6B-8C4D-2E5F6A7B8C9D}.Release|x64.ActiveCfg = Release|x64
+		{9B1D3C5E-7F20-4A6B-8C4D-2E5F6A7B8C9D}.Release|x64.Build.0 = Release|x64
 		{7C2E4A61-3B8D-4F0E-9A1C-5D6E7F8091A2}.Debug|x64.ActiveCfg = Debug|x64
 		{7C2E4A61-3B8D-4F0E-9A1C-5D6E7F8091A2}.Debug|x64.Build.0 = Debug|x64
 		{7C2E4A61-3B8D-4F0E-9A1C-5D6E7F8091A2}.Release|x64.ActiveCfg = Release|x64
@@ -48,6 +54,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{9B1D3C5E-7F20-4A6B-8C4D-2E5F6A7B8C9D} = {40B7772B-BEE1-4D3D-BE58-92A74CD4220F}
 		{7C2E4A61-3B8D-4F0E-9A1C-5D6E7F8091A2} = {40B7772B-BEE1-4D3D-BE58-92A74CD4220F}
 		{0609F9DF-FF23-4FE6-B48C-517611FDEB31} = {40B7772B-BEE1-4D3D-BE58-92A74CD4220F}
 		{3A50BCFC-5AF5-4FDF-A64C-10E14CFC52E5} = {40B7772B-BEE1-4D3D-BE58-92A74CD4220F}

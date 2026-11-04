@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TIA_Generator.Core\TIA_Generator.Core.csproj" />
+    <ProjectReference Include="..\TIA_Generator.Openness\TIA_Generator.Openness.csproj" />
   </ItemGroup>
 </Project>

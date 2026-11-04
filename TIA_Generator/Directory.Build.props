@@ -12,5 +12,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)bin\x64\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <!-- Openness API (TIA Portal V20) – DLL-ji se ne kopirajo v bin, naloži jih AssemblyResolve v GUI -->
+    <OpennessDir>C:\Program Files\Siemens\Automation\Portal V20\PublicAPI\V20\</OpennessDir>
   </PropertyGroup>
 </Project>

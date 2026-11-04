@@ -28,7 +28,8 @@ namespace TIA_Generator.Gui
         List<UnitRow> _allUnitRows = new List<UnitRow>();
 
         // ---------------------------------------------------------------- gradniki
-        readonly ToolStripButton _btnExport, _btnOpen, _btnSave, _btnSaveAs, _btnPlc, _btnNew, _btnStructure, _btnSkeleton;
+        readonly ToolStripButton _btnExport, _btnOpen, _btnSave, _btnSaveAs, _btnPlc, _btnNew, _btnStructure, _btnSkeleton, _btnImport;
+        string _lastSkeletonDir;
         TextDictionary _dict;
         TextDictionary Dict => _dict ?? (_dict = TextDictionary.LoadDefault(new[] { Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "slovar_lokalni.json") }));
         readonly ToolStripLabel _lblMachine;
@@ -63,9 +64,15 @@ namespace TIA_Generator.Gui
             _btnNew = new ToolStripButton("Nov stroj ...") { ToolTipText = "Nov stroj: sektorji, postaje, podpostaje – Ctrl+N" };
             _btnStructure = new ToolStripButton("Struktura ...") { ToolTipText = "Sektorji, število postaj, podpostaje, PLC indeksi", Enabled = false };
             _btnSkeleton = new ToolStripButton("PLC ogrodje ...") { ToolTipText = "FB/DB novih postaj kot klon vzorčne enote (SimaticML za uvoz)", Enabled = false };
+            _btnImport = new ToolStripButton("Uvozi v TIA ...") { ToolTipText = "PLC ogrodje v odprt TIA Portal V20 prek Openness (projekta ne shrani)" };
             _lblMachine = new ToolStripLabel("") { Alignment = ToolStripItemAlignment.Right, Font = new Font(Font, FontStyle.Bold) };
             tools.Items.AddRange(new ToolStripItem[] { _btnNew, _btnExport, _btnOpen, new ToolStripSeparator(), _btnSave, _btnSaveAs, new ToolStripSeparator(),
-                                                       _btnStructure, _btnSkeleton, _btnPlc, _lblMachine });
+                                                       _btnStructure, _btnSkeleton, _btnImport, _btnPlc, _lblMachine });
+            _btnImport.Click += (s, e) =>
+            {
+                string dir = _lastSkeletonDir ?? Settings.Get("importDir");
+                using (var d = new ImportDialog(dir, _model?.Machine.DbMap.Names.TryGetValue("errorMessages", out var em) == true ? em : null)) d.ShowDialog(this);
+            };
             _btnNew.Click += (s, e) => NewMachine();
             _btnStructure.Click += (s, e) => EditStructure();
             _btnSkeleton.Click += (s, e) => GenerateSkeleton();
@@ -734,6 +741,8 @@ namespace TIA_Generator.Gui
                     var r = new PlcSkeleton(Log).Generate(_model, new PlcSkeleton.Template { ExportDir = tplDir.Text, UnitId = tplUnit.Text.Trim() }, outDir.Text);
                     foreach (var l in r.Report) Log(l);
                     _status.Text = "PLC ogrodje: " + r.Units + " postaj, " + r.Files.Count + " datotek → " + outDir.Text;
+                    _lastSkeletonDir = outDir.Text;
+                    Settings.Set("importDir", outDir.Text);
                     if (MessageBox.Show(this, _status.Text + "\n\nPoročilo (potrebni simboli, trki številk) je v zavihku Dnevnik in v PLC_ogrodje_porocilo.txt.\nOdprem mapo?",
                                         Text, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                         System.Diagnostics.Process.Start("explorer.exe", "\"" + outDir.Text + "\"");

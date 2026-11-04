@@ -47,6 +47,12 @@ Odločitve: vir = ročni vnos + predizpolnitev iz exporta; izhod = HMI + PLC ogr
 - **Ni preverjeno v TIA**: uvoz generiranih XML (Openness/VCI) – prvi pravi test.
 - Naslednje: HMI iz strukture – tag tabele + `SeznamPostaj`, nato zasloni `Postaja_<oznaka>` in predloge `Nastavitve_Sektor_<del>` iz Purem; uvoz prek Openness.
 
+### Osnovni projekt + uvoz Openness (2026-11-04)
+- Kontrolni seznam izdelave osnovnega projekta: `D:\Claude\Dokumentacije\Generator\OSNOVNI_PROJEKT_KONTROLNI_SEZNAM.md` (Purem → sektorji, PHEV Rotor 2 → en sektor, vzorčni enoti A05 / 07). Generator uvaža v KOPIJO osnovnega projekta, ne v prazen projekt.
+- `TIA_Generator.Openness` (TiaImporter, lasten STA thread; TiaService v TIA_ToolKit je internal): procesi, priklop, seznam PLC-jev, načrt (dry-run), uvoz blokov v mape (ustvari), dodajanje bitov na konec DB_Error_Messages (export → XML → import Override, varnostna kopija).
+- GUI: gumb *Uvozi v TIA …* (ImportDialog). Preverjeno: build, nalaganje Openness iz namestitve TIA, seznam procesov (TIA ni bil odprt). **Ni preverjeno: dejanski uvoz v projekt.**
+- Ni narejeno: klici postaj v Main (OB1), PLC tagi U_<oznaka>_RESET_ENABLED, HMI alarmi.
+
 **Odprto / naslednji koraki:**
 1. Faza 2 potrebuje knjižnico predlog (čista predloga projekta ali Purem `Postaja_B02_1` + `Nastavitve_Sektor_B`).
 2. Slovar: veliko »sestavljenih« besedil je dobesednih (»Krimpanje položaj max«) – dopolnjuj `phrases` ali lokalni `-s` slovar; opcija: pobiranje besedil iz starih zaslonov (TextField levo od IOField-a).
