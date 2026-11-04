@@ -28,7 +28,9 @@ namespace TIA_Generator.Gui
         List<UnitRow> _allUnitRows = new List<UnitRow>();
 
         // ---------------------------------------------------------------- gradniki
-        readonly ToolStripButton _btnExport, _btnOpen, _btnSave, _btnSaveAs, _btnPlc;
+        readonly ToolStripButton _btnExport, _btnOpen, _btnSave, _btnSaveAs, _btnPlc, _btnNew, _btnStructure, _btnSkeleton;
+        TextDictionary _dict;
+        TextDictionary Dict => _dict ?? (_dict = TextDictionary.LoadDefault(new[] { Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "slovar_lokalni.json") }));
         readonly ToolStripLabel _lblMachine;
         readonly ToolStripStatusLabel _status;
         readonly ToolStripProgressBar _progress;
@@ -58,8 +60,15 @@ namespace TIA_Generator.Gui
             _btnSave = new ToolStripButton("Shrani") { ToolTipText = "Ctrl+S", Enabled = false };
             _btnSaveAs = new ToolStripButton("Shrani kot ...") { Enabled = false };
             _btnPlc = new ToolStripButton("Spremembe PLC (CSV) ...") { ToolTipText = "Časovniki → Delay[0..9]: seznam za Excel", Enabled = false };
+            _btnNew = new ToolStripButton("Nov stroj ...") { ToolTipText = "Nov stroj: sektorji, postaje, podpostaje – Ctrl+N" };
+            _btnStructure = new ToolStripButton("Struktura ...") { ToolTipText = "Sektorji, število postaj, podpostaje, PLC indeksi", Enabled = false };
+            _btnSkeleton = new ToolStripButton("PLC ogrodje ...") { ToolTipText = "FB/DB novih postaj kot klon vzorčne enote (SimaticML za uvoz)", Enabled = false };
             _lblMachine = new ToolStripLabel("") { Alignment = ToolStripItemAlignment.Right, Font = new Font(Font, FontStyle.Bold) };
-            tools.Items.AddRange(new ToolStripItem[] { _btnExport, _btnOpen, new ToolStripSeparator(), _btnSave, _btnSaveAs, new ToolStripSeparator(), _btnPlc, _lblMachine });
+            tools.Items.AddRange(new ToolStripItem[] { _btnNew, _btnExport, _btnOpen, new ToolStripSeparator(), _btnSave, _btnSaveAs, new ToolStripSeparator(),
+                                                       _btnStructure, _btnSkeleton, _btnPlc, _lblMachine });
+            _btnNew.Click += (s, e) => NewMachine();
+            _btnStructure.Click += (s, e) => EditStructure();
+            _btnSkeleton.Click += (s, e) => GenerateSkeleton();
             _btnExport.Click += async (s, e) => await ExtractFromExport();
             _btnOpen.Click += (s, e) => OpenModel();
             _btnSave.Click += (s, e) => Save(false);
@@ -215,6 +224,7 @@ namespace TIA_Generator.Gui
             {
                 if (e.Control && e.KeyCode == Keys.S && _model != null) { Save(false); e.Handled = true; }
                 else if (e.Control && e.KeyCode == Keys.O) { OpenModel(); e.Handled = true; }
+                else if (e.Control && e.KeyCode == Keys.N) { NewMachine(); e.Handled = true; }
                 else if (e.Control && e.KeyCode == Keys.E) { e.Handled = true; await ExtractFromExport(); }
             };
             ShowUnit(null);
@@ -310,8 +320,8 @@ namespace TIA_Generator.Gui
         {
             _progress.Visible = on;
             _status.Text = text;
-            _btnExport.Enabled = _btnOpen.Enabled = !on;
-            _btnSave.Enabled = _btnSaveAs.Enabled = _btnPlc.Enabled = !on && _model != null;
+            _btnExport.Enabled = _btnOpen.Enabled = _btnNew.Enabled = !on;
+            _btnSave.Enabled = _btnSaveAs.Enabled = _btnPlc.Enabled = _btnStructure.Enabled = _btnSkeleton.Enabled = !on && _model != null;
             UseWaitCursor = on;
         }
 
@@ -644,7 +654,93 @@ namespace TIA_Generator.Gui
         {
             _dirty = d;
             Text = "TIA_Generator – " + (_model?.Machine.Name ?? "generator HMI") + (d ? " *" : "");
-            _btnSave.Enabled = _btnSaveAs.Enabled = _btnPlc.Enabled = _model != null;
+            _btnSave.Enabled = _btnSaveAs.Enabled = _btnPlc.Enabled = _btnStructure.Enabled = _btnSkeleton.Enabled = _model != null;
+        }
+
+        // ================================================================ struktura stroja, PLC ogrodje
+
+        void NewMachine()
+        {
+            if (!ConfirmDiscard()) return;
+            var d = TIA_Generator.Structure.StructureBuilder.Create("Nov stroj", 3, 5);
+            using (var dlg = new StructureDialog(d, "Nov stroj – sektorji, postaje, podpostaje"))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                var m = TIA_Generator.Structure.StructureBuilder.ApplyToModel(dlg.Result, null, Dict);
+                SetModel(m, null, dirty: true);
+                _status.Text = "Nov stroj: " + m.Units.Count + " postaj – shrani model (Ctrl+S), nato 'PLC ogrodje ...'.";
+                Log(_status.Text);
+            }
+        }
+
+        void EditStructure()
+        {
+            if (_model == null) return;
+            CommitEdits();
+            var d = TIA_Generator.Structure.StructureBuilder.FromModel(_model);
+            using (var dlg = new StructureDialog(d, "Struktura stroja – " + _model.Machine.Name))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                int before = _model.Units.Count;
+                TIA_Generator.Structure.StructureBuilder.ApplyToModel(dlg.Result, _model, Dict);
+                string sel = _unit?.Id;
+                SetModel(_model, _modelPath, dirty: true);
+                if (sel != null) SelectUnit(sel, 0);
+                int fresh = _model.Units.Count(u => u.Origin == "struktura");
+                _status.Text = "Struktura uveljavljena: " + _model.Units.Count + " enot (prej " + before + "), novih postaj " + fresh + ".";
+                Log(_status.Text);
+            }
+        }
+
+        void GenerateSkeleton()
+        {
+            if (_model == null) return;
+            CommitEdits();
+            var fresh = _model.Units.Where(u => u.Origin == "struktura").ToList();
+            if (fresh.Count == 0)
+            {
+                MessageBox.Show(this, "V modelu ni novih postaj. PLC ogrodje se ustvari samo za postaje, dodane v 'Struktura ...' ali 'Nov stroj ...' (obstoječih iz PLC ne prepiše).", Text);
+                return;
+            }
+            string defOut = _modelPath != null ? Path.Combine(Path.GetDirectoryName(_modelPath), SafeName(_model.Machine.Name) + "_PLC_ogrodje")
+                                               : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), SafeName(_model.Machine.Name) + "_PLC_ogrodje");
+            using (var f = new Form { Text = "PLC ogrodje novih postaj (" + fresh.Count + ")", Size = new Size(760, 260), StartPosition = FormStartPosition.CenterParent, Font = Font, MinimizeBox = false, MaximizeBox = false, FormBorderStyle = FormBorderStyle.FixedDialog })
+            {
+                var t = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, Padding = new Padding(10) };
+                t.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
+                t.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+                t.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40));
+                var tplDir = new TextBox { Dock = DockStyle.Fill, Text = Settings.Get("skeletonTemplate") ?? @"D:\Claude\TiaFullExport\Purem support pin\Project1_V20" };
+                var tplUnit = new TextBox { Width = 90, Text = Settings.Get("skeletonUnit") ?? "A05" };
+                var outDir = new TextBox { Dock = DockStyle.Fill, Text = defOut };
+                Button Browse(TextBox tb) { var b = new Button { Text = "…", Width = 32 }; b.Click += (s, e) => { using (var d = new FolderBrowserDialog { SelectedPath = tb.Text }) if (d.ShowDialog(f) == DialogResult.OK) tb.Text = d.SelectedPath; }; return b; }
+                void Row(string l, Control c, Control b) { t.RowCount++; t.Controls.Add(new Label { Text = l, AutoSize = true, Padding = new Padding(0, 6, 0, 0) }, 0, t.RowCount - 1); t.Controls.Add(c, 1, t.RowCount - 1); if (b != null) t.Controls.Add(b, 2, t.RowCount - 1); }
+                Row("Vzorčni export", tplDir, Browse(tplDir));
+                Row("Vzorčna enota", tplUnit, null);
+                Row("Izhodna mapa", outDir, Browse(outDir));
+                t.RowCount++;
+                t.Controls.Add(new Label { Text = "Vzorec = standardno ogrodje postaje (Purem Unit_A05 »Spare«). Zamenjajo se oznaka, indeks postaje in časovniki → Delay[i]; številke FB/DB = PLC indeks, Settings = 100 + indeks.", AutoSize = false, Dock = DockStyle.Fill, Height = 40, ForeColor = Color.DimGray }, 0, t.RowCount - 1);
+                t.SetColumnSpan(t.GetControlFromPosition(0, t.RowCount - 1), 3);
+                var ok = new Button { Text = "Generiraj", DialogResult = DialogResult.OK, Width = 110, Height = 30 };
+                var bp = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 40, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(0, 4, 10, 0) };
+                bp.Controls.Add(ok);
+                f.Controls.Add(t); f.Controls.Add(bp); f.AcceptButton = ok;
+                if (f.ShowDialog(this) != DialogResult.OK) return;
+
+                Settings.Set("skeletonTemplate", tplDir.Text); Settings.Set("skeletonUnit", tplUnit.Text.Trim());
+                try
+                {
+                    UseWaitCursor = true;
+                    var r = new PlcSkeleton(Log).Generate(_model, new PlcSkeleton.Template { ExportDir = tplDir.Text, UnitId = tplUnit.Text.Trim() }, outDir.Text);
+                    foreach (var l in r.Report) Log(l);
+                    _status.Text = "PLC ogrodje: " + r.Units + " postaj, " + r.Files.Count + " datotek → " + outDir.Text;
+                    if (MessageBox.Show(this, _status.Text + "\n\nPoročilo (potrebni simboli, trki številk) je v zavihku Dnevnik in v PLC_ogrodje_porocilo.txt.\nOdprem mapo?",
+                                        Text, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        System.Diagnostics.Process.Start("explorer.exe", "\"" + outDir.Text + "\"");
+                }
+                catch (Exception ex) { Log("NAPAKA: " + ex); MessageBox.Show(this, ex.Message, "PLC ogrodje", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+                finally { UseWaitCursor = false; }
+            }
         }
 
         void SelectUnitFromWarning()

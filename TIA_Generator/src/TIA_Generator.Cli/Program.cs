@@ -26,6 +26,8 @@ namespace TIA_Generator.Cli
                     case "model": return CmdModel(args.Skip(1).ToList());
                     case "show": return CmdShow(args.Skip(1).ToList());
                     case "plcchanges": return CmdPlcChanges(args.Skip(1).ToList());
+                    case "newmachine": return CmdNewMachine(args.Skip(1).ToList());
+                    case "plcskeleton": return CmdPlcSkeleton(args.Skip(1).ToList());
                     default: Console.Error.WriteLine("Neznan ukaz: " + args[0]); Usage(); return 1;
                 }
             }
@@ -48,6 +50,52 @@ namespace TIA_Generator.Cli
             Console.WriteLine("      Pregled modela: tabela enot ali podrobnosti ene enote.");
             Console.WriteLine("  TIA_Generator plcchanges <x.hmimodel.json> [-o <spremembe.csv>]");
             Console.WriteLine("      Potrebne spremembe PLC za standard 2.0 (časovniki → Delay[0..9]) z bloki, kjer so člani uporabljeni.");
+        }
+
+        static string Opt(List<string> a, string name, string def = null)
+        {
+            int i = a.IndexOf(name);
+            return i >= 0 && i + 1 < a.Count ? a[i + 1] : def;
+        }
+
+        /// <summary>newmachine &lt;ime&gt; --sectors N (0 = en sektor) --stations M [--sub A01=2,B03=1] [--pc 0|1] [--panel 0|1] -o model.json</summary>
+        static int CmdNewMachine(List<string> a)
+        {
+            if (a.Count == 0 || a[0].StartsWith("-")) throw new ArgumentException("Manjka ime stroja.");
+            int sectors = int.Parse(Opt(a, "--sectors", "1")), stations = int.Parse(Opt(a, "--stations", "5"));
+            var d = TIA_Generator.Structure.StructureBuilder.Create(a[0], sectors, stations);
+            d.Pc = Opt(a, "--pc", "1") != "0"; d.Panel = Opt(a, "--panel", "1") != "0";
+            foreach (var kv in (Opt(a, "--sub", "") ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var p = kv.Split('=');
+                var st = d.Stations.FirstOrDefault(s => s.Id == p[0]) ?? throw new ArgumentException("Ni postaje " + p[0]);
+                st.SubCount = int.Parse(p[1]);
+            }
+            TIA_Generator.Structure.StructureBuilder.Rebuild(d);
+            var m = TIA_Generator.Structure.StructureBuilder.ApplyToModel(d, null, TextDictionary.LoadDefault());
+            string o = Opt(a, "-o", Safe(a[0]) + ".hmimodel.json");
+            ModelJson.Save(m, o);
+            Console.WriteLine("Model: " + Path.GetFullPath(o));
+            foreach (var s in d.Stations)
+                Console.WriteLine(string.Format("  {0,-8} {1,-3} PLC {2,3}  HMI {3,3}  {4}", s.Id, s.Sector, s.PlcIndex, s.HmiIndex, s.IsSub ? "podpostaja " + s.Parent : ""));
+            foreach (var w in TIA_Generator.Structure.StructureBuilder.Validate(d)) Console.WriteLine("  ⚠ " + w);
+            return 0;
+        }
+
+        /// <summary>plcskeleton &lt;model&gt; --template &lt;exportDir&gt; [--unit A05] -o &lt;outDir&gt;</summary>
+        static int CmdPlcSkeleton(List<string> a)
+        {
+            if (a.Count == 0) throw new ArgumentException("Manjka pot do .hmimodel.json.");
+            var m = ModelJson.Load(a[0]);
+            var tpl = new TIA_Generator.Generate.PlcSkeleton.Template
+            {
+                ExportDir = Opt(a, "--template", @"D:\Claude\TiaFullExport\Purem support pin\Project1_V20"),
+                UnitId = Opt(a, "--unit", "A05"),
+            };
+            string o = Opt(a, "-o") ?? throw new ArgumentException("Manjka -o <izhodna mapa>.");
+            var r = new TIA_Generator.Generate.PlcSkeleton(Console.WriteLine).Generate(m, tpl, o);
+            foreach (var l in r.Report) Console.WriteLine(l);
+            return 0;
         }
 
         static int CmdPlcChanges(List<string> a)

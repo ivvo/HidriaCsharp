@@ -30,6 +30,25 @@ TIA_Generator.sln
 ```
 Izhod: `bin\x64\Debug\TIA_Generator.exe`. Ne potrebuje TIA Portala.
 
+## Struktura stroja (glavni cilj)
+
+Stroj = sektorji in postaje po standardu 5.3:
+
+| Primer | FB postaj | PLC indeks | HMI indeks |
+|---|---|---|---|
+| 3 sektorji po 5 postaj | `Unit_A01…A05`, `Unit_B01…B05`, `Unit_C01…C05` | A: 11–15, B: 21–25, C: 41–45 (osnova A 10, B 20, C 40, D 60, E 80 + št. postaje) | PLC − 1 |
+| podpostaje A01 (2×) | `Unit_A01_1`, `Unit_A01_2` | naslednja prosta v razponu sektorja (16, 17) – urejljivo | PLC − 1 |
+| en sektor, 4 postaje | `Unit_01…Unit_04` | 1–4 | 0–3 |
+
+- **Nov stroj …** (Ctrl+N): vpišeš ime, sektorje (A–E, opis, število postaj), podpostaje in opise postaj; PLC indeksi se dodelijo samodejno (urejljivi), opozorila za izven razpona / podvojene.
+- **Struktura …**: isto za obstoječ model – predizpolni se iz exporta (manjkajoče številke, npr. Purem B05, ostanejo izpuščene; Purem B02 je samo »nosilec« podpostaj B02_1..4). Nove postaje dobijo `origin: "struktura"`.
+- **PLC ogrodje …**: za nove postaje ustvari SimaticML XML – klon vzorčne enote (privzeto Purem `Unit_A05` »Spare«, standardno ogrodje s 40 networki):
+  `Unit_<oznaka>` (FB = PLC indeks), `Unit_<oznaka>_DB` (instanca = PLC indeks), `Unit_<oznaka>_DB_Settings` (100 + indeks; `Delay : Array[0..9] of S5Time` + `Part_n_BAD_Count`).
+  V FB se zamenjajo oznaka (`Warning_OFF_A05` → `Warning_OFF_C03_1`), indeks v poljih `DB_*` (`OFF[15]` → `OFF[46]`) in časovniki (`Delay_Position_Error` → `Delay[0]`).
+  Poročilo `PLC_ogrodje_porocilo.txt`: potrebni simboli (biti v DB_Error_Messages, PLC tagi `U_<oznaka>_RESET_ENABLED`), trki številk z obstoječimi bloki.
+  Uvoz v TIA: Openness ali Version Control Interface (uvoz iz programa še ni narejen).
+- CLI: `newmachine "<ime>" --sectors 3 --stations 5 --sub A01=2,C03=1 -o x.hmimodel.json`, `plcskeleton x.hmimodel.json [--template <export>] [--unit A05] -o <mapa>`.
+
 ## Grafični vmesnik – `TIA_GeneratorGui.exe`
 
 Zagon: `bin\x64\Debug\TIA_GeneratorGui.exe` ali F5 v Visual Studiu (zagonski projekt `TIA_Generator.Gui`, profili *GUI*, *GUI – model Purem*, *GUI – export BMW G*).

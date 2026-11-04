@@ -49,6 +49,8 @@ namespace TIA_Generator.Model
         /// <summary>"single" (Unit_01 …) ali "parts" (Unit_A01 …).</summary>
         public string Type;
         public List<string> Parts = new List<string>();
+        /// <summary>Opisi sektorjev (SL), npr. A → "Montaža" – iz konfiguratorja strukture (za predlogo Nastavitve_Sektor_&lt;del&gt;).</summary>
+        public SortedDictionary<string, string> PartTexts = new SortedDictionary<string, string>();
         public List<string> Lines = new List<string>();
         public List<string> Languages = new List<string> { "sl-SI", "en-US", "de-DE" };
         public PlcRef Plc = new PlcRef();
@@ -89,6 +91,8 @@ namespace TIA_Generator.Model
     public sealed class Unit
     {
         public string Id;
+        /// <summary>"export" (izpeljano iz PLC) ali "struktura" (nova postaja iz konfiguratorja – zanjo se generira PLC ogrodje).</summary>
+        public string Origin;
         public string Fb;
         public string Part;
         /// <summary>Skupina iz mape, kadar ni del stroja (npr. "Dosing" za Machine/Dosing/D1_Electrode).</summary>

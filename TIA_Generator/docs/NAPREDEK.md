@@ -38,6 +38,15 @@ Preverjeno z `--snapshot` na Purem (odprt model) in BMW G (izdelava iz exporta).
 (SelectionChanged pred CurrentRow) in prazna tabela opozoril (ModelWarning ima polja – vezava prek WarningRow).
 Ni še preverjeno ročno: urejanje celic in shranjevanje prek GUI (koda gre prek iste ModelJson.Save kot CLI).
 
+### Struktura stroja + PLC ogrodje (2026-11-04)
+Uporabnik je pojasnil glavni cilj: HMI (in PLC ogrodje) iz **strukture stroja** – sektorji A/B/C…, število postaj v sektorju, podpostaje; en sektor = Unit_01…
+Odločitve: vir = ročni vnos + predizpolnitev iz exporta; izhod = HMI + PLC ogrodje; videz zaslonov iz Purem (dokler ni čiste predloge); naprave PC + panel.
+- `Core\Structure\MachineStructure.cs`: StructureDef/SectorDef/StationDef, `Create`, `Rebuild`, `AllocateIndices` (A01 → 11 …, podpostaje = naslednji prosti), `Validate`, `FromModel`, `ApplyToModel`.
+- `Core\Generate\PlcSkeleton.cs`: klon `Unit_A05` (Purem »Spare«, 40 networkov); preverjeno: 3×5 + podpostaje → 18 enot, 25 zamenjav indeksa na enoto, 0 ostankov A05; povratno branje z `model` da iste indekse, Settings DB-je in časovnike kot polje.
+- GUI: Nov stroj (Ctrl+N), Struktura, PLC ogrodje; razvojni `--snapdialog <png>`.
+- **Ni preverjeno v TIA**: uvoz generiranih XML (Openness/VCI) – prvi pravi test.
+- Naslednje: HMI iz strukture – tag tabele + `SeznamPostaj`, nato zasloni `Postaja_<oznaka>` in predloge `Nastavitve_Sektor_<del>` iz Purem; uvoz prek Openness.
+
 **Odprto / naslednji koraki:**
 1. Faza 2 potrebuje knjižnico predlog (čista predloga projekta ali Purem `Postaja_B02_1` + `Nastavitve_Sektor_B`).
 2. Slovar: veliko »sestavljenih« besedil je dobesednih (»Krimpanje položaj max«) – dopolnjuj `phrases` ali lokalni `-s` slovar; opcija: pobiranje besedil iz starih zaslonov (TextField levo od IOField-a).

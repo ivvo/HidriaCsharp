@@ -248,7 +248,7 @@ namespace TIA_Generator.Extract
             foreach (var fb in fbs)
             {
                 string id = fb.Name.Substring("Unit_".Length);
-                var u = new Unit { Id = id, Fb = fb.Name, Folder = fb.Folder };
+                var u = new Unit { Id = id, Origin = "export", Fb = fb.Name, Folder = fb.Folder };
                 var fno = Regex.Match((fb.Folder ?? "").Split('/').LastOrDefault() ?? "", @"^Unit\s+(\d+)\s");
                 if (fno.Success) u.FolderNo = int.Parse(fno.Groups[1].Value);
 
