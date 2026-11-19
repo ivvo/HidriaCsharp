@@ -13,6 +13,27 @@ namespace TemplateGenerator.Tests
 
         public void Dispose() => TestHelpers.DeleteDirSafely(_outDir);
 
+        // Generira ABB projekt z možnostjo Positions != 1 (BuildAndGenerate zna le (ime, free)).
+        private static ShellViewModel Gen(string outDir, params (string name, bool free, int positions)[] stations)
+        {
+            var vm = new ShellViewModel();
+            vm.ProgramName = "Robot1";
+            vm.AddProgram();
+            vm.SelectedProgram = vm.Program[0];
+            foreach (var (name, free, positions) in stations)
+            {
+                vm.StationName = name;
+                vm.StationFreeEnabled = free;
+                vm.AddStation();
+                if (positions != 1)
+                    vm.Program[0].Stations[vm.Program[0].Stations.Count - 1].Positions = positions;
+            }
+            vm.SelectedTemplate = "ABB Hidria";
+            vm.GenerateSimpleProgram = true;
+            vm.GenerateProject(outDir);
+            return vm;
+        }
+
         [Fact]
         public void Import_RoundTrips_StationListAndFlags()
         {
@@ -89,6 +110,94 @@ namespace TemplateGenerator.Tests
             string globalAfter = File.ReadAllText(globalPath);
             Assert.Contains(replacement, globalAfter);
             Assert.Contains("CONST robtarget jRobot1_Station2 :=", globalAfter);
+        }
+
+        // Sprememba Positions obstoječe postaje (1 -> 2): rezultat MORA biti bajt-identičen svežemu
+        // Generate z Weld na 2 poziciji (robtargeti so v obeh ničelni).
+        [Fact]
+        public void Update_ChangeExistingStationPositions_1to2_ByteIdenticalToFullGenerate()
+        {
+            string goldDir = TestHelpers.CreateTempDir();
+            try
+            {
+                Gen(goldDir, ("Weld", true, 2));
+                Gen(_outDir, ("Weld", true, 1));
+
+                var vm = new ShellViewModel();
+                vm.ImportProject(_outDir);
+                vm.Program[0].Stations.Single(s => s.RobotStationName == "Weld").Positions = 2;
+                vm.UpdateProject(_outDir);
+
+                AssertFilesByteIdentical(goldDir, _outDir, "Global.mod", "Robot1_Motion.mod", "robot_Main.mod", "Communication.mod");
+            }
+            finally { TestHelpers.DeleteDirSafely(goldDir); }
+        }
+
+        // Sprememba Positions navzdol (3 -> 1) mora biti prav tako bajt-identična svežemu Generate.
+        [Fact]
+        public void Update_ChangeExistingStationPositions_3to1_ByteIdenticalToFullGenerate()
+        {
+            string goldDir = TestHelpers.CreateTempDir();
+            try
+            {
+                Gen(goldDir, ("Weld", true, 1), ("Drop", false, 1));
+                Gen(_outDir, ("Weld", true, 3), ("Drop", false, 1));
+
+                var vm = new ShellViewModel();
+                vm.ImportProject(_outDir);
+                vm.Program[0].Stations.Single(s => s.RobotStationName == "Weld").Positions = 1;
+                vm.UpdateProject(_outDir);
+
+                AssertFilesByteIdentical(goldDir, _outDir, "Global.mod", "Robot1_Motion.mod", "robot_Main.mod", "Communication.mod");
+            }
+            finally { TestHelpers.DeleteDirSafely(goldDir); }
+        }
+
+        // Ob spremembi 1 -> 2 se naučena koordinata ene točke ohrani (preimenuje v pozicijo 1),
+        // nova pozicija 2 dobi ničle.
+        [Fact]
+        public void Update_ChangePositions_PreservesAndRenamesTaughtRobtarget()
+        {
+            Gen(_outDir, ("Weld", true, 1));
+            string globalPath = Path.Combine(_outDir, "Global.mod");
+
+            string g = File.ReadAllText(globalPath);
+            const string marker = "CONST robtarget jRobot1_Weld :=[[0,0,0]";
+            const string taughtVal = "CONST robtarget jRobot1_Weld :=[[11.1,22.2,33.3]";
+            Assert.Contains(marker, g);
+            File.WriteAllText(globalPath, g.Replace(marker, taughtVal));
+
+            var vm = new ShellViewModel();
+            vm.ImportProject(_outDir);
+            vm.Program[0].Stations.Single(s => s.RobotStationName == "Weld").Positions = 2;
+            vm.UpdateProject(_outDir);
+
+            string after = File.ReadAllText(globalPath);
+            Assert.Contains("CONST robtarget jRobot1_Weld1 :=[[11.1,22.2,33.3]", after); // naučena -> pozicija 1
+            Assert.Contains("CONST robtarget jRobot1_Weld2 :=[[0,0,0]", after);           // nova pozicija = ničle
+            Assert.DoesNotContain("robtarget jRobot1_Weld :=", after);                    // stare enojne ni več
+        }
+
+        private static void AssertFilesByteIdentical(string goldDir, string workDir, params string[] files)
+        {
+            foreach (var file in files)
+            {
+                string gold = File.ReadAllText(Path.Combine(goldDir, file));
+                string work = File.ReadAllText(Path.Combine(workDir, file));
+                if (gold != work)
+                    Assert.Fail($"'{file}': {FirstDiff(gold, work)}");
+            }
+        }
+
+        private static string FirstDiff(string a, string b)
+        {
+            var la = a.Replace("\r", "").Split('\n');
+            var lb = b.Replace("\r", "").Split('\n');
+            int n = Math.Min(la.Length, lb.Length);
+            for (int i = 0; i < n; i++)
+                if (la[i] != lb[i])
+                    return $"vrstica {i + 1}:\n  gold=[{la[i]}]\n  work=[{lb[i]}]";
+            return $"enako do {n} vrstic; dolžini gold={la.Length} work={lb.Length}";
         }
 
         [Fact]

@@ -37,9 +37,25 @@ namespace TemplateGenerator.Core.Classes
                 CopyDirectory(dir, Path.Combine(destDir, Path.GetFileName(dir)));
         }
 
+        // Generator (Template.cs) code-generirano vsebino (go-proc, veje, dodatne funkcije, robtarget
+        // deklaracije) zapiše z LF. Build*/Patch* pomočniki tu gradijo s CRLF, zato pri ZAMENJAVI
+        // obstoječih blokov (sprememba Positions) pretvorimo v LF, da je rezultat bajt-identičen Generate.
+        private static string Lf(string s) => s.Replace("\r\n", "\n");
+
         public static void UpdateProgram(ProgramModel program, List<StationModel> newStations, string path)
+            => UpdateProgram(program, newStations, null, path);
+
+        // repositioned: obstoječe postaje, ki jim je uporabnik spremenil Positions (podan je PREJŠNJE
+        // število pozicij, da znamo preimenovati/ohraniti naučene robtarget točke v Global.mod).
+        // Za vsako tako postajo zamenjamo njene obstoječe bloke (go-proc, moveOnStation vejo, dodatne
+        // MoveJ/MoveL funkcije) in prilagodimo njene robtarget deklaracije - ostale postaje ostanejo
+        // nedotaknjene. Home (indeks 0) in Pallet postaje se po Positions ne obravnavajo.
+        public static void UpdateProgram(ProgramModel program, List<StationModel> newStations,
+            List<(StationModel station, int oldPositions)> repositioned, string path)
         {
-            if (newStations == null || newStations.Count == 0) return;
+            newStations = newStations ?? new List<StationModel>();
+            repositioned = repositioned ?? new List<(StationModel, int)>();
+            if (newStations.Count == 0 && repositioned.Count == 0) return;
 
             string globalPath = Path.Combine(path, "Global.mod");
             string motionPath = Path.Combine(path, $"{program.ProgramName}_Motion.mod");
@@ -50,41 +66,58 @@ namespace TemplateGenerator.Core.Classes
                 if (!File.Exists(p))
                     throw new AbbHidriaUpdateException($"Datoteka '{p}' ne obstaja - ali je bila izbrana pravilna mapa projekta?");
 
-            UpdateGlobalMod(globalPath, program, newStations);
-
+            string globalContent = File.ReadAllText(globalPath);
             string motionContent = File.ReadAllText(motionPath);
             string mainContent = File.ReadAllText(mainPath);
             string commContent = File.ReadAllText(communicationPath);
 
-            int previousCount = program.Stations.Count - newStations.Count;
-
-            for (int idx = 0; idx < newStations.Count; idx++)
+            // --- 1) Na novo dodane postaje (kirurško vstavljanje) ---
+            if (newStations.Count > 0)
             {
-                var station = newStations[idx];
-                int stationIndex = previousCount + idx;
-                var notYetCreated = new HashSet<StationModel>(newStations.Skip(idx));
+                globalContent = ApplyGlobalModAppends(globalContent, program, newStations);
 
-                motionContent = PatchExistingGoProcsForNewOrigin(motionContent, program, station, notYetCreated);
-                motionContent = PatchMovement(motionContent, program, station);
-                motionContent = PatchMoveOnStation(motionContent, program, station);
-                motionContent = PatchMoveAway(motionContent, program, station);
-                if (station.Positions != 1)
-                    motionContent = PatchAdditionalPositions(motionContent, station);
+                int previousCount = program.Stations.Count - newStations.Count;
+                for (int idx = 0; idx < newStations.Count; idx++)
+                {
+                    var station = newStations[idx];
+                    int stationIndex = previousCount + idx;
+                    var notYetCreated = new HashSet<StationModel>(newStations.Skip(idx));
 
-                mainContent = PatchMainDispatch(mainContent, program, station, stationIndex);
-                if (station.Pallet)
-                    mainContent = PatchCreatePallet(mainContent, station);
+                    motionContent = PatchExistingGoProcsForNewOrigin(motionContent, program, station, notYetCreated);
+                    motionContent = PatchMovement(motionContent, program, station);
+                    motionContent = PatchMoveOnStation(motionContent, program, station);
+                    motionContent = PatchMoveAway(motionContent, program, station);
+                    if (station.Positions != 1)
+                        motionContent = PatchAdditionalPositions(motionContent, station);
 
-                commContent = PatchProc(commContent, "PROC robot_stationsFree()",
-                    station.StationFreeEnabled, $"\t\tSet do{station.RobotStationName}Free;");
-                commContent = PatchProc(commContent, "PROC robot_stationBusy()",
-                    station.StationFreeEnabled, $"\t\tReset do{station.RobotStationName}Free;");
-                commContent = PatchProc(commContent, "PROC robot_resetDepartLocations()",
-                    true, $"\t\tbRobotFrom{station.RobotStationName} := FALSE;");
-                commContent = PatchProc(commContent, "PROC robot_resetDestLocations()",
-                    true, $"\t\tbRobotTo{station.RobotStationName} := FALSE;");
+                    mainContent = PatchMainDispatch(mainContent, program, station, stationIndex);
+                    if (station.Pallet)
+                        mainContent = PatchCreatePallet(mainContent, station);
+
+                    commContent = PatchProc(commContent, "PROC robot_stationsFree()",
+                        station.StationFreeEnabled, $"\t\tSet do{station.RobotStationName}Free;");
+                    commContent = PatchProc(commContent, "PROC robot_stationBusy()",
+                        station.StationFreeEnabled, $"\t\tReset do{station.RobotStationName}Free;");
+                    commContent = PatchProc(commContent, "PROC robot_resetDepartLocations()",
+                        true, $"\t\tbRobotFrom{station.RobotStationName} := FALSE;");
+                    commContent = PatchProc(commContent, "PROC robot_resetDestLocations()",
+                        true, $"\t\tbRobotTo{station.RobotStationName} := FALSE;");
+                }
             }
 
+            // --- 2) Spremenjene Positions obstoječih postaj (zamenjava blokov) ---
+            foreach (var (station, oldPositions) in repositioned)
+            {
+                if (station.Pallet || program.Stations.IndexOf(station) == 0)
+                    continue; // Home in Pallet se po Positions ne obravnavata
+
+                motionContent = ReplaceGoProc(motionContent, program, station);
+                motionContent = ReplaceMoveOnStationBranch(motionContent, program, station);
+                motionContent = AdjustAdditionalFunctions(motionContent, station, oldPositions);
+                globalContent = AdjustRobtargets(globalContent, program, station, oldPositions);
+            }
+
+            File.WriteAllText(globalPath, globalContent);
             File.WriteAllText(motionPath, motionContent);
             File.WriteAllText(mainPath, mainContent);
             File.WriteAllText(communicationPath, commContent);
@@ -168,9 +201,8 @@ namespace TemplateGenerator.Core.Classes
         // obstoječe nekonsistentnosti v generatorju) ime VKLJUČNO s predpono programa ("jRobot1_Station1").
         // Tu repliciramo to natančno vedenje, da se novo dodane točke poimenujejo enako, kot bi jih
         // poimenoval sam generator, in se ujemajo z že obstoječimi deklaracijami v datoteki.
-        private static void UpdateGlobalMod(string path, ProgramModel program, List<StationModel> newStations)
+        private static string ApplyGlobalModAppends(string content, ProgramModel program, List<StationModel> newStations)
         {
-            string content = File.ReadAllText(path);
             int existingPalletCount = Regex.Matches(content, @"VAR num n\w+ :=").Count;
 
             foreach (var station in newStations)
@@ -205,7 +237,7 @@ namespace TemplateGenerator.Core.Classes
                 }
             }
 
-            File.WriteAllText(path, content);
+            return content;
         }
 
         private static string BuildRobtargetLine(string pointName)
@@ -333,8 +365,14 @@ namespace TemplateGenerator.Core.Classes
         private static string PatchMoveOnStation(string content, ProgramModel program, StationModel station)
         {
             string marker = $"PROC {program.ProgramName}_moveOnStation()";
-            string s = station.RobotStationName;
+            return InsertBeforeStandaloneElse(content, marker, BuildMoveOnStationBranch(station));
+        }
 
+        // Ena "ELSEIF bRobotTo<Postaja> = TRUE THEN ..." veja v {Prog}_moveOnStation (telo je odvisno
+        // od Pallet/Positions). Uporablja jo tudi zamenjava bloka pri spremembi Positions.
+        private static string BuildMoveOnStationBranch(StationModel station)
+        {
+            string s = station.RobotStationName;
             var sb = new StringBuilder();
             sb.Append($"\t\t\tELSEIF bRobotTo{s} = TRUE THEN \r\n");
             if (station.StationFreeEnabled)
@@ -349,7 +387,7 @@ namespace TemplateGenerator.Core.Classes
                 sb.Append($"\t\t\t\tMoveJ Offs(j{s},0,0,nRobotStationZOffset),vFullSpeed, z50, Tool0; \r\n" +
                           $"\t\t\t\tMoveL j{s}, vMoveOnStation, fine, Tool0; \r\n\r\n");
 
-            return InsertBeforeStandaloneElse(content, marker, sb.ToString());
+            return sb.ToString();
         }
 
         private static string PatchMoveAway(string content, ProgramModel program, StationModel station)
@@ -381,6 +419,17 @@ namespace TemplateGenerator.Core.Classes
         }
 
         private static string PatchAdditionalPositions(string content, StationModel station)
+            => InsertAdditionalBeforeEndModule(content, BuildAdditionalFunctionsText(station));
+
+        private static string InsertAdditionalBeforeEndModule(string content, string text)
+        {
+            int endModuleIdx = content.LastIndexOf("ENDMODULE", StringComparison.Ordinal);
+            if (endModuleIdx < 0)
+                throw new AbbHidriaUpdateException("V 'Motion.mod' ni bilo mogoče najti 'ENDMODULE'.");
+            return content.Substring(0, endModuleIdx) + text + content.Substring(endModuleIdx);
+        }
+
+        private static string BuildAdditionalFunctionsText(StationModel station)
         {
             string s = station.RobotStationName;
             var sb = new StringBuilder();
@@ -410,10 +459,7 @@ namespace TemplateGenerator.Core.Classes
             sb.Append($"            error_WrongAdditionalNumber(\"Function MoveL{s} \",);\r\n");
             sb.Append("\t\tENDTEST\r\n\tENDPROC\r\n\r\n");
 
-            int endModuleIdx = content.LastIndexOf("ENDMODULE", StringComparison.Ordinal);
-            if (endModuleIdx < 0)
-                throw new AbbHidriaUpdateException("V 'Motion.mod' ni bilo mogoče najti 'ENDMODULE'.");
-            return content.Substring(0, endModuleIdx) + sb + content.Substring(endModuleIdx);
+            return sb.ToString();
         }
 
         #endregion
@@ -433,6 +479,131 @@ namespace TemplateGenerator.Core.Classes
             string s = station.RobotStationName;
             string insertion = $"\t\tCreatePallet n{s} , j{s}1, j{s}2, j{s}3 , 0 , 0;\r\n";
             return InsertBeforeMarkerInBlock(content, marker, "! Start homing", insertion);
+        }
+
+        #endregion
+
+        #region ////// Sprememba Positions obstoječe postaje (zamenjava blokov) //////
+
+        // Zamenja celoten "PROC robot_go<S>() ... ENDPROC" z na novo zgrajenim (z novim Positions).
+        // V proc ni naučenih podatkov (le koda), zato je poln prepis bloka varen.
+        private static string ReplaceGoProc(string content, ProgramModel program, StationModel station)
+        {
+            string s = station.RobotStationName;
+            var (start, endProcStart) = FindProcBlockRange(content, $"PROC robot_go{s}()");
+            int endProc = endProcStart + "ENDPROC".Length;
+            // BuildGoProcText se začne z "\tPROC ..."; vodilni tab je v datoteki že pred 'start'.
+            // Generator zapiše to (code-generirano) vsebino z LF, zato CRLF iz Build* pretvorimo v LF.
+            string newProc = Lf(BuildGoProcText(program, station).Substring(1));
+            return content.Substring(0, start) + newProc + content.Substring(endProc);
+        }
+
+        // Zamenja "IF/ELSEIF bRobotTo<S> = TRUE THEN ..." vejo v {Prog}_moveOnStation z na novo zgrajeno
+        // (ohrani vodilno ključno besedo IF/ELSEIF izvirne vrstice).
+        private static string ReplaceMoveOnStationBranch(string content, ProgramModel program, StationModel station)
+        {
+            string s = station.RobotStationName;
+            string marker = $"PROC {program.ProgramName}_moveOnStation()";
+            var (procStart, procEnd) = FindProcBlockRange(content, marker);
+
+            int bIdx = content.IndexOf($"bRobotTo{s} = TRUE THEN", procStart, StringComparison.Ordinal);
+            if (bIdx < 0 || bIdx > procEnd)
+                throw new AbbHidriaUpdateException($"V 'moveOnStation' ni bilo mogoče najti veje za postajo '{s}'.");
+
+            int lineStart = content.LastIndexOf('\n', bIdx) + 1;
+            var m = Regex.Match(content.Substring(bIdx), @"\n[ \t]*(ELSEIF bRobotTo|ELSE(?!IF))");
+            if (!m.Success)
+                throw new AbbHidriaUpdateException($"V 'moveOnStation' ni bilo mogoče določiti konca veje za '{s}'.");
+            int nextStart = bIdx + m.Index + 1;
+
+            string newBranch = Lf(BuildMoveOnStationBranch(station)); // "\t\t\tELSEIF bRobotTo{s}..." (LF kot Generate)
+            string origPrefix = content.Substring(lineStart, bIdx - lineStart); // npr. "\t\t\tIF " ali "\t\t\tELSEIF "
+            if (origPrefix.TrimStart('\t', ' ').StartsWith("IF ", StringComparison.Ordinal))
+                newBranch = newBranch.Replace("\t\t\tELSEIF bRobotTo", "\t\t\tIF bRobotTo");
+
+            return content.Substring(0, lineStart) + newBranch + content.Substring(nextStart);
+        }
+
+        private static string AdjustAdditionalFunctions(string content, StationModel station, int oldPositions)
+        {
+            if (oldPositions > 1)
+                content = RemoveAdditionalFunctions(content, station); // odstrani obstoječe 3 procedure
+            if (station.Positions > 1) // dodaj nove (z novim št. pozicij) - LF kot svež Generate
+                content = InsertAdditionalBeforeEndModule(content, Lf(BuildAdditionalFunctionsText(station)));
+            return content;
+        }
+
+        // Odstrani zaporedne "PROC MoveJ<S>MaxZHeight / MoveJ<S>NearStation / MoveL<S>" z njihovim
+        // zaključnim ločilom (prazni vrstici), tako da ostane struktura datoteke čista.
+        private static string RemoveAdditionalFunctions(string content, StationModel station)
+        {
+            string s = station.RobotStationName;
+            int maxzIdx = content.IndexOf($"PROC MoveJ{s}MaxZHeight", StringComparison.Ordinal);
+            if (maxzIdx < 0) return content;
+            int startRemove = BackUpToStartOfLine(content, maxzIdx);
+
+            int movelIdx = content.IndexOf($"PROC MoveL{s}(", maxzIdx, StringComparison.Ordinal);
+            if (movelIdx < 0)
+                throw new AbbHidriaUpdateException($"Manjka 'PROC MoveL{s}(' pri odstranjevanju dodatnih funkcij postaje.");
+            int endProc = content.IndexOf("ENDPROC", movelIdx, StringComparison.Ordinal);
+            if (endProc < 0)
+                throw new AbbHidriaUpdateException($"Manjka 'ENDPROC' za 'MoveL{s}'.");
+            int endRemove = endProc + "ENDPROC".Length;
+            while (endRemove < content.Length && (content[endRemove] == '\r' || content[endRemove] == '\n'))
+                endRemove++;
+
+            return content.Substring(0, startRemove) + content.Substring(endRemove);
+        }
+
+        private const string ZeroRobtargetRhs = ":=[[0,0,0],[0.0,0.0,0.0,0.0],[0,0,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];";
+
+        // Prilagodi robtarget deklaracije postaje v Global.mod novemu številu pozicij, pri čemer OHRANI
+        // naučene koordinate: stari "j<Prog>_<S>" (1 poz.) <-> "j<Prog>_<S>1..N" (več poz.), nove pozicije
+        // dobijo ničelne koordinate. Vstavi jih na mesto starih (isti vrstni red kot svež Generate).
+        private static string AdjustRobtargets(string content, ProgramModel program, StationModel station, int oldPositions)
+        {
+            string baseName = $"{program.ProgramName}_{station.RobotStationName}";
+            int newPos = station.Positions;
+
+            var lineRx = new Regex(@"(?m)^\tCONST robtarget j" + Regex.Escape(baseName) + @"(\d*) (:=\[[^\r\n]*;)\r?\n");
+            var matches = lineRx.Matches(content).Cast<Match>().ToList();
+            if (matches.Count == 0) return content;
+
+            var oldRhsByName = new Dictionary<string, string>();
+            foreach (Match m in matches)
+                oldRhsByName[baseName + m.Groups[1].Value] = m.Groups[2].Value;
+
+            int insertPos = matches[0].Index;
+
+            foreach (Match m in matches.OrderByDescending(m => m.Index))
+                content = content.Remove(m.Index, m.Length);
+
+            var newNames = new List<string>();
+            if (newPos == 1) newNames.Add(baseName);
+            else for (int k = 1; k <= newPos; k++) newNames.Add(baseName + k);
+
+            var sb = new StringBuilder();
+            foreach (var newName in newNames)
+            {
+                string source = MapRepositionedRobtargetSource(newName, baseName, oldPositions);
+                string rhs = (source != null && oldRhsByName.TryGetValue(source, out var r)) ? r : ZeroRobtargetRhs;
+                sb.Append($"\tCONST robtarget j{newName} {rhs}\n"); // LF kot svež Generate
+            }
+
+            return content.Insert(insertPos, sb.ToString());
+        }
+
+        // Katera STARA robtarget točka (če sploh) je vir koordinat za dano NOVO ime.
+        private static string MapRepositionedRobtargetSource(string newName, string baseName, int oldPositions)
+        {
+            if (newName == baseName) // nov primer: ena pozicija
+                return oldPositions == 1 ? baseName : baseName + "1";
+
+            string kStr = newName.Substring(baseName.Length); // "1".."N"
+            if (oldPositions == 1)
+                return kStr == "1" ? baseName : null;
+            int k = int.Parse(kStr);
+            return k <= oldPositions ? baseName + k : null;
         }
 
         #endregion

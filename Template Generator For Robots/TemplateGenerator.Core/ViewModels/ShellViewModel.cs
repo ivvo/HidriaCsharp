@@ -33,6 +33,10 @@ namespace TemplateGenerator.Core.ViewModels
         // UpdateProject nato ve, katere postaje na koncu seznama so nove in jih je treba vstaviti.
         private readonly Dictionary<ProgramModel, int> _stationBaseline = new Dictionary<ProgramModel, int>();
 
+        // Za ABB: število pozicij vsake postaje ob uvozu/zadnji posodobitvi, da UpdateProject zazna,
+        // katerim OBSTOJEČIM postajam je uporabnik spremenil Positions (ne le dodane nove na konec).
+        private readonly Dictionary<ProgramModel, int[]> _stationPositionsBaseline = new Dictionary<ProgramModel, int[]>();
+
         // Proizvajalec zadnjega uspešnega uvoza ("Epson Hidria" / "KUKA Hella" / "ABB Hidria") -
         // UpdateProject ga potrebuje, da ve, kateri Updater naj pokliče.
         private string _importedVendor;
@@ -591,10 +595,12 @@ namespace TemplateGenerator.Core.ViewModels
 
                 Program.Clear();
                 _stationBaseline.Clear();
+                _stationPositionsBaseline.Clear();
                 foreach (var program in imported)
                 {
                     Program.Add(program);
                     _stationBaseline[program] = program.Stations.Count;
+                    _stationPositionsBaseline[program] = program.Stations.Select(s => s.Positions).ToArray();
                 }
 
                 i = Program.Count;
@@ -628,13 +634,23 @@ namespace TemplateGenerator.Core.ViewModels
 
             try
             {
-                var programsToUpdate = Program
-                    .Where(p => _stationBaseline.ContainsKey(p) && p.Stations.Count > _stationBaseline[p])
-                    .ToList();
-
-                if (programsToUpdate.Count == 0)
+                // Za vsak program izračunaj na novo dodane postaje in (samo ABB) obstoječe postaje s
+                // spremenjenim Positions.
+                var updates = new List<(ProgramModel program, List<StationModel> newStations,
+                    List<(StationModel station, int oldPositions)> repositioned)>();
+                foreach (var p in Program)
                 {
-                    TextUpdate = "Ni novih postaj za posodobitev (najprej uvozite projekt in dodajte novo postajo).";
+                    if (!_stationBaseline.ContainsKey(p)) continue;
+                    int baseline = _stationBaseline[p];
+                    var newStations = p.Stations.Skip(baseline).ToList();
+                    var repositioned = GetRepositionedStations(p);
+                    if (newStations.Count > 0 || repositioned.Count > 0)
+                        updates.Add((p, newStations, repositioned));
+                }
+
+                if (updates.Count == 0)
+                {
+                    TextUpdate = "Ni sprememb za posodobitev (dodaj novo postajo na konec, ali spremeni Positions obstoječe postaje - slednje samo pri ABB Hidria).";
                     return;
                 }
 
@@ -649,24 +665,22 @@ namespace TemplateGenerator.Core.ViewModels
                     default: throw new InvalidOperationException($"Neznan proizvajalec '{_importedVendor}'.");
                 }
 
-                foreach (var program in programsToUpdate)
+                foreach (var (program, newStations, repositioned) in updates)
                 {
-                    int baseline = _stationBaseline[program];
-                    var newStations = program.Stations.Skip(baseline).ToList();
-
                     switch (_importedVendor)
                     {
                         case "Epson Hidria": EpsonProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "KUKA Hella": KukaHellaProjectUpdater.UpdateProgram(program, newStations, path); break;
-                        case "ABB Hidria": AbbHidriaProjectUpdater.UpdateProgram(program, newStations, path); break;
+                        case "ABB Hidria": AbbHidriaProjectUpdater.UpdateProgram(program, newStations, repositioned, path); break;
                         case "Yamaha": YamahaProjectUpdater.UpdateProgram(program, newStations, path); break;
                         case "Kawasaki": KawasakiProjectUpdater.UpdateProgram(program, newStations, path); break;
                     }
 
                     _stationBaseline[program] = program.Stations.Count;
+                    _stationPositionsBaseline[program] = program.Stations.Select(s => s.Positions).ToArray();
                 }
 
-                TextUpdate = $"Projekt posodobljen ({programsToUpdate.Count} program(ov)). Varnostna kopija: {backupPath}";
+                TextUpdate = $"Projekt posodobljen ({updates.Count} program(ov)). Varnostna kopija: {backupPath}";
                 OpenFolder(path);
             }
             catch (Exception ex)
@@ -674,6 +688,25 @@ namespace TemplateGenerator.Core.ViewModels
                 TextUpdate = "Napaka pri posodabljanju: " + ex.Message;
             }
         }
+        // Obstoječe postaje (ne na novo dodane), katerim je uporabnik spremenil Positions - vrne par
+        // (postaja, prejšnje št. pozicij). Podprto samo pri ABB Hidria; Home (indeks 0) in Pallet se
+        // izpustita (Positions pri njiju ni smiseln).
+        private List<(StationModel station, int oldPositions)> GetRepositionedStations(ProgramModel p)
+        {
+            var result = new List<(StationModel, int)>();
+            if (_importedVendor != "ABB Hidria") return result;
+            if (!_stationPositionsBaseline.TryGetValue(p, out var basePos)) return result;
+
+            int n = Math.Min(basePos.Length, p.Stations.Count);
+            for (int i = 1; i < n; i++) // izpusti Home (indeks 0)
+            {
+                var st = p.Stations[i];
+                if (!st.Pallet && st.Positions != basePos[i])
+                    result.Add((st, basePos[i]));
+            }
+            return result;
+        }
+
         // Odpre generirano/posodobljeno mapo v Raziskovalcu. Med testi (nastavljena okoljska
         // spremenljivka TGR_SUPPRESS_EXPLORER=1) se odpiranje preskoči, da avtomatizirani testi ne
         // sprožijo množice oken Raziskovalca; enako se tiho preskoči, če zagon iz kakršnega koli
